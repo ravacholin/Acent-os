@@ -1,0 +1,123 @@
+export type LevelMCER = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+
+export type WordClassification = 'aguda' | 'grave' | 'esdrújula' | 'sobreesdrújula';
+
+export type WordCategory =
+  | 'aguda'
+  | 'grave'
+  | 'esdrújula'
+  | 'sobreesdrújula'
+  | 'hiato'
+  | 'diptongo'
+  | 'triptongo'
+  | 'monosílabo'
+  | 'diacrítica'
+  | 'interrogativo'
+  | 'exclamativo'
+  | 'solo-solo'
+  | 'demostrativo'
+  | 'mayúscula'
+  | 'extranjerismo'
+  | 'latinismo'
+  | 'mente'
+  | 'pronombre';
+
+export interface Word {
+  id: string;
+  word: string;               // Correct word with correct accents (e.g., "camión")
+  wordClean: string;          // Word without any accents/tildes (e.g., "camion")
+  syllables: string[];        // Syllable breakdown (e.g., ["ca", "mión"])
+  stressedSyllableIdx: number;// Index of the stressed syllable in syllables array (0-indexed)
+  classification: WordClassification;
+  category: WordCategory;
+  level: LevelMCER;
+  hasTilde: boolean;
+  rule: string;               // Grammatical rule
+  explanation: string;        // Short explanation (max 3 lines)
+  frequency: 'alta' | 'media' | 'baja';
+  options?: string[];         // Alternatives for Mode 3 (e.g., ["camión", "camion"])
+}
+
+export type GameMode =
+  | 'lleva-tilde'      // Mode 1: ¿Lleva tilde?
+  | 'escribi-tilde'    // Mode 2: Escribí la tilde
+  | 'encontra-error'   // Mode 3: Encontrá el error
+  | 'donde-va-tilde'   // Mode 4: ¿Dónde va la tilde?
+  | 'clasificacion'    // Mode 5: Clasificación
+  | 'dictado'          // Mode 6: Dictado (TTS)
+  | 'supervivencia'    // Mode 7: Supervivencia (Cronómetro)
+  | 'infinito'         // Mode 8: Infinito
+  | 'personalizado';   // Mode 9: Configuración personalizada
+
+export interface AppSettings {
+  darkModeOnly: boolean;
+  soundEnabled: boolean;
+  animationsEnabled: boolean;
+  showExplanationOnError: boolean;
+  showSyllables: boolean;
+  showRule: boolean;
+  showLevel: boolean;
+}
+
+export interface UserStats {
+  wordsSeen: number;
+  correctAnswers: number;
+  incorrectAnswers: number;
+  accuracy: number; // Percentage
+  currentStreak: number;
+  bestStreak: number;
+  totalTimeSeconds: number;
+  xp: number;
+  level: number;
+  categoryStats: Record<WordCategory, { correct: number; total: number }>;
+  levelStats: Record<LevelMCER, { correct: number; total: number }>;
+  frequentMistakes: Record<string, { wordId: string; word: string; incorrectCount: number; explanation: string }>;
+  masteredWords: string[]; // List of wordIds with consecutive correct answers
+  dailyHistory: Record<string, number>; // Date string "YYYY-MM-DD" -> words practiced
+  spacedRepetition?: Record<string, {
+    wordId: string;
+    box: number;
+    consecutiveCorrect: number;
+    lastSeenTimestamp: number;
+    nextReviewTimestamp: number;
+    failCount: number;
+  }>;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  category: 'count' | 'streak' | 'accuracy' | 'category' | 'mode';
+  requirement: number;
+  targetCategory?: WordCategory;
+  unlockedAt?: string; // Date string
+  icon: string; // Lucide icon name
+}
+
+export interface GameSessionState {
+  mode: GameMode;
+  words: Word[];
+  currentIndex: number;
+  correctCount: number;
+  incorrectCount: number;
+  streak: number;
+  score: number;
+  timeLeft: number; // Used in survival
+  initialTime: number; // Used in survival
+  startTime: number; // Timestamp of game start
+  history: Array<{
+    wordId: string;
+    userAnswer: any;
+    isCorrect: boolean;
+    timeTakenMs: number;
+  }>;
+}
+
+export interface SpacedRepetitionData {
+  wordId: string;
+  box: number; // Repetition box (1 to 5)
+  nextReviewDate: number; // Timestamp
+  easeFactor: number;
+  consecutiveCorrect: number;
+}

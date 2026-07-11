@@ -1,0 +1,1078 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  GameMode, 
+  AppSettings, 
+  UserStats, 
+  Achievement, 
+  GameSessionState, 
+  Word, 
+  WordCategory, 
+  LevelMCER 
+} from './types';
+import { WORDS_DATABASE } from './data/words';
+import { calculateErrorProfiles, getWeakCategories } from './utils/errorAnalysis';
+import PracticeSelector from './components/PracticeSelector';
+import StatsDashboard from './components/StatsDashboard';
+import AchievementsPanel, { INITIAL_ACHIEVEMENTS } from './components/AchievementsPanel';
+import DailyChallenge from './components/DailyChallenge';
+import SettingsPanel, { DEFAULT_SETTINGS } from './components/SettingsPanel';
+import ExerciseCard from './components/ExerciseCard';
+import { playClickSound, playCorrectSound, speakWord } from './utils/audio';
+import { 
+  Home, 
+  BookOpen, 
+  Calendar, 
+  BarChart3, 
+  Award, 
+  Settings as SettingsIcon, 
+  Flame, 
+  Zap, 
+  Play, 
+  Trophy, 
+  Sparkles,
+  ChevronRight,
+  ArrowLeft,
+  RotateCcw,
+  Volume2,
+  Check,
+  X,
+  Plus
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+
+// Default empty stats template
+const DEFAULT_STATS: UserStats = {
+  wordsSeen: 0,
+  correctAnswers: 0,
+  incorrectAnswers: 0,
+  accuracy: 0,
+  currentStreak: 0,
+  bestStreak: 0,
+  totalTimeSeconds: 0,
+  xp: 0,
+  level: 1,
+  categoryStats: {} as any,
+  levelStats: {} as any,
+  frequentMistakes: {},
+  masteredWords: [],
+  dailyHistory: {},
+  spacedRepetition: {}
+};
+
+// Seed initial category stats
+const CATEGORIES_LIST: WordCategory[] = [
+  'aguda', 'grave', 'esdrújula', 'sobreesdrújula', 'hiato', 'diptongo', 'triptongo', 'monosílabo', 'diacrítica', 'interrogativo'
+];
+CATEGORIES_LIST.forEach(cat => {
+  DEFAULT_STATS.categoryStats[cat] = { correct: 0, total: 0 };
+});
+
+const LEVELS_LIST: LevelMCER[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+LEVELS_LIST.forEach(lvl => {
+  DEFAULT_STATS.levelStats[lvl] = { correct: 0, total: 0 };
+});
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState<'inicio' | 'practicar' | 'desafio' | 'estadisticas' | 'logros' | 'configuracion'>('inicio');
+  
+  // LocalStorage driven states
+  const [stats, setStats] = useState<UserStats>(DEFAULT_STATS);
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+  const [achievements, setAchievements] = useState<Achievement[]>(INITIAL_ACHIEVEMENTS);
+  
+  // Active game states
+  const [session, setSession] = useState<GameSessionState | null>(null);
+  const [sessionCompleted, setSessionCompleted] = useState<boolean>(false);
+  const [selectedResultWord, setSelectedResultWord] = useState<Word | null>(null);
+  const [levelUpAlert, setLevelUpAlert] = useState<{ show: boolean; level: number }>({ show: false, level: 1 });
+  const [unlockedAchievementToast, setUnlockedAchievementToast] = useState<Achievement | null>(null);
+
+  const survivalTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 1. Initial State Hydration from Local Storage
+  useEffect(() => {
+    try {
+      const savedStats = localStorage.getItem('acentos-user-stats');
+      if (savedStats) {
+        setStats(JSON.parse(savedStats));
+      }
+
+      const savedSettings = localStorage.getItem('acentos-settings');
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings));
+      }
+
+      const savedAchievements = localStorage.getItem('acentos-achievements');
+      if (savedAchievements) {
+        setAchievements(JSON.parse(savedAchievements));
+      }
+    } catch (e) {
+      console.warn('Failed to restore states from local storage', e);
+    }
+  }, []);
+
+  // 2. Persistence Synchronization triggers
+  const saveStatsToStorage = (updatedStats: UserStats) => {
+    setStats(updatedStats);
+    localStorage.setItem('acentos-user-stats', JSON.stringify(updatedStats));
+  };
+
+  const saveSettingsToStorage = (updatedSettings: AppSettings) => {
+    setSettings(updatedSettings);
+    localStorage.setItem('acentos-settings', JSON.stringify(updatedSettings));
+  };
+
+  const saveAchievementsToStorage = (updatedAchievements: Achievement[]) => {
+    setAchievements(updatedAchievements);
+    localStorage.setItem('acentos-achievements', JSON.stringify(updatedAchievements));
+  };
+
+  const handleResetProgress = () => {
+    localStorage.removeItem('acentos-user-stats');
+    localStorage.removeItem('acentos-achievements');
+    // Clear daily challenge completions
+    const todayStr = new Date().toISOString().split('T')[0];
+    localStorage.removeItem(`daily-challenge-${todayStr}`);
+
+    setStats(DEFAULT_STATS);
+    setAchievements(INITIAL_ACHIEVEMENTS);
+    setActiveTab('inicio');
+    setSession(null);
+    setSessionCompleted(false);
+  };
+
+  // 3. Spaced Repetition Adaptability Logic
+  // Find words suited for the practice session
+  const selectSessionWords = (
+    mode: GameMode, 
+    customOptions?: { levels: LevelMCER[]; categories: WordCategory[] },
+    allWords: Word[] = WORDS_DATABASE
+  ): Word[] => {
+    let filtered = [...allWords];
+
+    // Mode specific filters
+    if (mode === 'donde-va-tilde') {
+      // Must have tilde to let users click the vowel
+      filtered = filtered.filter(w => w.hasTilde);
+    }
+
+    if (mode === 'personalizado' && customOptions) {
+      filtered = filtered.filter(w => 
+        customOptions.levels.includes(w.level) && 
+        customOptions.categories.includes(w.category)
+      );
+    }
+
+    const now = Date.now();
+    const weakCats = getWeakCategories(stats);
+
+    // Calculate priority scores for all filtered words
+    const scoredWords = filtered.map(w => {
+      let score = Math.random() * 10; // keep random base to avoid absolute repetition
+
+      // 1. Spaced Repetition scoring
+      if (stats.spacedRepetition && stats.spacedRepetition[w.id]) {
+        const record = stats.spacedRepetition[w.id];
+        
+        if (record.failCount > 0) {
+          // This is a failed word.
+          // Base fail boost: 1000
+          // If repeatedly failed (failCount >= 2), reappears even sooner (additional 1000)
+          const repeatedFailureBoost = record.failCount >= 2 ? 1000 : 0;
+          score += 1000 + (record.failCount * 500) + repeatedFailureBoost;
+          
+          // Add urgency if it's past review time
+          if (now >= record.nextReviewTimestamp) {
+            score += 500;
+          }
+        } else if (now >= record.nextReviewTimestamp) {
+          // Correct, but due for review
+          score += 300 + (6 - record.box) * 100;
+        } else {
+          // Correct, and not due yet (spaced interval penalty)
+          score -= 1500;
+        }
+      }
+
+      // 2. Adaptive learning: weak category boost
+      if (weakCats.includes(w.category)) {
+        score += 300;
+      }
+
+      return { word: w, score };
+    });
+
+    // Sort by score descending
+    scoredWords.sort((a, b) => b.score - a.score);
+
+    // Mix high-priority words with some fresh words to prevent burnout and ensure diversity
+    const topCount = Math.min(6, scoredWords.length);
+    const topSelections = scoredWords.slice(0, topCount).map(sw => sw.word);
+    
+    let remaining = scoredWords.slice(topCount).map(sw => sw.word);
+    remaining.sort(() => Math.random() - 0.5);
+
+    const finalSelection = [...topSelections, ...remaining].slice(0, 10);
+    return finalSelection;
+  };
+
+  // 4. Session Operations
+  const handleStartPractice = (
+    mode: GameMode, 
+    customOptions?: { levels: LevelMCER[]; categories: WordCategory[]; timeLimit?: number }
+  ) => {
+    playClickSound(settings.soundEnabled);
+    
+    let words = [];
+    let initialTime = 0;
+
+    if (mode === 'supervivencia') {
+      words = selectSessionWords(mode);
+      initialTime = 30; // Starts with 30s
+    } else if (mode === 'infinito') {
+      words = selectSessionWords(mode);
+    } else if (mode === 'personalizado') {
+      words = selectSessionWords(mode, customOptions);
+      initialTime = customOptions?.timeLimit || 0;
+    } else {
+      words = selectSessionWords(mode);
+    }
+
+    setSession({
+      mode,
+      words,
+      currentIndex: 0,
+      correctCount: 0,
+      incorrectCount: 0,
+      streak: 0,
+      score: 0,
+      timeLeft: initialTime,
+      initialTime,
+      startTime: Date.now(),
+      history: []
+    });
+
+    setSessionCompleted(false);
+    setSelectedResultWord(null);
+
+    // Setup Survival Timer if needed
+    if (mode === 'supervivencia') {
+      if (survivalTimerRef.current) clearInterval(survivalTimerRef.current);
+      survivalTimerRef.current = setInterval(() => {
+        setSession(prev => {
+          if (!prev) return null;
+          if (prev.timeLeft <= 1) {
+            if (survivalTimerRef.current) clearInterval(survivalTimerRef.current);
+            // End session
+            setSessionCompleted(true);
+            triggerSessionWrapUp(prev);
+            return { ...prev, timeLeft: 0 };
+          }
+          return { ...prev, timeLeft: prev.timeLeft - 1 };
+        });
+      }, 1000);
+    }
+  };
+
+  const handleStartDailyChallenge = (words: Word[]) => {
+    playClickSound(settings.soundEnabled);
+    setSession({
+      mode: 'lleva-tilde', // Default mode for daily challenge
+      words: words,
+      currentIndex: 0,
+      correctCount: 0,
+      incorrectCount: 0,
+      streak: 0,
+      score: 0,
+      timeLeft: 0,
+      initialTime: 0,
+      startTime: Date.now(),
+      history: []
+    });
+    setSessionCompleted(false);
+    setSelectedResultWord(null);
+  };
+
+  // Clean timer on unmount
+  useEffect(() => {
+    return () => {
+      if (survivalTimerRef.current) clearInterval(survivalTimerRef.current);
+    };
+  }, []);
+
+  // 5. Answer Assessment
+  const handleAnswerReceived = (isCorrect: boolean, timeTakenSeconds: number) => {
+    if (!session) return;
+
+    const currentWord = session.words[session.currentIndex];
+    
+    // Calculate Score multiplier
+    const comboMultiplier = Math.min(3, 1 + Math.floor(session.streak / 5));
+    const xpEarned = isCorrect ? (10 * comboMultiplier) : 0;
+
+    // Acierto / Fallo logic
+    const nextStreak = isCorrect ? session.streak + 1 : 0;
+    const nextCorrectCount = isCorrect ? session.correctCount + 1 : session.correctCount;
+    const nextIncorrectCount = !isCorrect ? session.incorrectCount + 1 : session.incorrectCount;
+
+    // Survival addition
+    let extraTime = 0;
+    if (session.mode === 'supervivencia') {
+      if (isCorrect) {
+        extraTime = 3 + Math.min(5, Math.floor(session.streak / 3)); // adds 3s plus streak bonus
+      } else {
+        extraTime = -5; // subtracts 5s on failure
+      }
+    }
+
+    // Dynamic stats updates
+    const updatedStats = { ...stats };
+    updatedStats.wordsSeen += 1;
+    updatedStats.totalTimeSeconds += timeTakenSeconds;
+
+    // Ensure spacedRepetition dictionary is initialized
+    if (!updatedStats.spacedRepetition) {
+      updatedStats.spacedRepetition = {};
+    }
+
+    const wordSR = updatedStats.spacedRepetition[currentWord.id] || {
+      wordId: currentWord.id,
+      box: 3, // start in box 3 (neutral)
+      consecutiveCorrect: 0,
+      lastSeenTimestamp: 0,
+      nextReviewTimestamp: 0,
+      failCount: 0
+    };
+
+    wordSR.lastSeenTimestamp = Date.now();
+    
+    if (isCorrect) {
+      updatedStats.correctAnswers += 1;
+      updatedStats.xp += xpEarned;
+      updatedStats.currentStreak += 1;
+      if (updatedStats.currentStreak > updatedStats.bestStreak) {
+        updatedStats.bestStreak = updatedStats.currentStreak;
+      }
+      
+      // Spaced Repetition consecutive correct tracking
+      if (!updatedStats.masteredWords.includes(currentWord.id)) {
+        updatedStats.masteredWords.push(currentWord.id);
+      }
+
+      // Progress word in spaced repetition
+      wordSR.consecutiveCorrect += 1;
+      wordSR.failCount = 0; // reset fail count upon correct answer
+      wordSR.box = Math.min(5, wordSR.box + 1);
+      
+      // Box intervals: Box 1 (30s), Box 2 (2m), Box 3 (10m), Box 4 (1h), Box 5 (1d)
+      const intervals = [0, 30 * 1000, 120 * 1000, 600 * 1000, 3600 * 1000, 86400 * 1000];
+      wordSR.nextReviewTimestamp = Date.now() + intervals[wordSR.box];
+    } else {
+      updatedStats.incorrectAnswers += 1;
+      updatedStats.currentStreak = 0;
+
+      // Unmaster word
+      updatedStats.masteredWords = updatedStats.masteredWords.filter(id => id !== currentWord.id);
+
+      // Save to frequent mistakes profile
+      if (!updatedStats.frequentMistakes[currentWord.id]) {
+        updatedStats.frequentMistakes[currentWord.id] = {
+          wordId: currentWord.id,
+          word: currentWord.word,
+          incorrectCount: 1,
+          explanation: currentWord.explanation
+        };
+      } else {
+        updatedStats.frequentMistakes[currentWord.id].incorrectCount += 1;
+      }
+
+      // Regress word in spaced repetition
+      wordSR.consecutiveCorrect = 0;
+      wordSR.failCount += 1;
+      wordSR.box = 1; // Demote to box 1 immediately on failure
+
+      // Penalty: reappears sooner. If they fail it repeatedly (failCount >= 2), reappears even sooner!
+      const penaltyInterval = wordSR.failCount >= 2 ? 5 * 1000 : 15 * 1000;
+      wordSR.nextReviewTimestamp = Date.now() + penaltyInterval;
+    }
+
+    updatedStats.spacedRepetition[currentWord.id] = wordSR;
+
+    // Update Category Metrics
+    if (!updatedStats.categoryStats[currentWord.category]) {
+      updatedStats.categoryStats[currentWord.category] = { correct: 0, total: 0 };
+    }
+    updatedStats.categoryStats[currentWord.category].total += 1;
+    if (isCorrect) {
+      updatedStats.categoryStats[currentWord.category].correct += 1;
+    }
+
+    // Update Level Metrics
+    if (!updatedStats.levelStats[currentWord.level]) {
+      updatedStats.levelStats[currentWord.level] = { correct: 0, total: 0 };
+    }
+    updatedStats.levelStats[currentWord.level].total += 1;
+    if (isCorrect) {
+      updatedStats.levelStats[currentWord.level].correct += 1;
+    }
+
+    // Update Accuracy Percentage
+    const totalAns = updatedStats.correctAnswers + updatedStats.incorrectAnswers;
+    updatedStats.accuracy = totalAns > 0 ? Math.round((updatedStats.correctAnswers / totalAns) * 100) : 0;
+
+    // Level progression (Level up check)
+    const newLevel = Math.floor(updatedStats.xp / 150) + 1;
+    if (newLevel > (updatedStats.level || 1)) {
+      setLevelUpAlert({ show: true, level: newLevel });
+      updatedStats.level = newLevel;
+      setTimeout(() => setLevelUpAlert({ show: false, level: 1 }), 4000);
+    }
+
+    // Daily History Calendar
+    const todayStr = new Date().toISOString().split('T')[0];
+    updatedStats.dailyHistory[todayStr] = (updatedStats.dailyHistory[todayStr] || 0) + 1;
+
+    // Check achievement rules
+    const achCheck = checkUnlockAchievements(updatedStats, achievements);
+    if (achCheck.newlyUnlocked.length > 0) {
+      setUnlockedAchievementToast(achCheck.newlyUnlocked[0]);
+      saveAchievementsToStorage(achCheck.updated);
+      setTimeout(() => setUnlockedAchievementToast(null), 4000);
+    }
+
+    saveStatsToStorage(updatedStats);
+
+    // Apply immediate session state transition
+    setSession(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        correctCount: nextCorrectCount,
+        incorrectCount: nextIncorrectCount,
+        streak: nextStreak,
+        timeLeft: Math.max(0, prev.timeLeft + extraTime),
+        history: [
+          ...prev.history,
+          {
+            wordId: currentWord.id,
+            userAnswer: isCorrect,
+            isCorrect,
+            timeTakenMs: timeTakenSeconds * 1000
+          }
+        ]
+      };
+    });
+  };
+
+  const handleNextWord = () => {
+    if (!session) return;
+
+    // Endless mode appends randomized words infinitely
+    if (session.mode === 'infinito') {
+      const nextIdx = session.currentIndex + 1;
+      const needNewWords = nextIdx >= session.words.length - 1;
+      const updatedWords = needNewWords 
+        ? [...session.words, ...selectSessionWords('infinito')]
+        : session.words;
+
+      setSession(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          words: updatedWords,
+          currentIndex: nextIdx
+        };
+      });
+      return;
+    }
+
+    const nextIndex = session.currentIndex + 1;
+
+    if (nextIndex >= session.words.length) {
+      // Completed session
+      if (survivalTimerRef.current) clearInterval(survivalTimerRef.current);
+      setSessionCompleted(true);
+      triggerSessionWrapUp(session);
+    } else {
+      setSession(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          currentIndex: nextIndex
+        };
+      });
+    }
+  };
+
+  const triggerSessionWrapUp = (finalSession: GameSessionState) => {
+    // If it was a Daily Challenge, save to today's completed state
+    const isDaily = activeTab === 'desafio';
+    if (isDaily) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const dailyKey = `daily-challenge-${todayStr}`;
+      
+      const resultObj = {
+        correctCount: finalSession.correctCount,
+        timeTakenSeconds: (Date.now() - finalSession.startTime) / 1000,
+        xpEarned: 100 + finalSession.correctCount * 5
+      };
+      
+      localStorage.setItem(dailyKey, JSON.stringify(resultObj));
+      
+      // Update stats with Daily challenge completion XP
+      const updatedStats = { ...stats };
+      updatedStats.xp += resultObj.xpEarned;
+      const newLevel = Math.floor(updatedStats.xp / 150) + 1;
+      if (newLevel > (updatedStats.level || 1)) {
+        setLevelUpAlert({ show: true, level: newLevel });
+        updatedStats.level = newLevel;
+        setTimeout(() => setLevelUpAlert({ show: false, level: 1 }), 4000);
+      }
+      saveStatsToStorage(updatedStats);
+    }
+  };
+
+  const handleExitSession = () => {
+    if (survivalTimerRef.current) clearInterval(survivalTimerRef.current);
+    setSession(null);
+    setSessionCompleted(false);
+  };
+
+  // 6. Achievement Checker Rules
+  const checkUnlockAchievements = (currentStats: UserStats, currentAchievements: Achievement[]) => {
+    let newlyUnlocked: Achievement[] = [];
+    const updated = currentAchievements.map(ach => {
+      if (ach.unlockedAt) return ach;
+      
+      let unlocked = false;
+      switch (ach.id) {
+        case 'ach-seen-100':
+          unlocked = currentStats.wordsSeen >= 100;
+          break;
+        case 'ach-seen-500':
+          unlocked = currentStats.wordsSeen >= 500;
+          break;
+        case 'ach-streak-50':
+          unlocked = currentStats.bestStreak >= 50;
+          break;
+        case 'ach-accuracy-90':
+          unlocked = currentStats.wordsSeen >= 20 && currentStats.accuracy >= 90;
+          break;
+        case 'ach-hiatos': {
+          const catStat = currentStats.categoryStats['hiato'];
+          unlocked = catStat && catStat.total >= 5 && (catStat.correct / catStat.total) >= 0.85;
+          break;
+        }
+        case 'ach-esdrujulas': {
+          const catStat = currentStats.categoryStats['esdrújula'];
+          unlocked = catStat && catStat.total >= 5 && (catStat.correct / catStat.total) >= 0.85;
+          break;
+        }
+        case 'ach-diacriticas': {
+          const catStat = currentStats.categoryStats['diacrítica'];
+          unlocked = catStat && catStat.total >= 5 && (catStat.correct / catStat.total) >= 0.85;
+          break;
+        }
+      }
+      
+      if (unlocked) {
+        const updatedAch = { ...ach, unlockedAt: new Date().toLocaleDateString('es-ES') };
+        newlyUnlocked.push(updatedAch);
+        return updatedAch;
+      }
+      return ach;
+    });
+    return { updated, newlyUnlocked };
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0A] text-[#EDEDED] flex flex-col font-sans relative overflow-x-hidden select-none" id="app-root">
+      
+      {/* 1. Global Alert/Toast Notifications */}
+      <AnimatePresence>
+        {levelUpAlert.show && (
+          <motion.div 
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-white text-black px-6 py-3.5 rounded-lg border border-neutral-200 shadow-xl flex items-center gap-3"
+            id="toast-level-up"
+          >
+            <div className="p-1.5 bg-black rounded text-white animate-bounce">
+              <Sparkles className="w-5 h-5 fill-current text-white" />
+            </div>
+            <div>
+              <div className="text-xs font-mono font-bold tracking-widest uppercase opacity-60">¡SUBIDA DE NIVEL!</div>
+              <div className="font-display font-bold text-sm">Has alcanzado el Nivel {levelUpAlert.level}</div>
+            </div>
+          </motion.div>
+        )}
+
+        {unlockedAchievementToast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-6 right-6 z-50 bg-neutral-950 text-white p-5 rounded-lg border border-neutral-800 shadow-2xl flex gap-3 max-w-sm"
+            id="toast-achievement"
+          >
+            <div className="p-2.5 bg-neutral-900 border border-neutral-800 rounded text-amber-400 shrink-0">
+              <Trophy className="w-5 h-5 fill-amber-400/10" />
+            </div>
+            <div className="space-y-1 min-w-0">
+              <div className="text-[10px] font-mono font-bold tracking-widest uppercase text-amber-500">Logro Desbloqueado</div>
+              <div className="font-semibold text-sm truncate">{unlockedAchievementToast.title}</div>
+              <p className="text-neutral-500 text-xs leading-relaxed">{unlockedAchievementToast.description}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 2. Top Navigation / Status Bar matching the Clean Minimalism theme */}
+      <nav className="flex items-center justify-between px-8 py-6 border-b border-[#1F1F1F] bg-[#0A0A0A]" id="main-nav-header">
+        <div 
+          onClick={() => { if (!session) setActiveTab('inicio'); }}
+          className="flex items-center gap-3 cursor-pointer group select-none"
+          id="brand-logo"
+        >
+          <div className="w-8 h-8 bg-white rounded flex items-center justify-center transition-all group-hover:scale-105 duration-200">
+            <span className="text-black font-black text-xl leading-none">A</span>
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold tracking-tight leading-none text-[#EDEDED] font-display">AcentOS</h1>
+            <p className="text-[10px] text-[#A1A1A1] uppercase tracking-[0.2em] mt-1 font-mono">Spanish Accent Trainer</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-8">
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] text-[#A1A1A1] uppercase tracking-wider font-mono">Racha</span>
+            <span className="text-sm font-mono text-[#EDEDED]">{stats.currentStreak}</span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] text-[#A1A1A1] uppercase tracking-wider font-mono">Precisión</span>
+            <span className="text-sm font-mono text-[#EDEDED]">{stats.accuracy}%</span>
+          </div>
+          <div className="flex flex-col items-end hidden sm:flex">
+            <span className="text-[10px] text-[#A1A1A1] uppercase tracking-wider font-mono">Nivel {stats.level}</span>
+            <span className="text-sm font-mono text-[#A1A1A1]">{stats.xp} XP</span>
+          </div>
+          <div 
+            onClick={() => {
+              playClickSound(settings.soundEnabled);
+              if (session) handleExitSession();
+              setActiveTab('configuracion');
+            }}
+            className="w-10 h-10 rounded-full border border-[#222] flex items-center justify-center cursor-pointer hover:bg-[#161616] transition-colors"
+          >
+            <div className="w-4 h-4 border-2 border-white rounded-sm"></div>
+          </div>
+        </div>
+      </nav>
+
+      {/* 3. Main Split Screen Shell */}
+      <div className="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto px-4 md:px-6 py-6 gap-6">
+        
+        {/* SIDE NAV - Hidden when in active practice session */}
+        {!session && (
+          <nav className="w-full md:w-56 shrink-0 flex flex-row md:flex-col gap-2 border-b md:border-b-0 md:border-r border-[#1F1F1F] pb-4 md:pb-0 md:pr-4 overflow-x-auto scrollbar-none" id="main-navigation">
+            {[
+              { id: 'inicio', label: 'Inicio', icon: Home },
+              { id: 'practicar', label: 'Entrenar', icon: Play },
+              { id: 'desafio', label: 'Desafío Diario', icon: Calendar },
+              { id: 'estadisticas', label: 'Estadísticas', icon: BarChart3 },
+              { id: 'logros', label: 'Logros', icon: Award },
+              { id: 'configuracion', label: 'Configuración', icon: SettingsIcon }
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    playClickSound(settings.soundEnabled);
+                    setActiveTab(tab.id as any);
+                  }}
+                  className={`flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-mono font-medium rounded transition-all cursor-pointer border shrink-0 ${
+                    active 
+                      ? 'bg-white text-black border-white' 
+                      : 'bg-[#161616] border border-[#222] text-[#A1A1A1] hover:bg-white hover:text-black hover:border-white'
+                  }`}
+                  id={`nav-tab-${tab.id}`}
+                >
+                  <Icon className="w-4 h-4 shrink-0 stroke-[2]" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        )}
+
+        {/* MAIN VIEWER */}
+        <main className="flex-1 min-w-0" id="main-viewer">
+          <AnimatePresence mode="wait">
+            
+            {/* ACTIVE TRAINING VIEW */}
+            {session && !sessionCompleted && (
+              <motion.div
+                key="active-session-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-6"
+                id="active-session-container"
+              >
+                {/* Back out button */}
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={handleExitSession}
+                    className="flex items-center gap-1.5 text-xs font-mono text-neutral-500 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Abandonar sesión</span>
+                  </button>
+                  <span className="text-xs font-mono text-neutral-500">
+                    Palabra {session.currentIndex + 1} de {session.mode === 'infinito' ? '∞' : session.words.length}
+                  </span>
+                </div>
+
+                {session.words[session.currentIndex] && (
+                  <ExerciseCard
+                    word={session.words[session.currentIndex]}
+                    mode={session.mode}
+                    settings={settings}
+                    comboStreak={session.streak}
+                    timeLeft={session.mode === 'supervivencia' ? session.timeLeft : undefined}
+                    onAnswer={handleAnswerReceived}
+                    onNext={handleNextWord}
+                  />
+                )}
+              </motion.div>
+            )}
+
+            {/* RESULTS VIEW */}
+            {session && sessionCompleted && (
+              <motion.div
+                key="session-completed-tab"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                className="space-y-6 max-w-xl mx-auto"
+                id="session-completed-panel"
+              >
+                <div className="text-center space-y-2">
+                  <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase border border-emerald-950 bg-emerald-950/10 px-3 py-1 rounded-full">
+                    Sesión Completada
+                  </span>
+                  <h2 className="text-3xl font-bold tracking-tight text-white font-display pt-2">Resumen de Práctica</h2>
+                  <p className="text-neutral-500 text-sm">Análisis de rendimiento inmediato sobre el set de acentuación</p>
+                </div>
+
+                {/* Score stats grid */}
+                <div className="grid grid-cols-3 gap-4 border border-neutral-900 p-6 rounded-lg bg-neutral-950/40 text-center">
+                  <div>
+                    <span className="text-neutral-500 text-[10px] uppercase font-mono tracking-widest block">Aciertos</span>
+                    <span className="text-2xl font-bold text-white block mt-1">{session.correctCount} / {session.words.length}</span>
+                    <span className="text-[10px] text-neutral-500 font-mono">palabras</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 text-[10px] uppercase font-mono tracking-widest block">Precisión</span>
+                    <span className="text-2xl font-bold text-emerald-400 block mt-1">
+                      {session.words.length > 0 ? Math.round((session.correctCount / session.words.length) * 100) : 0}%
+                    </span>
+                    <span className="text-[10px] text-neutral-500 font-mono">porcentaje</span>
+                  </div>
+                  <div>
+                    <span className="text-neutral-500 text-[10px] uppercase font-mono tracking-widest block">Tiempo</span>
+                    <span className="text-2xl font-bold text-white block mt-1">
+                      {((Date.now() - session.startTime) / 1000).toFixed(0)}s
+                    </span>
+                    <span className="text-[10px] text-neutral-500 font-mono">duración total</span>
+                  </div>
+                </div>
+
+                {/* Word review list */}
+                <div className="bg-neutral-950 border border-neutral-900 p-5 rounded-lg space-y-4">
+                  <h3 className="text-xs font-semibold tracking-widest text-neutral-400 uppercase font-mono">
+                    Revisión del Vocabulario
+                  </h3>
+                  <div className="divide-y divide-neutral-900 max-h-56 overflow-y-auto pr-1">
+                    {session.words.map((w, wIdx) => {
+                      const histItem = session.history.find(h => h.wordId === w.id);
+                      const isWordCorrect = histItem ? histItem.isCorrect : false;
+                      const isSelected = selectedResultWord?.id === w.id;
+
+                      return (
+                        <div key={wIdx} className="py-2.5">
+                          <div 
+                            onClick={() => {
+                              playClickSound(settings.soundEnabled);
+                              setSelectedResultWord(isSelected ? null : w);
+                            }}
+                            className="flex justify-between items-center cursor-pointer hover:bg-neutral-900/40 px-2 py-1 rounded transition-colors"
+                          >
+                            <span className="font-display text-sm font-semibold text-white">{w.word}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-neutral-500 uppercase">{w.classification}</span>
+                              {isWordCorrect ? (
+                                <Check className="w-4 h-4 text-emerald-400" />
+                              ) : (
+                                <X className="w-4 h-4 text-rose-500" />
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Extra info collapsible details */}
+                          {isSelected && (
+                            <motion.div 
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              className="mt-2 p-3 bg-neutral-900 border border-neutral-800 rounded text-xs space-y-2"
+                            >
+                              <div className="flex justify-between text-[11px] font-mono text-neutral-400">
+                                <span>Silabeo: {w.syllables.join(' • ')}</span>
+                                <span>Regla: {w.rule}</span>
+                              </div>
+                              <p className="text-neutral-300 italic">"{w.explanation}"</p>
+                            </motion.div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Return controls */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-3">
+                  <button
+                    onClick={() => handleStartPractice(session.mode)}
+                    className="flex-1 py-3 bg-white text-black font-semibold rounded hover:bg-neutral-200 transition-all flex justify-center items-center gap-2 text-sm cursor-pointer"
+                  >
+                    <RotateCcw className="w-4 h-4 text-black" />
+                    Practicar de Nuevo
+                  </button>
+                  <button
+                    onClick={handleExitSession}
+                    className="flex-1 py-3 bg-neutral-950 hover:bg-neutral-900 border border-neutral-800 text-white font-semibold rounded transition-all text-sm cursor-pointer"
+                  >
+                    Volver a Modos
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* LANDING TAB: INICIO */}
+            {!session && activeTab === 'inicio' && (
+              <motion.div
+                key="inicio-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-8"
+                id="inicio-view"
+              >
+                {/* Hero Card layout */}
+                <div className="bg-[#161616] border border-[#222] p-8 md:p-12 rounded-xl space-y-6 text-center max-w-2xl mx-auto relative overflow-hidden">
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-mono tracking-widest text-[#A1A1A1] uppercase">
+                      SPANISH ACCENT TRAINER
+                    </span>
+                    <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#EDEDED] font-display">AcentOS</h2>
+                    <p className="text-[#A1A1A1] text-sm max-w-md mx-auto leading-relaxed pt-2">
+                      Desarrollá intuición ortográfica instantánea sobre cuándo una palabra lleva tilde y cuándo no. Práctica rápida, inteligente y adictiva diseñada para sesiones de 2 a 10 minutos.
+                    </p>
+                  </div>
+
+                  <div className="flex justify-center pt-3">
+                    <button
+                      onClick={() => setActiveTab('practicar')}
+                      className="px-8 py-3.5 bg-white text-black font-bold rounded-lg hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center gap-2 text-sm shadow-md cursor-pointer"
+                    >
+                      Comenzar Entrenamiento
+                      <ChevronRight className="w-4 h-4 text-black stroke-[3]" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Secondary Quick Access grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                  <div 
+                    onClick={() => setActiveTab('desafio')}
+                    className="bg-[#161616] border border-[#222] p-5 rounded-lg cursor-pointer hover:bg-white hover:text-black group transition-all duration-200 flex flex-col justify-between"
+                  >
+                    <div>
+                      <Calendar className="w-5 h-5 text-amber-500 group-hover:text-black transition-colors" />
+                      <h4 className="text-sm font-semibold text-[#EDEDED] group-hover:text-black transition-colors mt-3 font-display">Desafío Diario</h4>
+                      <p className="text-[#A1A1A1] group-hover:text-black/80 transition-colors text-xs mt-1">Prueba fija de 20 palabras.</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-[#A1A1A1] group-hover:text-black transition-colors mt-4 flex items-center gap-1">Entrar <ChevronRight className="w-3 h-3" /></span>
+                  </div>
+
+                  <div 
+                    onClick={() => setActiveTab('estadisticas')}
+                    className="bg-[#161616] border border-[#222] p-5 rounded-lg cursor-pointer hover:bg-white hover:text-black group transition-all duration-200 flex flex-col justify-between"
+                  >
+                    <div>
+                      <BarChart3 className="w-5 h-5 text-emerald-400 group-hover:text-black transition-colors" />
+                      <h4 className="text-sm font-semibold text-[#EDEDED] group-hover:text-black transition-colors mt-3 font-display">Estadísticas</h4>
+                      <p className="text-[#A1A1A1] group-hover:text-black/80 transition-colors text-xs mt-1">Analizá tus perfiles de error.</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-[#A1A1A1] group-hover:text-black transition-colors mt-4 flex items-center gap-1">Ver <ChevronRight className="w-3 h-3" /></span>
+                  </div>
+
+                  <div 
+                    onClick={() => setActiveTab('configuracion')}
+                    className="bg-[#161616] border border-[#222] p-5 rounded-lg cursor-pointer hover:bg-white hover:text-black group transition-all duration-200 flex flex-col justify-between"
+                  >
+                    <div>
+                      <SettingsIcon className="w-5 h-5 text-neutral-400 group-hover:text-black transition-colors" />
+                      <h4 className="text-sm font-semibold text-[#EDEDED] group-hover:text-black transition-colors mt-3 font-display">Configuración</h4>
+                      <p className="text-[#A1A1A1] group-hover:text-black/80 transition-colors text-xs mt-1">Audio, sílabas y explicaciones.</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-[#A1A1A1] group-hover:text-black transition-colors mt-4 flex items-center gap-1">Ajustar <ChevronRight className="w-3 h-3" /></span>
+                  </div>
+                </div>
+
+                {/* Elegant credits disclaimer */}
+                <div className="text-center text-[11px] font-mono text-neutral-600 max-w-sm mx-auto pt-6">
+                  AcentOS — Spanish Accent Trainer. Diseñado para estudiantes de ELE, docentes y autodidactas. Todo el progreso se almacena localmente.
+                </div>
+              </motion.div>
+            )}
+
+            {/* PRACTICE SELECTOR TAB */}
+            {!session && activeTab === 'practicar' && (
+              <motion.div
+                key="practicar-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <PracticeSelector onSelectMode={handleStartPractice} />
+              </motion.div>
+            )}
+
+            {/* DAILY CHALLENGE TAB */}
+            {!session && activeTab === 'desafio' && (
+              <motion.div
+                key="desafio-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <DailyChallenge stats={stats} onStartChallenge={handleStartDailyChallenge} />
+              </motion.div>
+            )}
+
+            {/* STATS TAB */}
+            {!session && activeTab === 'estadisticas' && (
+              <motion.div
+                key="estadisticas-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <StatsDashboard 
+                  stats={stats} 
+                  onResetStats={handleResetProgress} 
+                  onStartFocusSession={(categories) => {
+                    handleStartPractice('personalizado', {
+                      levels: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+                      categories: categories,
+                      timeLimit: 120
+                    });
+                  }}
+                />
+              </motion.div>
+            )}
+
+            {/* ACHIEVEMENTS TAB */}
+            {!session && activeTab === 'logros' && (
+              <motion.div
+                key="logros-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <AchievementsPanel stats={stats} achievements={achievements} />
+              </motion.div>
+            )}
+
+            {/* CONFIGURATION TAB */}
+            {!session && activeTab === 'configuracion' && (
+              <motion.div
+                key="configuracion-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <SettingsPanel 
+                  settings={settings} 
+                  onChangeSettings={saveSettingsToStorage}
+                  onResetStats={handleResetProgress}
+                />
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </main>
+      </div>
+
+      {/* 4. Bottom Command Bar in Clean Minimalism Style */}
+      <footer className="px-8 py-6 border-t border-[#1F1F1F] bg-[#0A0A0A] flex flex-col sm:flex-row items-center justify-between gap-4 text-[#555] mt-auto select-none" id="app-footer">
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 text-[11px] uppercase tracking-wider font-medium">
+          <div 
+            onClick={() => {
+              playClickSound(settings.soundEnabled);
+              if (session) handleExitSession();
+              setActiveTab('inicio');
+            }}
+            className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors"
+          >
+            <span className="px-1.5 py-0.5 rounded bg-[#1F1F1F] text-[#888] text-[9px] font-mono">ESC</span>
+            Menú
+          </div>
+          <div 
+            onClick={() => {
+              playClickSound(settings.soundEnabled);
+              if (session) handleExitSession();
+              setActiveTab('estadisticas');
+            }}
+            className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors"
+          >
+            <span className="px-1.5 py-0.5 rounded bg-[#1F1F1F] text-[#888] text-[9px] font-mono">H</span>
+            Historial
+          </div>
+          <div 
+            onClick={() => {
+              playClickSound(settings.soundEnabled);
+              if (session) handleExitSession();
+              setActiveTab('configuracion');
+            }}
+            className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors"
+          >
+            <span className="px-1.5 py-0.5 rounded bg-[#1F1F1F] text-[#888] text-[9px] font-mono">T</span>
+            Ajustes
+          </div>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-32 h-1.5 bg-[#161616] rounded-full overflow-hidden border border-[#222]">
+              <div 
+                className="h-full bg-[#EDEDED] transition-all duration-300" 
+                style={{ width: `${Math.min(100, ((stats.xp % 150) / 150) * 100)}%` }}
+              />
+            </div>
+            <span className="text-[11px] uppercase tracking-widest text-[#A1A1A1] font-mono">Nivel {stats.level}</span>
+          </div>
+          <div className="w-[1px] h-4 bg-[#1F1F1F] hidden sm:block"></div>
+          <div className="text-[11px] flex items-center gap-2 text-[#A1A1A1] font-mono">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            Autoguardado
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
