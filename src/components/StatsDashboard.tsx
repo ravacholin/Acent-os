@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { UserStats, WordCategory, LevelMCER, Word } from '../types';
 import { WORDS_DATABASE } from '../data/words';
 import { calculateErrorProfiles } from '../utils/errorAnalysis';
-import { 
-  Trophy, 
-  Flame, 
-  Target, 
-  Clock, 
-  Eye, 
-  CheckCircle, 
-  AlertTriangle, 
-  Bookmark, 
+import {
+  Trophy,
+  Flame,
+  Target,
+  Clock,
+  Eye,
+  CheckCircle,
+  AlertTriangle,
+  Bookmark,
   BookmarkCheck,
   Calendar,
   Grid,
@@ -84,6 +84,13 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
     .sort((a, b) => b.incorrectCount - a.incorrectCount)
     .slice(0, 5);
 
+  const tabButtonClass = (tab: typeof activeTab) =>
+    `px-3 py-1.5 text-xs font-mono border cursor-pointer transition-all ${
+      activeTab === tab
+        ? 'bg-white text-black border-white font-semibold'
+        : 'bg-[#161616] text-[#A1A1A1] border-[#262626] hover:text-white'
+    }`;
+
   return (
     <div className="space-y-6" id="stats-dashboard">
       {/* Header */}
@@ -94,45 +101,17 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
             Análisis detallado de tu intuición de acentuación y perfiles de error detectados.
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-3 py-1.5 text-xs font-mono rounded border cursor-pointer transition-all ${
-              activeTab === 'overview'
-                ? 'bg-white text-black border-white font-semibold'
-                : 'bg-[#161616] text-[#A1A1A1] border-[#222] hover:text-white'
-            }`}
-          >
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={() => setActiveTab('overview')} className={tabButtonClass('overview')}>
             Resumen
           </button>
-          <button
-            onClick={() => setActiveTab('profiles')}
-            className={`px-3 py-1.5 text-xs font-mono rounded border cursor-pointer transition-all ${
-              activeTab === 'profiles'
-                ? 'bg-white text-black border-white font-semibold'
-                : 'bg-[#161616] text-[#A1A1A1] border-[#222] hover:text-white'
-            }`}
-          >
+          <button onClick={() => setActiveTab('profiles')} className={tabButtonClass('profiles')}>
             Perfiles de Error
           </button>
-          <button
-            onClick={() => setActiveTab('categories')}
-            className={`px-3 py-1.5 text-xs font-mono rounded border cursor-pointer transition-all ${
-              activeTab === 'categories'
-                ? 'bg-white text-black border-white font-semibold'
-                : 'bg-[#161616] text-[#A1A1A1] border-[#222] hover:text-white'
-            }`}
-          >
+          <button onClick={() => setActiveTab('categories')} className={tabButtonClass('categories')}>
             Categorías y Niveles
           </button>
-          <button
-            onClick={() => setActiveTab('mistakes')}
-            className={`px-3 py-1.5 text-xs font-mono rounded border cursor-pointer transition-all ${
-              activeTab === 'mistakes'
-                ? 'bg-white text-black border-white font-semibold'
-                : 'bg-[#161616] text-[#A1A1A1] border-[#222] hover:text-white'
-            }`}
-          >
+          <button onClick={() => setActiveTab('mistakes')} className={tabButtonClass('mistakes')}>
             Errores Frecuentes ({frequentMistakesArray.length})
           </button>
         </div>
@@ -142,9 +121,9 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
         <div className="space-y-6">
           {/* Key Grid Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-[#161616] border border-[#222] p-5 rounded-lg flex flex-col justify-between">
+            <div className="bg-[#161616] border border-[#262626] p-5 flex flex-col justify-between">
               <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono flex items-center gap-1">
-                <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500/20" /> Racha Actual
+                <Flame className="w-3.5 h-3.5 text-[#A1A1A1]" /> Racha Actual
               </span>
               <div className="mt-4 flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-[#EDEDED] tracking-tight">{stats.currentStreak}</span>
@@ -153,21 +132,21 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
               <span className="text-[10px] text-[#A1A1A1] font-mono mt-1">Mejor racha: {stats.bestStreak}</span>
             </div>
 
-            <div className="bg-[#161616] border border-[#222] p-5 rounded-lg flex flex-col justify-between">
+            <div className="bg-[#161616] border border-[#262626] p-5 flex flex-col justify-between">
               <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono flex items-center gap-1">
-                <Target className="w-3.5 h-3.5 text-emerald-400" /> Precisión General
+                <Target className="w-3.5 h-3.5 text-[#A1A1A1]" /> Precisión General
               </span>
               <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-emerald-400 tracking-tight">{stats.accuracy}%</span>
+                <span className="text-3xl font-bold text-white tracking-tight">{stats.accuracy}%</span>
               </div>
               <span className="text-[10px] text-[#A1A1A1] font-mono mt-1">
                 {stats.correctAnswers} correctas de {stats.correctAnswers + stats.incorrectAnswers}
               </span>
             </div>
 
-            <div className="bg-[#161616] border border-[#222] p-5 rounded-lg flex flex-col justify-between">
+            <div className="bg-[#161616] border border-[#262626] p-5 flex flex-col justify-between">
               <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono flex items-center gap-1">
-                <Trophy className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500/10" /> Nivel y XP
+                <Trophy className="w-3.5 h-3.5 text-[#A1A1A1]" /> Nivel y XP
               </span>
               <div className="mt-4 flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-[#EDEDED] tracking-tight font-display">Nvl {stats.level || 1}</span>
@@ -175,9 +154,9 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
               <span className="text-[10px] text-[#A1A1A1] font-mono mt-1">{stats.xp} XP acumulado</span>
             </div>
 
-            <div className="bg-[#161616] border border-[#222] p-5 rounded-lg flex flex-col justify-between">
+            <div className="bg-[#161616] border border-[#262626] p-5 flex flex-col justify-between">
               <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-cyan-400" /> Tiempo Promedio
+                <Clock className="w-3.5 h-3.5 text-[#A1A1A1]" /> Tiempo Promedio
               </span>
               <div className="mt-4 flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-[#EDEDED] tracking-tight">{formatAverageTime()}</span>
@@ -187,26 +166,25 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
           </div>
 
           {/* Activity Heatmap Grid */}
-          <div className="bg-[#161616] border border-[#222] p-5 rounded-lg space-y-4">
+          <div className="bg-[#161616] border border-[#262626] p-5 space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-xs font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-[#A1A1A1]" /> Constancia de Práctica
               </span>
               <span className="text-[#A1A1A1] text-[10px] font-mono">Últimos 21 días</span>
             </div>
-            
+
             <div className="flex flex-wrap gap-2 justify-between py-2">
               {heatmapDays.map((day) => {
-                const isPracticed = day.count > 0;
-                let intensityClass = 'bg-[#0A0A0A] border-[#222] text-[#555]';
-                if (day.count > 0 && day.count < 5) intensityClass = 'bg-[#161616] border-[#222] text-[#A1A1A1]';
+                let intensityClass = 'bg-[#0d0d0d] border-[#262626] text-[#555]';
+                if (day.count > 0 && day.count < 5) intensityClass = 'bg-[#161616] border-[#262626] text-[#A1A1A1]';
                 else if (day.count >= 5 && day.count < 15) intensityClass = 'bg-[#EDEDED] text-black border-white';
-                else if (day.count >= 15) intensityClass = 'bg-white text-black border-white font-bold scale-105 shadow-sm';
+                else if (day.count >= 15) intensityClass = 'bg-white text-black border-white font-bold scale-105';
 
                 return (
                   <div
                     key={day.dateStr}
-                    className={`w-10 h-12 border rounded flex flex-col items-center justify-center transition-all ${intensityClass}`}
+                    className={`w-10 h-12 border flex flex-col items-center justify-center transition-all ${intensityClass}`}
                     title={`${day.count} palabras practicadas el ${day.dateStr}`}
                   >
                     <span className="text-[9px] font-mono opacity-60 uppercase">{day.dayLabel}</span>
@@ -215,14 +193,14 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
                 );
               })}
             </div>
-            
+
             <div className="flex justify-between items-center text-[10px] text-[#A1A1A1] pt-2 border-t border-[#1F1F1F]">
               <span>Menos activo</span>
               <div className="flex gap-1.5 items-center">
-                <div className="w-2.5 h-2.5 bg-[#0A0A0A] rounded border border-[#222]"></div>
-                <div className="w-2.5 h-2.5 bg-[#161616] rounded border border-[#222]"></div>
-                <div className="w-2.5 h-2.5 bg-[#EDEDED] rounded"></div>
-                <div className="w-2.5 h-2.5 bg-white rounded"></div>
+                <div className="w-2.5 h-2.5 bg-[#0d0d0d] border border-[#262626]"></div>
+                <div className="w-2.5 h-2.5 bg-[#161616] border border-[#262626]"></div>
+                <div className="w-2.5 h-2.5 bg-[#EDEDED]"></div>
+                <div className="w-2.5 h-2.5 bg-white"></div>
               </div>
               <span>Más activo</span>
             </div>
@@ -231,16 +209,16 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
           {/* Quick analysis boxes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Mastered words */}
-            <div className="bg-[#161616] border border-[#222] p-5 rounded-lg space-y-3">
+            <div className="bg-[#161616] border border-[#262626] p-5 space-y-3">
               <span className="text-xs font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
-                <BookmarkCheck className="w-4 h-4 text-emerald-400" /> Palabras Dominadas ({stats.masteredWords?.length || 0})
+                <BookmarkCheck className="w-4 h-4 text-[#A1A1A1]" /> Palabras Dominadas ({stats.masteredWords?.length || 0})
               </span>
               {stats.masteredWords && stats.masteredWords.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-2 pt-1">
                   {stats.masteredWords.map((id) => {
                     const matched = WORDS_DATABASE.find(w => w.id === id);
                     return (
-                      <span key={id} className="text-[11px] font-mono px-2 py-0.5 border border-emerald-950 bg-emerald-950/10 text-emerald-400 rounded-full">
+                      <span key={id} className="text-[11px] font-mono px-2 py-0.5 border border-[#262626] bg-[#0d0d0d] text-[#EDEDED]">
                         {matched?.word || id}
                       </span>
                     );
@@ -254,7 +232,7 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
             </div>
 
             {/* General progress info */}
-            <div className="bg-[#161616] border border-[#222] p-5 rounded-lg space-y-3">
+            <div className="bg-[#161616] border border-[#262626] p-5 space-y-3">
               <span className="text-xs font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
                 <Bookmark className="w-4 h-4 text-[#A1A1A1]" /> Cobertura del Banco de Palabras
               </span>
@@ -263,9 +241,9 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
                   <span>Vistas</span>
                   <span>{stats.wordsSeen} / {WORDS_DATABASE.length} palabras</span>
                 </div>
-                <div className="w-full bg-[#0A0A0A] h-1.5 rounded-full overflow-hidden border border-[#222]">
-                  <div 
-                    className="bg-[#EDEDED] h-full rounded-full transition-all duration-500" 
+                <div className="w-full bg-[#0d0d0d] h-1.5 overflow-hidden border border-[#262626]">
+                  <div
+                    className="bg-[#EDEDED] h-full transition-all duration-500"
                     style={{ width: `${Math.min(100, (stats.wordsSeen / WORDS_DATABASE.length) * 100)}%` }}
                   />
                 </div>
@@ -280,51 +258,51 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
 
       {activeTab === 'profiles' && (
         <div className="space-y-6">
-          <div className="bg-[#161616] border border-[#222] p-6 rounded-lg space-y-2">
+          <div className="bg-[#161616] border border-[#262626] p-6 space-y-2">
             <h3 className="text-sm font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
               <Target className="w-4 h-4 text-white" /> Análisis Dinámico del Perfil de Errores
             </h3>
             <p className="text-[#A1A1A1] text-xs leading-relaxed max-w-2xl">
-              Nuestro sistema analiza cada acierto y error que cometes para agrupar tus fallos en perfiles ortográficos y pedagógicos concretos. Los perfiles marcados en <span className="text-rose-400 font-semibold">crítico</span> se inyectan automáticamente con mayor frecuencia en tus sesiones de práctica generales para acelerar tu aprendizaje.
+              Nuestro sistema analiza cada acierto y error que cometes para agrupar tus fallos en perfiles ortográficos y pedagógicos concretos. Los perfiles marcados en <span className="text-white font-semibold underline underline-offset-2">crítico</span> se inyectan automáticamente con mayor frecuencia en tus sesiones de práctica generales para acelerar tu aprendizaje.
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-6">
             {calculateErrorProfiles(stats).map((p) => {
               const hasData = p.total > 0;
-              
-              // Status badges & color styling
+
+              // Status badges & monochrome styling (distinción por forma, no color)
               let statusText = 'Estable';
-              let statusStyles = 'border-[#222] bg-[#0A0A0A] text-[#A1A1A1]';
+              let statusStyles = 'border-[#262626] bg-[#0d0d0d] text-[#A1A1A1]';
               let Icon = Target;
               let barColor = 'bg-white';
 
               if (p.status === 'excelente') {
                 statusText = 'Excelente';
-                statusStyles = 'border-emerald-950/60 bg-emerald-950/10 text-emerald-400';
+                statusStyles = 'border-white bg-white text-black';
                 Icon = CheckCircle;
-                barColor = 'bg-emerald-400';
+                barColor = 'bg-white';
               } else if (p.status === 'crítico') {
                 statusText = 'Crítico (Priorizado)';
-                statusStyles = 'border-rose-950/60 bg-rose-950/10 text-rose-400';
+                statusStyles = 'border-white bg-transparent text-white';
                 Icon = AlertTriangle;
-                barColor = 'bg-rose-500';
+                barColor = 'bg-white';
               } else if (hasData) {
                 statusText = 'En Progreso';
-                statusStyles = 'border-amber-950/60 bg-amber-950/10 text-amber-400';
-                barColor = 'bg-amber-400';
+                statusStyles = 'border-[#3a3a3a] bg-[#161616] text-[#A1A1A1]';
+                barColor = 'bg-[#8a8a8a]';
               } else {
                 statusText = 'Sin Datos';
-                statusStyles = 'border-[#222] bg-[#0A0A0A] text-[#555]';
-                barColor = 'bg-neutral-800';
+                statusStyles = 'border-[#262626] bg-[#0d0d0d] text-[#555]';
+                barColor = 'bg-[#333]';
               }
 
               return (
-                <div key={p.id} className="bg-[#161616] border border-[#222] p-6 rounded-lg space-y-4 flex flex-col md:flex-row gap-6 justify-between items-start">
+                <div key={p.id} className="bg-[#161616] border border-[#262626] p-6 space-y-4 flex flex-col md:flex-row gap-6 justify-between items-start">
                   <div className="space-y-4 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2.5">
                       <h4 className="text-base font-semibold text-[#EDEDED] tracking-tight font-display">{p.name}</h4>
-                      <span className={`px-2 py-0.5 border text-[10px] font-mono font-medium rounded-full flex items-center gap-1 ${statusStyles}`}>
+                      <span className={`px-2 py-0.5 border text-[10px] font-mono font-medium flex items-center gap-1 ${statusStyles}`}>
                         <Icon className="w-3 h-3" />
                         {statusText}
                       </span>
@@ -342,16 +320,16 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
                           {hasData ? `${p.accuracy}% (${p.correct}/${p.total} aciertos)` : 'Sin datos registrados'}
                         </span>
                       </div>
-                      <div className="w-full bg-[#0A0A0A] h-1.5 rounded-full overflow-hidden border border-[#222]">
-                        <div 
-                          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+                      <div className="w-full bg-[#0d0d0d] h-1.5 overflow-hidden border border-[#262626]">
+                        <div
+                          className={`h-full transition-all duration-500 ${barColor}`}
                           style={{ width: `${hasData ? p.accuracy : 0}%` }}
                         />
                       </div>
                     </div>
 
                     {/* Pedagogical recommendations box */}
-                    <div className="p-3.5 bg-[#0A0A0A] border border-[#222] rounded-md space-y-1">
+                    <div className="p-3.5 bg-[#0d0d0d] border border-[#262626] space-y-1">
                       <span className="text-[10px] font-semibold tracking-widest text-white uppercase font-mono">
                         Consejo Pedagógico:
                       </span>
@@ -364,7 +342,7 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-[10px] font-mono text-[#555] uppercase">Ejemplos:</span>
                       {p.examples.map((ex, exIdx) => (
-                        <span key={exIdx} className="text-[11px] font-mono px-2 py-0.5 bg-[#0A0A0A] border border-[#222] text-[#A1A1A1] rounded">
+                        <span key={exIdx} className="text-[11px] font-mono px-2 py-0.5 bg-[#0d0d0d] border border-[#262626] text-[#A1A1A1]">
                           {ex}
                         </span>
                       ))}
@@ -375,7 +353,7 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
                   {onStartFocusSession && (
                     <button
                       onClick={() => onStartFocusSession(p.categories)}
-                      className="w-full md:w-auto shrink-0 px-4 py-2.5 bg-white text-black text-xs font-semibold font-mono rounded hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer border border-white"
+                      className="w-full md:w-auto shrink-0 px-4 py-2.5 bg-white text-black text-xs font-semibold font-mono hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer border border-white"
                     >
                       <Play className="w-3.5 h-3.5 fill-black stroke-[3]" />
                       Entrenar Perfil
@@ -391,17 +369,16 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
       {activeTab === 'categories' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Categories Stats Card */}
-          <div className="bg-[#161616] border border-[#222] p-5 rounded-lg space-y-4">
+          <div className="bg-[#161616] border border-[#262626] p-5 space-y-4">
             <h3 className="text-sm font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
               <Grid className="w-4 h-4 text-[#A1A1A1]" /> Precisión por Regla / Categoría
             </h3>
-            
+
             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
               {(Object.keys(categoryLabels) as WordCategory[]).map((cat) => {
                 const progress = stats.categoryStats?.[cat] || { correct: 0, total: 0 };
                 const pct = progress.total > 0 ? Math.round((progress.correct / progress.total) * 100) : 0;
-                
-                // Only show categories the user has faced, or highlight others
+
                 return (
                   <div key={cat} className="space-y-1">
                     <div className="flex justify-between text-xs">
@@ -410,10 +387,10 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
                         {progress.total > 0 ? `${pct}% (${progress.correct}/${progress.total})` : 'Sin entrenar'}
                       </span>
                     </div>
-                    <div className="w-full bg-[#0A0A0A] h-1 rounded-full overflow-hidden border border-[#222]">
-                      <div 
-                        className={`h-full rounded-full ${
-                          pct >= 80 ? 'bg-emerald-400' : pct >= 50 ? 'bg-amber-400' : progress.total > 0 ? 'bg-rose-500' : 'bg-neutral-800'
+                    <div className="w-full bg-[#0d0d0d] h-1 overflow-hidden border border-[#262626]">
+                      <div
+                        className={`h-full ${
+                          pct >= 80 ? 'bg-white' : pct >= 50 ? 'bg-[#8a8a8a]' : progress.total > 0 ? 'bg-[#555]' : 'bg-[#333]'
                         }`}
                         style={{ width: `${progress.total > 0 ? pct : 0}%` }}
                       />
@@ -425,17 +402,17 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
           </div>
 
           {/* Levels Stats Card */}
-          <div className="bg-[#161616] border border-[#222] p-5 rounded-lg space-y-4 flex flex-col justify-between">
+          <div className="bg-[#161616] border border-[#262626] p-5 space-y-4 flex flex-col justify-between">
             <div className="space-y-4">
               <h3 className="text-sm font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
                 <Target className="w-4 h-4 text-[#A1A1A1]" /> Precisión por Nivel MCER
               </h3>
-              
+
               <div className="space-y-3">
                 {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as LevelMCER[]).map((lvl) => {
                   const progress = stats.levelStats?.[lvl] || { correct: 0, total: 0 };
                   const pct = progress.total > 0 ? Math.round((progress.correct / progress.total) * 100) : 0;
-                  
+
                   return (
                     <div key={lvl} className="space-y-1">
                       <div className="flex justify-between text-xs font-mono">
@@ -444,9 +421,9 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
                           {progress.total > 0 ? `${pct}% (${progress.correct}/${progress.total})` : 'Sin entrenar'}
                         </span>
                       </div>
-                      <div className="w-full bg-[#0A0A0A] h-1 rounded-full overflow-hidden border border-[#222]">
-                        <div 
-                          className="bg-white h-full rounded-full"
+                      <div className="w-full bg-[#0d0d0d] h-1 overflow-hidden border border-[#262626]">
+                        <div
+                          className="bg-white h-full"
                           style={{ width: `${progress.total > 0 ? pct : 0}%` }}
                         />
                       </div>
@@ -464,9 +441,9 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
       )}
 
       {activeTab === 'mistakes' && (
-        <div className="bg-[#161616] border border-[#222] p-5 rounded-lg space-y-4">
+        <div className="bg-[#161616] border border-[#262626] p-5 space-y-4">
           <h3 className="text-sm font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
-            <AlertTriangle className="w-4 h-4 text-amber-500" /> Perfil de Errores Críticos
+            <AlertTriangle className="w-4 h-4 text-white" /> Perfil de Errores Críticos
           </h3>
           <p className="text-[#A1A1A1] text-xs">
             Palabras que has fallado más veces. El algoritmo de Spaced Repetition (repaso espaciado) las insertará con prioridad en tus próximas sesiones.
@@ -479,7 +456,7 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-base font-semibold text-[#EDEDED] font-display">{m.word}</span>
-                      <span className="px-2 py-0.5 border border-rose-900/40 bg-rose-950/20 text-rose-400 font-mono text-[10px] rounded">
+                      <span className="px-2 py-0.5 border border-white bg-transparent text-white font-mono text-[10px]">
                         Fallada {m.incorrectCount} veces
                       </span>
                     </div>
@@ -487,7 +464,7 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
                   </div>
                   <div className="text-right shrink-0">
                     <span className="text-[#A1A1A1] font-mono text-[10px]">Corrección</span>
-                    <div className="font-bold text-emerald-400 font-mono">{m.word}</div>
+                    <div className="font-bold text-white font-mono">{m.word}</div>
                   </div>
                 </div>
               ))}
@@ -509,7 +486,7 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
                 onResetStats();
               }
             }}
-            className="text-[10px] font-mono text-neutral-600 hover:text-rose-500 border border-transparent hover:border-rose-950 px-2.5 py-1 rounded transition-all cursor-pointer"
+            className="text-[10px] font-mono text-[#555] hover:text-white border border-transparent hover:border-[#262626] px-2.5 py-1 transition-all cursor-pointer"
           >
             Reiniciar historial de entrenamiento
           </button>

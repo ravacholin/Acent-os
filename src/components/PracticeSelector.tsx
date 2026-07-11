@@ -36,8 +36,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       description: 'Microdesafíos ultra rápidos de Sí o No. Entrena tu reacción inmediata.',
       icon: CheckCircle,
       difficulty: 'Fácil • 2-4s por palabra',
-      badge: 'Rápido',
-      accentColor: 'border-emerald-500/20 text-emerald-400 hover:border-emerald-500/40'
+      badge: 'Rápido'
     },
     {
       id: 'escribi-tilde' as GameMode,
@@ -45,8 +44,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       description: 'Escribe la palabra con su tilde correspondiente. Práctica de teclado activa.',
       icon: Keyboard,
       difficulty: 'Medio • 4-6s por palabra',
-      badge: 'Escritura',
-      accentColor: 'border-blue-500/20 text-blue-400 hover:border-blue-500/40'
+      badge: 'Escritura'
     },
     {
       id: 'encontra-error' as GameMode,
@@ -54,8 +52,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       description: 'Compara dos opciones gráficas de la misma palabra y elige la correcta.',
       icon: AlertOctagon,
       difficulty: 'Fácil • 3-5s por palabra',
-      badge: 'Visual',
-      accentColor: 'border-amber-500/20 text-amber-400 hover:border-amber-500/40'
+      badge: 'Visual'
     },
     {
       id: 'donde-va-tilde' as GameMode,
@@ -63,8 +60,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       description: 'Toca exactamente la vocal que debe llevar la tilde en la palabra mostrada.',
       icon: Type,
       difficulty: 'Medio-Difícil • 3-6s',
-      badge: 'Interactivo',
-      accentColor: 'border-purple-500/20 text-purple-400 hover:border-purple-500/40'
+      badge: 'Interactivo'
     },
     {
       id: 'clasificacion' as GameMode,
@@ -72,8 +68,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       description: 'Clasifica las palabras instantáneamente en Agudas, Graves, Esdrújulas o Sobreesdrújulas.',
       icon: Layers,
       difficulty: 'Medio • 3-5s por palabra',
-      badge: 'Teoría Práctica',
-      accentColor: 'border-cyan-500/20 text-cyan-400 hover:border-cyan-500/40'
+      badge: 'Teoría Práctica'
     },
     {
       id: 'dictado' as GameMode,
@@ -81,8 +76,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       description: 'Escucha la palabra pronunciada y escríbela correctamente con sus tildes.',
       icon: Volume2,
       difficulty: 'Difícil • 5-8s por palabra',
-      badge: 'Auditivo',
-      accentColor: 'border-pink-500/20 text-pink-400 hover:border-pink-500/40'
+      badge: 'Auditivo'
     },
     {
       id: 'supervivencia' as GameMode,
@@ -90,8 +84,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       description: 'Empieza con 30 segundos. Los aciertos suman tiempo; los errores descuentan.',
       icon: Zap,
       difficulty: 'Extremo • Presión',
-      badge: 'Arcade',
-      accentColor: 'border-rose-500/20 text-rose-400 hover:border-rose-500/40'
+      badge: 'Arcade'
     },
     {
       id: 'infinito' as GameMode,
@@ -99,8 +92,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       description: 'Práctica libre sin límites de tiempo ni presión. Ideal para relajarse.',
       icon: InfinityIcon,
       difficulty: 'Libre • Sin Estrés',
-      badge: 'Zen',
-      accentColor: 'border-neutral-500/20 text-neutral-400 hover:border-neutral-500/40'
+      badge: 'Zen'
     },
     {
       id: 'personalizado' as GameMode,
@@ -108,8 +100,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       description: 'Elige niveles específicos (A1-C2), categorías y duración a tu medida.',
       icon: SlidersHorizontal,
       difficulty: 'Configurable',
-      badge: 'Filtros',
-      accentColor: 'border-indigo-500/20 text-indigo-400 hover:border-indigo-500/40'
+      badge: 'Filtros'
     }
   ];
 
@@ -154,7 +145,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border border-[#222] bg-[#161616] p-6 rounded-lg space-y-6"
+          className="border border-[#262626] bg-[#161616] p-6 space-y-6"
           id="custom-setup-panel"
         >
           <div className="flex justify-between items-center">
@@ -164,7 +155,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
             </div>
             <button 
               onClick={() => setSelectedMode(null)}
-              className="text-[#A1A1A1] hover:text-white text-xs px-3 py-1.5 border border-[#222] rounded hover:bg-[#0A0A0A] transition-colors"
+              className="text-[#A1A1A1] hover:text-white text-xs px-3 py-1.5 border border-[#262626] hover:bg-[#0d0d0d] transition-colors"
             >
               Volver a modos
             </button>
@@ -181,10 +172,10 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
                     <button
                       key={lvl}
                       onClick={() => handleToggleLevel(lvl)}
-                      className={`px-4 py-2 text-xs font-mono font-medium rounded transition-all flex items-center gap-1.5 border cursor-pointer ${
-                        active 
-                          ? 'bg-white text-black border-white' 
-                          : 'bg-[#0A0A0A] text-[#A1A1A1] border-[#222] hover:border-[#EDEDED]'
+                      className={`px-4 py-2 text-xs font-mono font-medium transition-all flex items-center gap-1.5 border cursor-pointer ${
+                        active
+                          ? 'bg-white text-black border-white'
+                          : 'bg-[#0d0d0d] text-[#A1A1A1] border-[#262626] hover:border-[#EDEDED]'
                       }`}
                     >
                       {active && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -203,10 +194,10 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
                   <button
                     key={t}
                     onClick={() => setCustomTime(t)}
-                    className={`px-4 py-2 text-xs font-mono font-medium rounded transition-all border cursor-pointer ${
-                      customTime === t 
-                        ? 'bg-white text-black border-white' 
-                        : 'bg-[#0A0A0A] text-[#A1A1A1] border-[#222] hover:border-[#EDEDED]'
+                    className={`px-4 py-2 text-xs font-mono font-medium transition-all border cursor-pointer ${
+                      customTime === t
+                        ? 'bg-white text-black border-white'
+                        : 'bg-[#0d0d0d] text-[#A1A1A1] border-[#262626] hover:border-[#EDEDED]'
                     }`}
                   >
                     {t === 180 ? '3 Min' : t === 120 ? '2 Min' : t === 60 ? '1 Min' : '30s'}
@@ -237,14 +228,14 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
                   <button
                     key={cat.id}
                     onClick={() => handleToggleCategory(cat.id as WordCategory)}
-                    className={`px-3 py-2 text-xs text-left rounded transition-all flex items-center justify-between border cursor-pointer ${
-                      active 
-                        ? 'bg-[#0A0A0A] text-white border-[#EDEDED]' 
-                        : 'bg-[#0A0A0A] text-[#A1A1A1] border-[#222] hover:border-[#EDEDED]'
+                    className={`px-3 py-2 text-xs text-left transition-all flex items-center justify-between border cursor-pointer ${
+                      active
+                        ? 'bg-[#0d0d0d] text-white border-[#EDEDED]'
+                        : 'bg-[#0d0d0d] text-[#A1A1A1] border-[#262626] hover:border-[#EDEDED]'
                     }`}
                   >
                     <span className="truncate font-medium">{cat.label}</span>
-                    {active && <Check className="w-3 h-3 text-emerald-400 shrink-0 ml-1" />}
+                    {active && <Check className="w-3 h-3 text-white shrink-0 ml-1" />}
                   </button>
                 );
               })}
@@ -255,7 +246,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
           <div className="pt-4 border-t border-[#1F1F1F] flex justify-end">
             <button
               onClick={handleStartCustomMode}
-              className="px-6 py-2.5 bg-white text-black font-semibold rounded hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center gap-2 text-sm cursor-pointer"
+              className="px-6 py-2.5 bg-white text-black font-semibold hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center gap-2 text-sm cursor-pointer"
             >
               <Play className="w-4 h-4 fill-current text-black" />
               Comenzar Entrenamiento
@@ -280,15 +271,15 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
                     onSelectMode(mode.id);
                   }
                 }}
-                className="group relative p-5 bg-[#161616] hover:bg-white border border-[#222] hover:border-white rounded-lg flex flex-col justify-between cursor-pointer h-52 transition-all duration-200 shadow-sm"
+                className="group relative p-5 bg-[#161616] hover:bg-white border border-[#262626] hover:border-white flex flex-col justify-between cursor-pointer h-52 transition-all duration-200"
                 id={`mode-card-${mode.id}`}
               >
                 <div>
                   <div className="flex justify-between items-start">
-                    <div className="p-2.5 bg-[#0A0A0A] group-hover:bg-[#161616]/10 border border-[#222] group-hover:border-black/10 rounded transition-all duration-200">
+                    <div className="p-2.5 bg-[#0d0d0d] group-hover:bg-black/5 border border-[#262626] group-hover:border-black/10 transition-all duration-200">
                       <Icon className="w-5 h-5 text-white group-hover:text-black stroke-[2] transition-colors" />
                     </div>
-                    <span className="text-[10px] uppercase tracking-widest font-mono text-[#A1A1A1] group-hover:text-black/80 border border-[#222] group-hover:border-black/10 px-2 py-0.5 rounded-full bg-[#0A0A0A] group-hover:bg-[#161616]/10 transition-all duration-200">
+                    <span className="text-[10px] uppercase tracking-widest font-mono text-[#A1A1A1] group-hover:text-black/80 border border-[#262626] group-hover:border-black/10 px-2 py-0.5 bg-[#0d0d0d] group-hover:bg-black/5 transition-all duration-200">
                       {mode.badge}
                     </span>
                   </div>

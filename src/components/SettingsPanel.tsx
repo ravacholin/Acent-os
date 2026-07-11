@@ -115,7 +115,7 @@ export default function SettingsPanel({ settings, onChangeSettings, onResetStats
               {group.title}
             </h3>
 
-            <div className="divide-y divide-[#1F1F1F] border border-[#222] rounded-lg bg-[#161616]">
+            <div className="divide-y divide-[#1F1F1F] border border-[#262626] bg-[#161616]">
               {group.options.map((option) => {
                 const Icon = option.icon;
                 return (
@@ -125,7 +125,7 @@ export default function SettingsPanel({ settings, onChangeSettings, onResetStats
                     id={`settings-item-${option.key}`}
                   >
                     <div className="flex gap-3 items-start min-w-0">
-                      <div className="p-2 bg-[#0A0A0A] border border-[#222] rounded text-[#A1A1A1] mt-0.5">
+                      <div className="p-2 bg-[#0d0d0d] border border-[#262626] text-[#A1A1A1] mt-0.5">
                         <Icon className="w-4 h-4 stroke-[2]" />
                       </div>
                       <div className="space-y-0.5">
@@ -134,7 +134,7 @@ export default function SettingsPanel({ settings, onChangeSettings, onResetStats
                             {option.label}
                           </span>
                           {option.isLocked && (
-                            <span className="text-[9px] font-mono text-[#A1A1A1] border border-[#222] px-1.5 py-0.5 rounded bg-[#0A0A0A]">
+                            <span className="text-[9px] font-mono text-[#A1A1A1] border border-[#262626] px-1.5 py-0.5 bg-[#0d0d0d]">
                               FIJO
                             </span>
                           )}
@@ -148,16 +148,16 @@ export default function SettingsPanel({ settings, onChangeSettings, onResetStats
                     <button
                       onClick={() => handleToggle(option.key)}
                       disabled={option.isLocked}
-                      className={`relative w-9 h-5 rounded-full transition-all shrink-0 focus:outline-none cursor-pointer ${
-                        option.isLocked 
-                          ? 'bg-[#1F1F1F] opacity-60' 
-                          : option.value 
-                            ? 'bg-white' 
-                            : 'bg-[#0A0A0A] border border-[#222]'
+                      className={`relative w-9 h-5 border transition-all shrink-0 focus:outline-none cursor-pointer ${
+                        option.isLocked
+                          ? 'bg-[#1F1F1F] border-[#262626] opacity-60'
+                          : option.value
+                            ? 'bg-white border-white'
+                            : 'bg-[#0d0d0d] border-[#262626]'
                       }`}
                     >
-                      <span 
-                        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-all ${
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 transition-all ${
                           option.isLocked 
                             ? 'bg-[#A1A1A1]' 
                             : option.value 
@@ -175,7 +175,7 @@ export default function SettingsPanel({ settings, onChangeSettings, onResetStats
       </div>
 
       {onResetStats && (
-        <div className="bg-[#161616] border border-[#222] p-5 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
+        <div className="bg-[#161616] border border-[#262626] p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
           <div className="space-y-1">
             <h4 className="text-sm font-semibold text-[#EDEDED]">Reiniciar Base de Datos Local</h4>
             <p className="text-[#A1A1A1] text-xs leading-relaxed max-w-md">
@@ -188,7 +188,7 @@ export default function SettingsPanel({ settings, onChangeSettings, onResetStats
                 onResetStats();
               }
             }}
-            className="px-4 py-2 bg-[#0A0A0A] hover:bg-[#161616] border border-[#222] hover:border-rose-950 text-[#A1A1A1] hover:text-rose-400 font-mono text-xs font-medium rounded transition-all cursor-pointer flex items-center gap-1.5 self-end sm:self-auto shrink-0"
+            className="px-4 py-2 bg-[#0d0d0d] hover:bg-white border border-[#262626] hover:border-white text-[#A1A1A1] hover:text-black font-mono text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 self-end sm:self-auto shrink-0"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Borrar Todo
