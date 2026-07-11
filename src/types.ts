@@ -36,6 +36,8 @@ export interface Word {
   explanation: string;        // Short explanation (max 3 lines)
   frequency: 'alta' | 'media' | 'baja';
   options?: string[];         // Alternatives for Mode 3 (e.g., ["camión", "camion"])
+  sense?: string;             // Grammatical function for ambiguous pairs (e.g., "artículo", "pronombre personal")
+  example?: string;           // Context sentence with the target position marked by "___" (e.g., "___ coche es rojo")
 }
 
 export type GameMode =

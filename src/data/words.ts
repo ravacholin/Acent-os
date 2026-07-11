@@ -33,7 +33,9 @@ function makeWord(
   level: LevelMCER,
   frequency: 'alta' | 'media' | 'baja',
   rule: string,
-  explanation: string
+  explanation: string,
+  sense?: string,
+  example?: string
 ): Word {
   return {
     id: word,
@@ -47,7 +49,9 @@ function makeWord(
     hasTilde: TILDE_RE.test(word),
     rule,
     explanation,
-    frequency
+    frequency,
+    sense,
+    example
   };
 }
 
@@ -296,46 +300,46 @@ export const WORDS_DATABASE: Word[] = [
   // ============================================================
   //  TILDE DIACRÍTICA (pares homófonos)
   // ============================================================
-  makeWord('tú', ['tú'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Pronombre personal "tú" (tú eres) frente al posesivo "tu" (tu casa).'),
-  makeWord('tu', ['tu'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Posesivo "tu" (tu casa); sin tilde. El pronombre "tú" sí la lleva.'),
-  makeWord('él', ['él'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Pronombre personal "él" (él sabe) frente al artículo "el" (el coche).'),
-  makeWord('el', ['el'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Artículo "el" (el coche); sin tilde. El pronombre "él" sí la lleva.'),
-  makeWord('mí', ['mí'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Pronombre "mí" (para mí) frente al posesivo "mi" (mi libro).'),
-  makeWord('mi', ['mi'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Posesivo "mi" (mi libro); sin tilde. El pronombre "mí" sí la lleva.'),
-  makeWord('sí', ['sí'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Afirmación o pronombre "sí" frente a la conjunción condicional "si".'),
-  makeWord('si', ['si'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Conjunción condicional "si" (si quieres); sin tilde.'),
-  makeWord('té', ['té'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Sustantivo "té" (bebida) frente al pronombre "te" (te veo).'),
-  makeWord('te', ['te'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Pronombre "te" (te veo); sin tilde. La bebida "té" sí la lleva.'),
-  makeWord('más', ['más'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Cuantificador "más" (quiero más) frente a la conjunción "mas" (= pero).'),
-  makeWord('mas', ['mas'], 0, 'aguda', 'diacrítica', 'B1', 'baja', R.diac, 'Conjunción adversativa "mas" (= pero); sin tilde. El cuantificador "más" sí la lleva.'),
-  makeWord('dé', ['dé'], 0, 'aguda', 'diacrítica', 'A2', 'media', R.diac, 'Verbo dar "dé" (que le dé) frente a la preposición "de".'),
-  makeWord('de', ['de'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Preposición "de" (casa de Ana); sin tilde. El verbo "dé" sí la lleva.'),
-  makeWord('sé', ['sé'], 0, 'aguda', 'diacrítica', 'A2', 'media', R.diac, 'Verbo saber/ser "sé" (yo sé) frente al pronombre "se".'),
-  makeWord('se', ['se'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Pronombre "se" (se fue); sin tilde. El verbo "sé" sí la lleva.'),
-  makeWord('aún', ['a', 'ún'], 1, 'aguda', 'diacrítica', 'B1', 'media', R.diac, '"aún" (= todavía) lleva tilde; "aun" (= incluso) no la lleva.'),
+  makeWord('tú', ['tú'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Pronombre personal "tú" (tú eres) frente al posesivo "tu" (tu casa).', 'pronombre personal', '___ eres mi mejor amigo'),
+  makeWord('tu', ['tu'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Posesivo "tu" (tu casa); sin tilde. El pronombre "tú" sí la lleva.', 'posesivo', 'Me encanta ___ casa nueva'),
+  makeWord('él', ['él'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Pronombre personal "él" (él sabe) frente al artículo "el" (el coche).', 'pronombre personal', 'Ayer ___ llegó tarde'),
+  makeWord('el', ['el'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Artículo "el" (el coche); sin tilde. El pronombre "él" sí la lleva.', 'artículo', '___ coche es de color rojo'),
+  makeWord('mí', ['mí'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Pronombre "mí" (para mí) frente al posesivo "mi" (mi libro).', 'pronombre personal', 'Este regalo es para ___'),
+  makeWord('mi', ['mi'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Posesivo "mi" (mi libro); sin tilde. El pronombre "mí" sí la lleva.', 'posesivo', '___ libro está sobre la mesa'),
+  makeWord('sí', ['sí'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Afirmación o pronombre "sí" frente a la conjunción condicional "si".', 'afirmación', 'Ella dijo que ___ quería venir'),
+  makeWord('si', ['si'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Conjunción condicional "si" (si quieres); sin tilde.', 'conjunción condicional', '___ quieres, vamos al cine'),
+  makeWord('té', ['té'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Sustantivo "té" (bebida) frente al pronombre "te" (te veo).', 'sustantivo (la bebida)', 'Quiero una taza de ___ caliente'),
+  makeWord('te', ['te'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Pronombre "te" (te veo); sin tilde. La bebida "té" sí la lleva.', 'pronombre', 'Mañana ___ veo en la plaza'),
+  makeWord('más', ['más'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Cuantificador "más" (quiero más) frente a la conjunción "mas" (= pero).', 'adverbio de cantidad', 'Quiero ___ pan, por favor'),
+  makeWord('mas', ['mas'], 0, 'aguda', 'diacrítica', 'B1', 'baja', R.diac, 'Conjunción adversativa "mas" (= pero); sin tilde. El cuantificador "más" sí la lleva.', 'conjunción adversativa (= pero)', 'Lo intenté, ___ no lo logré'),
+  makeWord('dé', ['dé'], 0, 'aguda', 'diacrítica', 'A2', 'media', R.diac, 'Verbo dar "dé" (que le dé) frente a la preposición "de".', 'verbo dar', 'Espero que te ___ el dinero'),
+  makeWord('de', ['de'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Preposición "de" (casa de Ana); sin tilde. El verbo "dé" sí la lleva.', 'preposición', 'La casa ___ Ana es grande'),
+  makeWord('sé', ['sé'], 0, 'aguda', 'diacrítica', 'A2', 'media', R.diac, 'Verbo saber/ser "sé" (yo sé) frente al pronombre "se".', 'verbo saber/ser', 'Yo ___ la respuesta correcta'),
+  makeWord('se', ['se'], 0, 'aguda', 'diacrítica', 'A1', 'alta', R.diac, 'Pronombre "se" (se fue); sin tilde. El verbo "sé" sí la lleva.', 'pronombre', 'Él ___ fue muy temprano'),
+  makeWord('aún', ['a', 'ún'], 1, 'aguda', 'diacrítica', 'B1', 'media', R.diac, '"aún" (= todavía) lleva tilde; "aun" (= incluso) no la lleva.', 'adverbio (= todavía)', '___ no ha llegado el tren'),
 
   // ============================================================
   //  INTERROGATIVOS / EXCLAMATIVOS
   // ============================================================
-  makeWord('qué', ['qué'], 0, 'aguda', 'interrogativo', 'A1', 'alta', R.interr, '"qué" con valor interrogativo/exclamativo (¿Qué quieres?) frente al relativo "que".'),
-  makeWord('cómo', ['có', 'mo'], 0, 'grave', 'interrogativo', 'A1', 'alta', R.interr, '"cómo" interrogativo/exclamativo (No sé cómo) frente al adverbio "como".'),
-  makeWord('cuándo', ['cuán', 'do'], 0, 'grave', 'interrogativo', 'A2', 'alta', R.interr, '"cuándo" interrogativo (¿Cuándo?) frente a la conjunción "cuando".'),
-  makeWord('dónde', ['dón', 'de'], 0, 'grave', 'interrogativo', 'A1', 'alta', R.interr, '"dónde" interrogativo (¿Dónde?) frente al relativo "donde".'),
-  makeWord('quién', ['quién'], 0, 'aguda', 'interrogativo', 'A1', 'alta', R.interr, '"quién" interrogativo/exclamativo (¿Quién?) frente al relativo "quien".'),
-  makeWord('cuánto', ['cuán', 'to'], 0, 'grave', 'interrogativo', 'A2', 'alta', R.interr, '"cuánto" interrogativo/exclamativo (¡Cuánto!) frente a "cuanto".'),
-  makeWord('cuál', ['cuál'], 0, 'aguda', 'interrogativo', 'A2', 'alta', R.interr, '"cuál" interrogativo (¿Cuál?) frente al relativo "cual".'),
-  makeWord('cuáles', ['cuá', 'les'], 0, 'grave', 'interrogativo', 'A2', 'media', R.interr, '"cuáles" interrogativo (¿Cuáles?) frente a "cuales".'),
-  makeWord('quiénes', ['quié', 'nes'], 0, 'grave', 'interrogativo', 'A2', 'media', R.interr, '"quiénes" interrogativo (¿Quiénes?) frente a "quienes".'),
-  makeWord('adónde', ['a', 'dón', 'de'], 1, 'grave', 'interrogativo', 'B1', 'media', R.interr, '"adónde" interrogativo (¿Adónde vas?) frente a "adonde".'),
-  makeWord('cuántas', ['cuán', 'tas'], 0, 'grave', 'exclamativo', 'A2', 'media', R.interr, '"cuántas" exclamativo/interrogativo (¡Cuántas!) frente a "cuantas".'),
+  makeWord('qué', ['qué'], 0, 'aguda', 'interrogativo', 'A1', 'alta', R.interr, '"qué" con valor interrogativo/exclamativo (¿Qué quieres?) frente al relativo "que".', 'interrogativo/exclamativo', '¿___ quieres comer hoy?'),
+  makeWord('cómo', ['có', 'mo'], 0, 'grave', 'interrogativo', 'A1', 'alta', R.interr, '"cómo" interrogativo/exclamativo (No sé cómo) frente al adverbio "como".', 'interrogativo/exclamativo', '¿___ estás hoy?'),
+  makeWord('cuándo', ['cuán', 'do'], 0, 'grave', 'interrogativo', 'A2', 'alta', R.interr, '"cuándo" interrogativo (¿Cuándo?) frente a la conjunción "cuando".', 'interrogativo', '¿___ llega el tren?'),
+  makeWord('dónde', ['dón', 'de'], 0, 'grave', 'interrogativo', 'A1', 'alta', R.interr, '"dónde" interrogativo (¿Dónde?) frente al relativo "donde".', 'interrogativo', '¿___ vives ahora?'),
+  makeWord('quién', ['quién'], 0, 'aguda', 'interrogativo', 'A1', 'alta', R.interr, '"quién" interrogativo/exclamativo (¿Quién?) frente al relativo "quien".', 'interrogativo/exclamativo', '¿___ llamó por teléfono?'),
+  makeWord('cuánto', ['cuán', 'to'], 0, 'grave', 'interrogativo', 'A2', 'alta', R.interr, '"cuánto" interrogativo/exclamativo (¡Cuánto!) frente a "cuanto".', 'interrogativo/exclamativo', '¿___ cuesta esto?'),
+  makeWord('cuál', ['cuál'], 0, 'aguda', 'interrogativo', 'A2', 'alta', R.interr, '"cuál" interrogativo (¿Cuál?) frente al relativo "cual".', 'interrogativo', '¿___ prefieres, este o aquel?'),
+  makeWord('cuáles', ['cuá', 'les'], 0, 'grave', 'interrogativo', 'A2', 'media', R.interr, '"cuáles" interrogativo (¿Cuáles?) frente a "cuales".', 'interrogativo', '¿___ son los tuyos?'),
+  makeWord('quiénes', ['quié', 'nes'], 0, 'grave', 'interrogativo', 'A2', 'media', R.interr, '"quiénes" interrogativo (¿Quiénes?) frente a "quienes".', 'interrogativo', '¿___ vienen a la fiesta?'),
+  makeWord('adónde', ['a', 'dón', 'de'], 1, 'grave', 'interrogativo', 'B1', 'media', R.interr, '"adónde" interrogativo (¿Adónde vas?) frente a "adonde".', 'interrogativo', '¿___ vas con tanta prisa?'),
+  makeWord('cuántas', ['cuán', 'tas'], 0, 'grave', 'exclamativo', 'A2', 'media', R.interr, '"cuántas" exclamativo/interrogativo (¡Cuántas!) frente a "cuantas".', 'exclamativo/interrogativo', '¡___ cosas hay que hacer!'),
 
   // ============================================================
   //  SOLO / DEMOSTRATIVOS (tilde diacrítica histórica)
   // ============================================================
-  makeWord('sólo', ['só', 'lo'], 0, 'grave', 'solo-solo', 'B2', 'media', R.diac, 'La RAE lo desaconseja; solo se admite tilde en "sólo" (=solamente) si hay ambigüedad.'),
-  makeWord('éste', ['és', 'te'], 0, 'grave', 'demostrativo', 'B2', 'baja', R.diac, 'Pronombre demostrativo con tilde histórica; hoy la RAE aconseja escribir "este".'),
-  makeWord('ése', ['é', 'se'], 0, 'grave', 'demostrativo', 'B2', 'baja', R.diac, 'Demostrativo con tilde histórica; hoy se recomienda "ese" sin tilde.'),
-  makeWord('aquél', ['a', 'quél'], 1, 'aguda', 'demostrativo', 'B2', 'baja', R.diac, 'Demostrativo con tilde histórica; hoy se recomienda "aquel" sin tilde.'),
+  makeWord('sólo', ['só', 'lo'], 0, 'grave', 'solo-solo', 'B2', 'media', R.diac, 'La RAE lo desaconseja; solo se admite tilde en "sólo" (=solamente) si hay ambigüedad.', 'adverbio (= solamente)', '___ quiero un vaso de agua'),
+  makeWord('éste', ['és', 'te'], 0, 'grave', 'demostrativo', 'B2', 'baja', R.diac, 'Pronombre demostrativo con tilde histórica; hoy la RAE aconseja escribir "este".', 'pronombre demostrativo', 'Prefiero ___, no aquel'),
+  makeWord('ése', ['é', 'se'], 0, 'grave', 'demostrativo', 'B2', 'baja', R.diac, 'Demostrativo con tilde histórica; hoy se recomienda "ese" sin tilde.', 'pronombre demostrativo', 'Dame ___ de ahí, por favor'),
+  makeWord('aquél', ['a', 'quél'], 1, 'aguda', 'demostrativo', 'B2', 'baja', R.diac, 'Demostrativo con tilde histórica; hoy se recomienda "aquel" sin tilde.', 'pronombre demostrativo', 'Me quedo con ___ del fondo'),
 
   // ============================================================
   //  MAYÚSCULAS (se acentúan igual)
@@ -399,3 +403,43 @@ export const WORDS_DATABASE: Word[] = [
   makeWord('pídeselo', ['pí', 'de', 'se', 'lo'], 0, 'sobreesdrújula', 'pronombre', 'B1', 'baja', R.sob, 'Imperativo con dos enclíticos; sobreesdrújula, se acentúa siempre.'),
   makeWord('entrégamelo', ['en', 'tré', 'ga', 'me', 'lo'], 1, 'sobreesdrújula', 'pronombre', 'B2', 'baja', R.sob, 'Imperativo con dos enclíticos; sobreesdrújula, lleva tilde.')
 ];
+
+/**
+ * Categorías cuyos ejercicios son ambiguos sin contexto (homófonas / homógrafas
+ * que solo se distinguen por la tilde diacrítica o el valor interrogativo). Para
+ * estas palabras SIEMPRE se muestra el sentido gramatical + una frase de ejemplo
+ * antes de responder, en todos los modos.
+ */
+export const AMBIGUOUS_CATEGORIES: ReadonlySet<WordCategory> = new Set<WordCategory>([
+  'diacrítica',
+  'interrogativo',
+  'exclamativo',
+  'solo-solo',
+  'demostrativo'
+]);
+
+export const isAmbiguousWord = (word: Word): boolean =>
+  AMBIGUOUS_CATEGORIES.has(word.category);
+
+// Agrupa las palabras por su forma sin tildes para encontrar homófonos (el ↔ él).
+const WORDS_BY_CLEAN = new Map<string, Word[]>();
+for (const w of WORDS_DATABASE) {
+  const key = w.wordClean.toLowerCase();
+  const bucket = WORDS_BY_CLEAN.get(key);
+  if (bucket) bucket.push(w);
+  else WORDS_BY_CLEAN.set(key, [w]);
+}
+
+/**
+ * Devuelve la grafía "distractora" para el modo "Encontrá el error" en palabras
+ * ambiguas: la pareja homófona real si existe en la base (p. ej. "el" para "él"),
+ * o, si no existe (interrogativos, "aún", "sólo", demostrativos), la variante
+ * con/sin tilde. Nunca devuelve la misma grafía que la correcta.
+ */
+export function getHomophonePartner(word: Word): string {
+  const bucket = WORDS_BY_CLEAN.get(word.wordClean.toLowerCase()) || [];
+  const partner = bucket.find(w => w.word !== word.word);
+  if (partner) return partner.word;
+  // Sin pareja en la base: alterna la tilde.
+  return word.hasTilde ? word.wordClean : word.word;
+}
