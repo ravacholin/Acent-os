@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Word, GameMode, AppSettings, WordClassification } from '../types';
+import { isAmbiguousWord, getHomophonePartner } from '../data/words';
 import { 
   playClickSound, 
   playCorrectSound, 
@@ -137,6 +138,11 @@ export default function ExerciseCard({
     inputRef.current?.focus();
   };
 
+  // True for diacritic / interrogative pairs that are unanswerable without context
+  // (el/él, tu/tú, qué/que…). For these we always surface the grammatical sense +
+  // an example sentence so the intended form is clear before answering.
+  const isAmbiguous = isAmbiguousWord(word);
+
   // Handle Mode 3: Encontrá el error
   // We need static options for the word
   const getComparisonOptions = () => {
@@ -145,7 +151,11 @@ export default function ExerciseCard({
     const correctOption = word.word;
     let incorrectOption = word.wordClean;
 
-    if (!word.hasTilde) {
+    if (isAmbiguous) {
+      // Both spellings are valid words; the distractor is the homophone partner
+      // (el↔él, qué↔que). The example sentence + sense decide which one is correct.
+      incorrectOption = getHomophonePartner(word);
+    } else if (!word.hasTilde) {
       // If original doesn't have a tilde, create a fake incorrect accented syllable
       // e.g., "reloj" -> "relój"
       const syllables = [...word.syllables];
@@ -296,7 +306,24 @@ export default function ExerciseCard({
                 transition={{ duration: 0.15 }}
                 className="w-full text-center space-y-6"
               >
-                
+
+                {/* Disambiguation context for diacritic / interrogative pairs.
+                    Without this, "el" vs "él" (etc.) is impossible to answer. */}
+                {isAmbiguous && (word.sense || word.example) && (
+                  <div className="max-w-md mx-auto bg-[#0d0d0d] border border-[#262626] px-4 py-3 space-y-2">
+                    {word.sense && (
+                      <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#A1A1A1]">
+                        Se pide: <span className="text-white font-semibold normal-case tracking-normal">{word.sense}</span>
+                      </div>
+                    )}
+                    {word.example && (
+                      <p className="text-sm md:text-base text-[#EDEDED] font-display leading-relaxed">
+                        {word.example.replace(/___/g, '_____')}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* MODE 1: ¿Lleva tilde? */}
                 {mode === 'lleva-tilde' && (
                   <div className="flex flex-col items-center gap-8">
@@ -379,7 +406,9 @@ export default function ExerciseCard({
                 {/* MODE 3: Encontrá el error */}
                 {mode === 'encontra-error' && (
                   <div className="space-y-6">
-                    <p className="text-xs font-mono text-[#A1A1A1]">Elige la palabra escrita correctamente</p>
+                    <p className="text-xs font-mono text-[#A1A1A1]">
+                      {isAmbiguous ? 'Elige la forma correcta para la frase' : 'Elige la palabra escrita correctamente'}
+                    </p>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto pt-2">
                       {options.map((opt, oIdx) => (

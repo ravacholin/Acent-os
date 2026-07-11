@@ -9,7 +9,7 @@ import {
   WordCategory, 
   LevelMCER 
 } from './types';
-import { WORDS_DATABASE } from './data/words';
+import { WORDS_DATABASE, isAmbiguousWord } from './data/words';
 import { calculateErrorProfiles, getWeakCategories } from './utils/errorAnalysis';
 import PracticeSelector from './components/PracticeSelector';
 import StatsDashboard from './components/StatsDashboard';
@@ -74,6 +74,18 @@ LEVELS_LIST.forEach(lvl => {
 
 // Number of words per regular practice session
 const SESSION_SIZE = 10;
+
+// "Meta" modes (timed / endless / filtered) don't have their own question format;
+// they present a concrete exercise type per word. We rotate through fast, tap-based
+// formats that work for ANY word (including diacritic pairs, which show context).
+const META_MODES = new Set<GameMode>(['supervivencia', 'infinito', 'personalizado']);
+const META_ROTATION: GameMode[] = ['lleva-tilde', 'encontra-error', 'clasificacion'];
+
+// Resolve the concrete exercise type to render for a given session word index.
+function resolveRenderMode(mode: GameMode, index: number): GameMode {
+  if (!META_MODES.has(mode)) return mode;
+  return META_ROTATION[index % META_ROTATION.length];
+}
 // How many recently-seen words we remember to avoid repeating them across sessions.
 // Capped well below the total database so there is always a fresh pool available.
 const RECENT_MEMORY_KEY = 'acentos-recent-words';
@@ -179,11 +191,18 @@ export default function App() {
     setSessionCompleted(false);
   };
 
-  // 3. Spaced Repetition Adaptability Logic
-  // Find words suited for the practice session
+  // 3. Word selection (pure — never mutates the "recently seen" memory).
+  //
+  // Two-quota design so the hundreds of words actually surface:
+  //   - A *capped* slice of "review" words (failed / due for spaced repetition) so
+  //     struggle-words come back in moderation instead of flooding every session.
+  //   - The remaining slots are filled with genuinely fresh variety, preferring
+  //     never-recently-seen words, all shuffled at random.
+  // The caller is responsible for recording what it actually shows (rememberSeen).
   const selectSessionWords = (
-    mode: GameMode, 
+    mode: GameMode,
     customOptions?: { levels: LevelMCER[]; categories: WordCategory[] },
+    count: number = SESSION_SIZE,
     allWords: Word[] = WORDS_DATABASE
   ): Word[] => {
     let filtered = [...allWords];
@@ -194,73 +213,68 @@ export default function App() {
       filtered = filtered.filter(w => w.hasTilde);
     }
 
+    if (mode === 'dictado') {
+      // Homophones (el/él, tu/tú, qué/que…) are indistinguishable by audio, so
+      // they cannot be dictated fairly — keep them out of this mode only.
+      filtered = filtered.filter(w => !isAmbiguousWord(w));
+    }
+
     if (mode === 'personalizado' && customOptions) {
-      filtered = filtered.filter(w => 
-        customOptions.levels.includes(w.level) && 
+      filtered = filtered.filter(w =>
+        customOptions.levels.includes(w.level) &&
         customOptions.categories.includes(w.category)
       );
     }
 
+    if (filtered.length === 0) return [];
+
     const now = Date.now();
     const weakCats = getWeakCategories(stats);
-    const recentlySeen = loadRecentlySeen();
-    const recentIndex = new Map(recentlySeen.map((id, idx) => [id, idx]));
+    const recentSet = new Set(loadRecentlySeen());
+    const sr = stats.spacedRepetition || {};
 
-    // Calculate priority scores for all filtered words.
-    // Fresh words get a large random jitter (0–1000) so every session is genuinely
-    // shuffled; spaced-repetition boosts sit far above that range so due/failed words
-    // still resurface reliably regardless of the random draw.
-    const scoredWords = filtered.map(w => {
-      let score = Math.random() * 1000; // strong random base → real variety
-      let isReviewDue = false;
-
-      // 1. Spaced Repetition scoring
-      if (stats.spacedRepetition && stats.spacedRepetition[w.id]) {
-        const record = stats.spacedRepetition[w.id];
-
-        if (record.failCount > 0) {
-          // This is a failed word.
-          const repeatedFailureBoost = record.failCount >= 2 ? 1000 : 0;
-          score += 3000 + (record.failCount * 500) + repeatedFailureBoost;
-          isReviewDue = true;
-          if (now >= record.nextReviewTimestamp) {
-            score += 500;
-          }
-        } else if (now >= record.nextReviewTimestamp) {
-          // Correct, but due for review
-          score += 2000 + (6 - record.box) * 100;
-          isReviewDue = true;
-        } else {
-          // Correct, and not due yet (spaced interval penalty)
-          score -= 5000;
-        }
+    // Split into "due for review" and everything else.
+    const failed: Word[] = [];
+    const dueCorrect: Word[] = [];
+    const rest: Word[] = [];
+    for (const w of filtered) {
+      const record = sr[w.id];
+      if (record && record.failCount > 0) {
+        failed.push(w);
+      } else if (record && now >= record.nextReviewTimestamp) {
+        dueCorrect.push(w);
+      } else {
+        rest.push(w);
       }
+    }
 
-      // 2. Adaptive learning: weak category boost
-      if (weakCats.includes(w.category)) {
-        score += 800;
-      }
+    // Cap how many review words a single session may contain (failed first).
+    const reviewQuota = Math.min(Math.ceil(count * 0.4), failed.length + dueCorrect.length);
+    const reviewPool = [...shuffle(failed), ...shuffle(dueCorrect)].slice(0, reviewQuota);
 
-      // 3. Anti-repetition: strongly demote words shown in recent sessions so the
-      //    same words don't keep appearing. Never demote words that are due for
-      //    spaced-repetition review (we WANT those back). More recent = bigger penalty.
-      if (!isReviewDue && recentIndex.has(w.id)) {
-        const pos = recentIndex.get(w.id)!; // 0 = most recent
-        score -= 3000 - Math.min(pos * 15, 2000);
-      }
+    // Fill the rest with fresh variety: prefer words not seen recently, and give a
+    // light preference to weak categories — but keep it heavily shuffled so we never
+    // show the same set twice.
+    const notRecent = shuffle(rest.filter(w => !recentSet.has(w.id)));
+    const recent = shuffle(rest.filter(w => recentSet.has(w.id)));
+    const weakFirst = (arr: Word[]) => {
+      const weak = arr.filter(w => weakCats.includes(w.category));
+      const other = arr.filter(w => !weakCats.includes(w.category));
+      return [...weak, ...other];
+    };
+    const freshPool = [...weakFirst(notRecent), ...recent];
 
-      return { word: w, score };
-    });
+    // Assemble: review words + fresh fill. If still short (tiny custom filter),
+    // top up from any leftover review words so we never return fewer than possible.
+    const chosen = [...reviewPool, ...freshPool].slice(0, count);
+    if (chosen.length < count) {
+      const chosenIds = new Set(chosen.map(w => w.id));
+      const leftover = [...failed, ...dueCorrect].filter(w => !chosenIds.has(w.id));
+      chosen.push(...leftover.slice(0, count - chosen.length));
+    }
 
-    // Sort by score descending, breaking ties randomly for extra variety.
-    scoredWords.sort((a, b) => (b.score - a.score) || (Math.random() - 0.5));
-
-    const finalSelection = scoredWords.slice(0, SESSION_SIZE).map(sw => sw.word);
-
-    // Remember what we're about to show so future sessions avoid these words.
-    rememberSeen(finalSelection.map(w => w.id));
-
-    return finalSelection;
+    // Final shuffle so review words aren't always first.
+    return shuffle(chosen);
   };
 
   // 4. Session Operations
@@ -269,7 +283,7 @@ export default function App() {
     customOptions?: { levels: LevelMCER[]; categories: WordCategory[]; timeLimit?: number }
   ) => {
     playClickSound(settings.soundEnabled);
-    
+
     let words = [];
     let initialTime = 0;
 
@@ -284,6 +298,17 @@ export default function App() {
     } else {
       words = selectSessionWords(mode);
     }
+
+    // Empty selection guard: a very narrow custom filter (or a fully mastered set
+    // for a mode) can yield no words. Don't start a session that would hang on a
+    // blank card — tell the user and bail out.
+    if (words.length === 0) {
+      alert('No hay palabras disponibles para esta combinación de niveles y categorías. Prueba a ampliar la selección.');
+      return;
+    }
+
+    // Record what we're about to show so future sessions favor fresh words.
+    rememberSeen(words.map(w => w.id));
 
     setSession({
       mode,
@@ -514,17 +539,23 @@ export default function App() {
   const handleNextWord = () => {
     if (!session) return;
 
-    // Endless mode appends randomized words infinitely
-    if (session.mode === 'infinito') {
+    // Endless modes (Infinito + Supervivencia) never "complete" by running out of
+    // queue — they keep serving words. Survival ends only when its timer hits 0.
+    if (session.mode === 'infinito' || session.mode === 'supervivencia') {
       const nextIdx = session.currentIndex + 1;
       const needNewWords = nextIdx >= session.words.length - 1;
-      // Avoid appending words that are still upcoming in the current queue so we
-      // never show the same word twice in a row.
-      const upcomingIds = new Set(session.words.slice(nextIdx).map(w => w.id));
-      const fresh = selectSessionWords('infinito').filter(w => !upcomingIds.has(w.id));
-      const updatedWords = needNewWords
-        ? [...session.words, ...fresh]
-        : session.words;
+
+      let updatedWords = session.words;
+      if (needNewWords) {
+        // Only select (and record as seen) when we actually append. Avoid words
+        // still upcoming in the queue so we never repeat back-to-back.
+        const upcomingIds = new Set(session.words.slice(nextIdx).map(w => w.id));
+        const fresh = selectSessionWords(session.mode).filter(w => !upcomingIds.has(w.id));
+        if (fresh.length > 0) {
+          rememberSeen(fresh.map(w => w.id));
+          updatedWords = [...session.words, ...fresh];
+        }
+      }
 
       setSession(prev => {
         if (!prev) return null;
@@ -783,20 +814,25 @@ export default function App() {
                     <span>Abandonar sesión</span>
                   </button>
                   <span className="text-xs font-mono text-neutral-500">
-                    Palabra {session.currentIndex + 1} de {session.mode === 'infinito' ? '∞' : session.words.length}
+                    Palabra {session.currentIndex + 1} de {session.mode === 'infinito' || session.mode === 'supervivencia' ? '∞' : session.words.length}
                   </span>
                 </div>
 
                 {session.words[session.currentIndex] && (
-                  <ExerciseCard
-                    word={session.words[session.currentIndex]}
-                    mode={session.mode}
-                    settings={settings}
-                    comboStreak={session.streak}
-                    timeLeft={session.mode === 'supervivencia' ? session.timeLeft : undefined}
-                    onAnswer={handleAnswerReceived}
-                    onNext={handleNextWord}
-                  />
+                  // Keyed wrapper: changing the key on each word remounts ExerciseCard
+                  // with fresh state, so the previous word's answer/feedback never
+                  // flashes for a frame before the new exercise renders.
+                  <div key={`${session.mode}-${session.currentIndex}`}>
+                    <ExerciseCard
+                      word={session.words[session.currentIndex]}
+                      mode={resolveRenderMode(session.mode, session.currentIndex)}
+                      settings={settings}
+                      comboStreak={session.streak}
+                      timeLeft={session.mode === 'supervivencia' ? session.timeLeft : undefined}
+                      onAnswer={handleAnswerReceived}
+                      onNext={handleNextWord}
+                    />
+                  </div>
                 )}
               </motion.div>
             )}
