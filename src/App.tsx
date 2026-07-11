@@ -72,6 +72,44 @@ LEVELS_LIST.forEach(lvl => {
   DEFAULT_STATS.levelStats[lvl] = { correct: 0, total: 0 };
 });
 
+// Number of words per regular practice session
+const SESSION_SIZE = 10;
+// How many recently-seen words we remember to avoid repeating them across sessions.
+// Capped well below the total database so there is always a fresh pool available.
+const RECENT_MEMORY_KEY = 'acentos-recent-words';
+const RECENT_MEMORY_CAP = 120;
+
+// Unbiased Fisher–Yates shuffle (returns a new array; does not mutate input)
+function shuffle<T>(input: T[]): T[] {
+  const arr = [...input];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Recently-seen memory persisted in localStorage. Newest ids first.
+function loadRecentlySeen(): string[] {
+  try {
+    const raw = localStorage.getItem(RECENT_MEMORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function rememberSeen(ids: string[]) {
+  try {
+    const prev = loadRecentlySeen();
+    // Prepend the new ids (newest first), de-duplicate, and cap the length.
+    const merged = [...ids, ...prev.filter(id => !ids.includes(id))].slice(0, RECENT_MEMORY_CAP);
+    localStorage.setItem(RECENT_MEMORY_KEY, JSON.stringify(merged));
+  } catch {
+    /* ignore storage errors */
+  }
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'inicio' | 'practicar' | 'desafio' | 'estadisticas' | 'logros' | 'configuracion'>('inicio');
   
@@ -165,54 +203,63 @@ export default function App() {
 
     const now = Date.now();
     const weakCats = getWeakCategories(stats);
+    const recentlySeen = loadRecentlySeen();
+    const recentIndex = new Map(recentlySeen.map((id, idx) => [id, idx]));
 
-    // Calculate priority scores for all filtered words
+    // Calculate priority scores for all filtered words.
+    // Fresh words get a large random jitter (0–1000) so every session is genuinely
+    // shuffled; spaced-repetition boosts sit far above that range so due/failed words
+    // still resurface reliably regardless of the random draw.
     const scoredWords = filtered.map(w => {
-      let score = Math.random() * 10; // keep random base to avoid absolute repetition
+      let score = Math.random() * 1000; // strong random base → real variety
+      let isReviewDue = false;
 
       // 1. Spaced Repetition scoring
       if (stats.spacedRepetition && stats.spacedRepetition[w.id]) {
         const record = stats.spacedRepetition[w.id];
-        
+
         if (record.failCount > 0) {
           // This is a failed word.
-          // Base fail boost: 1000
-          // If repeatedly failed (failCount >= 2), reappears even sooner (additional 1000)
           const repeatedFailureBoost = record.failCount >= 2 ? 1000 : 0;
-          score += 1000 + (record.failCount * 500) + repeatedFailureBoost;
-          
-          // Add urgency if it's past review time
+          score += 3000 + (record.failCount * 500) + repeatedFailureBoost;
+          isReviewDue = true;
           if (now >= record.nextReviewTimestamp) {
             score += 500;
           }
         } else if (now >= record.nextReviewTimestamp) {
           // Correct, but due for review
-          score += 300 + (6 - record.box) * 100;
+          score += 2000 + (6 - record.box) * 100;
+          isReviewDue = true;
         } else {
           // Correct, and not due yet (spaced interval penalty)
-          score -= 1500;
+          score -= 5000;
         }
       }
 
       // 2. Adaptive learning: weak category boost
       if (weakCats.includes(w.category)) {
-        score += 300;
+        score += 800;
+      }
+
+      // 3. Anti-repetition: strongly demote words shown in recent sessions so the
+      //    same words don't keep appearing. Never demote words that are due for
+      //    spaced-repetition review (we WANT those back). More recent = bigger penalty.
+      if (!isReviewDue && recentIndex.has(w.id)) {
+        const pos = recentIndex.get(w.id)!; // 0 = most recent
+        score -= 3000 - Math.min(pos * 15, 2000);
       }
 
       return { word: w, score };
     });
 
-    // Sort by score descending
-    scoredWords.sort((a, b) => b.score - a.score);
+    // Sort by score descending, breaking ties randomly for extra variety.
+    scoredWords.sort((a, b) => (b.score - a.score) || (Math.random() - 0.5));
 
-    // Mix high-priority words with some fresh words to prevent burnout and ensure diversity
-    const topCount = Math.min(6, scoredWords.length);
-    const topSelections = scoredWords.slice(0, topCount).map(sw => sw.word);
-    
-    let remaining = scoredWords.slice(topCount).map(sw => sw.word);
-    remaining.sort(() => Math.random() - 0.5);
+    const finalSelection = scoredWords.slice(0, SESSION_SIZE).map(sw => sw.word);
 
-    const finalSelection = [...topSelections, ...remaining].slice(0, 10);
+    // Remember what we're about to show so future sessions avoid these words.
+    rememberSeen(finalSelection.map(w => w.id));
+
     return finalSelection;
   };
 
@@ -471,8 +518,12 @@ export default function App() {
     if (session.mode === 'infinito') {
       const nextIdx = session.currentIndex + 1;
       const needNewWords = nextIdx >= session.words.length - 1;
-      const updatedWords = needNewWords 
-        ? [...session.words, ...selectSessionWords('infinito')]
+      // Avoid appending words that are still upcoming in the current queue so we
+      // never show the same word twice in a row.
+      const upcomingIds = new Set(session.words.slice(nextIdx).map(w => w.id));
+      const fresh = selectSessionWords('infinito').filter(w => !upcomingIds.has(w.id));
+      const updatedWords = needNewWords
+        ? [...session.words, ...fresh]
         : session.words;
 
       setSession(prev => {
