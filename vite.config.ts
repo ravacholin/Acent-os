@@ -11,7 +11,12 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+        includeAssets: [
+          'favicon-16x16.png',
+          'favicon-32x32.png',
+          'favicon-96x96.png',
+          'apple-touch-icon.png',
+        ],
         manifest: {
           name: 'AcentOS — Spanish Accent Trainer',
           short_name: 'AcentOS',
