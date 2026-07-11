@@ -79,9 +79,9 @@ export default function AchievementsPanel({ stats, achievements }: AchievementsP
 
   return (
     <div className="space-y-6" id="achievements-panel">
-      <div className="border-b border-neutral-900 pb-5">
+      <div className="border-b border-[#1F1F1F] pb-5">
         <h2 className="text-2xl font-semibold tracking-tight text-white font-display">Logros de Aprendizaje</h2>
-        <p className="text-neutral-500 text-sm mt-1">
+        <p className="text-[#A1A1A1] text-sm mt-1">
           Hitos que acreditan tu dominio de la prosodia y ortografía en español. Completamente basados en práctica real.
         </p>
       </div>
@@ -98,16 +98,16 @@ export default function AchievementsPanel({ stats, achievements }: AchievementsP
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: idx * 0.04 }}
-              className={`p-5 rounded-lg border transition-all duration-300 flex items-start gap-4 ${
-                isUnlocked 
-                  ? 'bg-neutral-950/40 border-neutral-800' 
-                  : 'bg-neutral-950/20 border-neutral-900/60 opacity-65'
+              className={`p-5 border transition-all duration-300 flex items-start gap-4 ${
+                isUnlocked
+                  ? 'bg-[#161616] border-[#262626]'
+                  : 'bg-[#0d0d0d] border-[#1a1a1a] opacity-65'
               }`}
             >
-              <div className={`p-3 rounded-md border shrink-0 transition-colors ${
-                isUnlocked 
-                  ? 'bg-neutral-900 border-neutral-700 text-white' 
-                  : 'bg-neutral-950 border-neutral-900 text-neutral-600'
+              <div className={`p-3 border shrink-0 transition-colors ${
+                isUnlocked
+                  ? 'bg-[#161616] border-[#3a3a3a] text-white'
+                  : 'bg-[#0d0d0d] border-[#1a1a1a] text-[#555]'
               }`}>
                 {isUnlocked ? (
                   <Icon className="w-5 h-5 text-white stroke-[2]" />
@@ -118,29 +118,29 @@ export default function AchievementsPanel({ stats, achievements }: AchievementsP
 
               <div className="space-y-1.5 flex-1 min-w-0">
                 <div className="flex justify-between items-start gap-2">
-                  <h3 className={`text-sm font-semibold truncate ${isUnlocked ? 'text-white font-display' : 'text-neutral-500'}`}>
+                  <h3 className={`text-sm font-semibold truncate ${isUnlocked ? 'text-white font-display' : 'text-[#8a8a8a]'}`}>
                     {ach.title}
                   </h3>
                   {ach.unlockedAt && (
-                    <span className="text-[9px] font-mono text-emerald-400 border border-emerald-950 px-1.5 py-0.5 rounded bg-emerald-950/10 shrink-0">
+                    <span className="text-[9px] font-mono text-black border border-white px-1.5 py-0.5 bg-white shrink-0">
                       DESBLOQUEADO
                     </span>
                   )}
                 </div>
-                <p className="text-neutral-500 text-xs leading-relaxed">
+                <p className="text-[#A1A1A1] text-xs leading-relaxed">
                   {ach.description}
                 </p>
 
                 {/* Progress bar */}
                 {!ach.unlockedAt && (
                   <div className="space-y-1 pt-1.5">
-                    <div className="flex justify-between items-center text-[10px] font-mono text-neutral-600">
+                    <div className="flex justify-between items-center text-[10px] font-mono text-[#8a8a8a]">
                       <span>Progreso</span>
                       <span>{progress}%</span>
                     </div>
-                    <div className="w-full bg-neutral-950 h-1 rounded overflow-hidden">
-                      <div 
-                        className="bg-neutral-700 h-full rounded transition-all duration-300" 
+                    <div className="w-full bg-[#0d0d0d] h-1 overflow-hidden border border-[#1a1a1a]">
+                      <div
+                        className="bg-white h-full transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>

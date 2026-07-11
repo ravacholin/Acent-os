@@ -236,10 +236,10 @@ export default function ExerciseCard({
           return (
             <React.Fragment key={idx}>
               {idx > 0 && <span className="text-neutral-700">•</span>}
-              <span className={`px-2 py-0.5 rounded ${
-                isStressed 
-                  ? 'bg-neutral-900 border border-neutral-800 text-white font-semibold' 
-                  : 'text-neutral-500'
+              <span className={`px-2 py-0.5 ${
+                isStressed
+                  ? 'bg-[#161616] border border-[#262626] text-white font-semibold'
+                  : 'text-[#8a8a8a]'
               }`}>
                 {syllable}
               </span>
@@ -254,10 +254,10 @@ export default function ExerciseCard({
     <div className="space-y-6" id={`exercise-${word.id}`}>
       
       {/* Top Indicators bar */}
-      <div className="flex justify-between items-center bg-[#161616] p-4 rounded-lg border border-[#222]">
+      <div className="flex justify-between items-center bg-[#161616] p-4 border border-[#262626]">
         <div className="flex gap-3 items-center text-xs font-mono text-[#A1A1A1]">
           {settings.showLevel && (
-            <span className="px-2 py-0.5 bg-[#0A0A0A] border border-[#222] text-[#A1A1A1] rounded">
+            <span className="px-2 py-0.5 bg-black border border-[#262626] text-[#A1A1A1]">
               Nivel {word.level}
             </span>
           )}
@@ -267,13 +267,13 @@ export default function ExerciseCard({
         {/* Combo metrics & timer */}
         <div className="flex items-center gap-4 text-xs font-mono">
           {timeLeft !== undefined && (
-            <div className="flex items-center gap-1 text-rose-400 font-bold">
+            <div className="flex items-center gap-1 text-white font-bold">
               <TimerIcon className="w-3.5 h-3.5" />
               <span>{timeLeft}s</span>
             </div>
           )}
           {comboStreak > 1 && (
-            <div className="flex items-center gap-1 text-amber-500 font-bold animate-pulse">
+            <div className="flex items-center gap-1 text-white font-bold animate-pulse">
               <Flame className="w-3.5 h-3.5 fill-current" />
               <span>{comboStreak}x Combo</span>
             </div>
@@ -282,7 +282,7 @@ export default function ExerciseCard({
       </div>
 
       {/* Main interaction Card */}
-      <div className="bg-[#161616] border border-[#222] rounded-lg p-8 relative overflow-hidden min-h-[280px] flex flex-col justify-between">
+      <div className="bg-[#161616] border border-[#262626] p-8 relative overflow-hidden min-h-[280px] flex flex-col justify-between">
         
         {/* Dynamic game mode canvas */}
         <div className="flex-1 flex flex-col justify-center items-center py-6">
@@ -311,7 +311,7 @@ export default function ExerciseCard({
                     <div className="flex gap-6 justify-center pt-2">
                       <button
                         onClick={() => handleLlevaTildeAnswer(true)}
-                        className="group relative w-44 py-5 rounded-xl bg-[#0A0A0A] border border-[#222] hover:bg-white hover:text-black transition-all duration-200 flex flex-col items-center gap-2 cursor-pointer"
+                        className="group relative w-44 py-5 bg-[#0d0d0d] border border-[#262626] hover:bg-white hover:text-black transition-all duration-200 flex flex-col items-center gap-2 cursor-pointer"
                         id="btn-lleva-si"
                       >
                         <span className="text-lg font-medium">Sí</span>
@@ -319,7 +319,7 @@ export default function ExerciseCard({
                       </button>
                       <button
                         onClick={() => handleLlevaTildeAnswer(false)}
-                        className="group relative w-44 py-5 rounded-xl bg-[#0A0A0A] border border-[#222] hover:bg-white hover:text-black transition-all duration-200 flex flex-col items-center gap-2 cursor-pointer"
+                        className="group relative w-44 py-5 bg-[#0d0d0d] border border-[#262626] hover:bg-white hover:text-black transition-all duration-200 flex flex-col items-center gap-2 cursor-pointer"
                         id="btn-lleva-no"
                       >
                         <span className="text-lg font-medium">No</span>
@@ -344,7 +344,7 @@ export default function ExerciseCard({
                         value={userVal}
                         onChange={(e) => setUserVal(e.target.value)}
                         placeholder="Escribe aquí..."
-                        className="w-full bg-[#0A0A0A] border border-[#222] focus:border-white text-white font-mono text-center text-lg py-2.5 px-4 rounded outline-none transition-colors"
+                        className="w-full bg-[#0d0d0d] border border-[#262626] focus:border-white text-white font-mono text-center text-lg py-2.5 px-4 outline-none transition-colors"
                         autoComplete="off"
                         autoCapitalize="off"
                         autoCorrect="off"
@@ -358,7 +358,7 @@ export default function ExerciseCard({
                             key={vowel}
                             type="button"
                             onClick={() => handleInsertAccent(vowel)}
-                            className="w-8 h-8 flex items-center justify-center bg-[#0A0A0A] border border-[#222] text-xs font-mono text-[#A1A1A1] hover:text-white rounded transition-colors cursor-pointer"
+                            className="w-8 h-8 flex items-center justify-center bg-[#0d0d0d] border border-[#262626] text-xs font-mono text-[#A1A1A1] hover:bg-white hover:text-black transition-colors cursor-pointer"
                           >
                             {vowel}
                           </button>
@@ -368,7 +368,7 @@ export default function ExerciseCard({
                       <button
                         type="submit"
                         disabled={!userVal.trim()}
-                        className="w-full py-2.5 bg-white text-black font-semibold rounded hover:bg-neutral-200 disabled:opacity-40 disabled:hover:bg-white transition-all text-sm cursor-pointer"
+                        className="w-full py-2.5 bg-white text-black font-semibold hover:bg-neutral-200 disabled:opacity-40 disabled:hover:bg-white transition-all text-sm cursor-pointer"
                       >
                         Validar <span className="text-[10px] opacity-60 font-mono ml-1">(Enter)</span>
                       </button>
@@ -386,7 +386,7 @@ export default function ExerciseCard({
                         <button
                           key={oIdx}
                           onClick={() => handleComparisonAnswer(opt)}
-                          className="p-5 bg-[#0A0A0A] border border-[#222] hover:bg-white hover:text-black group rounded-lg text-center font-display text-2xl font-bold text-[#EDEDED] transition-all cursor-pointer"
+                          className="p-5 bg-[#0d0d0d] border border-[#262626] hover:bg-white hover:text-black group text-center font-display text-2xl font-bold text-[#EDEDED] transition-all cursor-pointer"
                           id={`btn-option-${oIdx}`}
                         >
                           <div className="text-[10px] font-mono text-[#A1A1A1] group-hover:text-black/60 transition-colors uppercase tracking-widest text-left mb-2">Opción {oIdx + 1}</div>
@@ -409,9 +409,9 @@ export default function ExerciseCard({
                           <button
                             key={letterIdx}
                             onClick={() => handleLetterClick(letterIdx, char)}
-                            className={`w-12 h-14 border rounded flex items-center justify-center text-2xl font-bold font-mono transition-all ${
-                              isVowel 
-                                ? 'bg-[#0A0A0A] border-[#222] text-white hover:bg-white hover:text-black cursor-pointer' 
+                            className={`w-12 h-14 border flex items-center justify-center text-2xl font-bold font-mono transition-all ${
+                              isVowel
+                                ? 'bg-[#0d0d0d] border-[#262626] text-white hover:bg-white hover:text-black cursor-pointer'
                                 : 'bg-[#161616] border-[#161616] text-[#555] cursor-not-allowed'
                             }`}
                           >
@@ -441,7 +441,7 @@ export default function ExerciseCard({
                         <button
                           key={item.id}
                           onClick={() => handleClassificationAnswer(item.id)}
-                          className="p-3 bg-[#0A0A0A] border border-[#222] hover:bg-white hover:text-black group text-xs text-[#EDEDED] rounded font-semibold transition-all cursor-pointer flex flex-col justify-center items-center gap-1"
+                          className="p-3 bg-[#0d0d0d] border border-[#262626] hover:bg-white hover:text-black group text-xs text-[#EDEDED] font-semibold transition-all cursor-pointer flex flex-col justify-center items-center gap-1"
                           id={`btn-classification-${item.id}`}
                         >
                           <span className="font-display text-sm font-semibold">{item.label}</span>
@@ -459,7 +459,7 @@ export default function ExerciseCard({
                       <button
                         type="button"
                         onClick={() => speakWord(word.word, settings.soundEnabled)}
-                        className="p-4 bg-[#0A0A0A] border border-[#222] hover:bg-white hover:text-black transition-all active:scale-90 cursor-pointer flex items-center justify-center"
+                        className="p-4 bg-[#0d0d0d] border border-[#262626] hover:bg-white hover:text-black transition-all active:scale-90 cursor-pointer flex items-center justify-center"
                         title="Escuchar palabra"
                       >
                         <Volume2 className="w-6 h-6 stroke-[2]" />
@@ -474,7 +474,7 @@ export default function ExerciseCard({
                         value={userVal}
                         onChange={(e) => setUserVal(e.target.value)}
                         placeholder="Escribe la palabra..."
-                        className="w-full bg-[#0A0A0A] border border-[#222] focus:border-white text-white font-mono text-center text-lg py-2.5 px-4 rounded outline-none transition-colors"
+                        className="w-full bg-[#0d0d0d] border border-[#262626] focus:border-white text-white font-mono text-center text-lg py-2.5 px-4 outline-none transition-colors"
                         autoComplete="off"
                         autoCapitalize="off"
                         autoCorrect="off"
@@ -488,7 +488,7 @@ export default function ExerciseCard({
                             key={vowel}
                             type="button"
                             onClick={() => handleInsertAccent(vowel)}
-                            className="w-8 h-8 flex items-center justify-center bg-[#0A0A0A] border border-[#222] text-xs font-mono text-[#A1A1A1] hover:text-white rounded transition-colors cursor-pointer"
+                            className="w-8 h-8 flex items-center justify-center bg-[#0d0d0d] border border-[#262626] text-xs font-mono text-[#A1A1A1] hover:bg-white hover:text-black transition-colors cursor-pointer"
                           >
                             {vowel}
                           </button>
@@ -498,7 +498,7 @@ export default function ExerciseCard({
                       <button
                         type="submit"
                         disabled={!userVal.trim()}
-                        className="w-full py-2.5 bg-white text-black font-semibold rounded hover:bg-neutral-200 disabled:opacity-40 disabled:hover:bg-white transition-all text-sm cursor-pointer"
+                        className="w-full py-2.5 bg-white text-black font-semibold hover:bg-neutral-200 disabled:opacity-40 disabled:hover:bg-white transition-all text-sm cursor-pointer"
                       >
                         Validar <span className="text-[10px] opacity-60 font-mono ml-1">(Enter)</span>
                       </button>
@@ -518,10 +518,10 @@ export default function ExerciseCard({
               >
                 {/* Result Announcement */}
                 <div className="flex flex-col items-center space-y-3">
-                  <div className={`p-3 rounded-full border ${
-                    isCorrect 
-                      ? 'bg-emerald-950/20 border-emerald-900 text-emerald-400' 
-                      : 'bg-rose-950/20 border-rose-900 text-rose-400'
+                  <div className={`p-3 border-2 ${
+                    isCorrect
+                      ? 'bg-white border-white text-black'
+                      : 'bg-transparent border-white text-white'
                   }`}>
                     {isCorrect ? (
                       <Check className="w-8 h-8 stroke-[3]" />
@@ -544,7 +544,7 @@ export default function ExerciseCard({
                 </div>
 
                 {/* Pedagogical support details */}
-                <div className="max-w-md mx-auto bg-[#0A0A0A] p-4 border border-[#222] rounded-lg space-y-2.5 text-center">
+                <div className="max-w-md mx-auto bg-[#0d0d0d] p-4 border border-[#262626] space-y-2.5 text-center">
                   {settings.showRule && (
                     <div className="text-[10px] font-mono text-[#A1A1A1] uppercase tracking-widest">
                       {word.rule}
@@ -561,7 +561,7 @@ export default function ExerciseCard({
                 <div className="flex justify-center pt-3">
                   <button
                     onClick={onNext}
-                    className="px-6 py-2.5 bg-white text-black font-semibold rounded hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center gap-2 text-sm cursor-pointer"
+                    className="px-6 py-2.5 bg-white text-black font-semibold hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center gap-2 text-sm cursor-pointer"
                     id="btn-next-exercise"
                   >
                     Siguiente Palabra
@@ -569,7 +569,7 @@ export default function ExerciseCard({
                   </button>
                 </div>
                 <div className="text-[10px] text-neutral-500 font-mono text-center">
-                  Atajo: pulsa <span className="text-[#EDEDED] bg-[#0A0A0A] px-1.5 py-0.5 border border-[#222] rounded font-mono">Enter</span> o <span className="text-[#EDEDED] bg-[#0A0A0A] px-1.5 py-0.5 border border-[#222] rounded font-mono">Espacio</span>
+                  Atajo: pulsa <span className="text-[#EDEDED] bg-[#0d0d0d] px-1.5 py-0.5 border border-[#262626] font-mono">Enter</span> o <span className="text-[#EDEDED] bg-[#0d0d0d] px-1.5 py-0.5 border border-[#262626] font-mono">Espacio</span>
                 </div>
               </motion.div>
             )}

@@ -75,11 +75,11 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
         <motion.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-[#161616] border border-[#222] p-6 rounded-lg space-y-6"
+          className="bg-[#161616] border border-[#262626] p-6 space-y-6"
           id="daily-challenge-completed"
         >
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-950/20 border border-emerald-900/60 text-emerald-400 rounded-md">
+            <div className="p-3 bg-white border border-white text-black">
               <CheckCircle className="w-6 h-6 stroke-[2]" />
             </div>
             <div>
@@ -93,7 +93,7 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
             <div className="text-center sm:text-left space-y-1">
               <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono">Puntuación</span>
               <div className="text-2xl font-bold text-[#EDEDED] flex items-center justify-center sm:justify-start gap-1">
-                <Star className="w-5 h-5 text-amber-400 fill-amber-400/20" />
+                <Star className="w-5 h-5 text-white" />
                 <span>{resultData.correctCount} / 20</span>
               </div>
               <p className="text-[#A1A1A1] text-[11px] font-mono">{(resultData.correctCount / 20 * 100).toFixed(0)}% de precisión</p>
@@ -102,7 +102,7 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
             <div className="text-center sm:text-left space-y-1">
               <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono">Tiempo Total</span>
               <div className="text-2xl font-bold text-[#EDEDED] flex items-center justify-center sm:justify-start gap-1">
-                <Zap className="w-5 h-5 text-cyan-400" />
+                <Zap className="w-5 h-5 text-white" />
                 <span>{(resultData.timeTakenSeconds || 0).toFixed(0)}s</span>
               </div>
               <p className="text-[#A1A1A1] text-[11px] font-mono">Promedio: {((resultData.timeTakenSeconds || 0) / 20).toFixed(1)}s por palabra</p>
@@ -110,8 +110,8 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
 
             <div className="text-center sm:text-left space-y-1">
               <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono">Recompensa</span>
-              <div className="text-2xl font-bold text-emerald-400 flex items-center justify-center sm:justify-start gap-1">
-                <Award className="w-5 h-5 text-emerald-400" />
+              <div className="text-2xl font-bold text-white flex items-center justify-center sm:justify-start gap-1">
+                <Award className="w-5 h-5 text-white" />
                 <span>+{resultData.xpEarned || 100} XP</span>
               </div>
               <p className="text-[#A1A1A1] text-[11px] font-mono">Multiplicador diario aplicado</p>
@@ -129,12 +129,12 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
                 <div key={h.dateStr} className="flex flex-col items-center gap-1.5 h-full justify-end">
                   {h.completed ? (
                     <div 
-                      className="w-full bg-white rounded-t transition-all cursor-pointer"
+                      className="w-full bg-white transition-all cursor-pointer"
                       style={{ height: `${(h.score / 20) * 80 + 10}%` }}
                       title={`Puntuación: ${h.score}/20`}
                     />
                   ) : (
-                    <div className="w-full bg-[#0A0A0A] border border-dashed border-[#222] h-2 rounded-t" />
+                    <div className="w-full bg-[#0d0d0d] border border-dashed border-[#262626] h-2" />
                   )}
                   <span className="text-[9px] font-mono text-[#A1A1A1] truncate max-w-full text-center">
                     {h.label}
@@ -145,10 +145,10 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
           </div>
         </motion.div>
       ) : (
-        <div className="bg-[#161616] border border-[#222] p-8 rounded-lg flex flex-col md:flex-row justify-between items-center gap-6" id="daily-challenge-pending">
+        <div className="bg-[#161616] border border-[#262626] p-8 flex flex-col md:flex-row justify-between items-center gap-6" id="daily-challenge-pending">
           <div className="space-y-3 flex-1">
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 border border-amber-900/40 bg-amber-950/20 text-amber-400 font-mono text-[10px] rounded flex items-center gap-1">
+              <span className="px-2 py-0.5 border border-[#262626] bg-[#0d0d0d] text-[#EDEDED] font-mono text-[10px] flex items-center gap-1">
                 <Calendar className="w-3 h-3" /> HOY
               </span>
               <span className="text-[#A1A1A1] font-mono text-xs">20 palabras rápidas</span>
@@ -159,13 +159,13 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
             </p>
             <div className="flex gap-6 pt-2 text-[#A1A1A1] font-mono text-[11px]">
               <div>• Tiempo medio estimado: <span className="text-[#EDEDED]">1.5 minutos</span></div>
-              <div>• XP extra: <span className="text-emerald-400 font-semibold">+100 XP por completar</span></div>
+              <div>• XP extra: <span className="text-white font-semibold">+100 XP por completar</span></div>
             </div>
           </div>
 
           <button
             onClick={handleLaunch}
-            className="w-full md:w-auto px-6 py-3.5 bg-white text-black font-semibold rounded hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0 text-sm cursor-pointer"
+            className="w-full md:w-auto px-6 py-3.5 bg-white text-black font-semibold hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0 text-sm cursor-pointer"
           >
             <Play className="w-4 h-4 fill-current text-black" />
             Empezar Desafío
