@@ -27,13 +27,6 @@ export default function SettingsPanel({ settings, onChangeSettings, onResetStats
     value: boolean;
   }[] = [
     {
-      key: 'darkModeOnly',
-      label: 'Modo oscuro exclusivo',
-      description: 'Interfaz oscura de alto contraste. No desactivable.',
-      isLocked: true,
-      value: true
-    },
-    {
       key: 'soundEnabled',
       label: 'Efectos de sonido',
       description: 'Microtonos procedimentales de acierto, error y clic.',
@@ -80,8 +73,8 @@ export default function SettingsPanel({ settings, onChangeSettings, onResetStats
   return (
     <div id="settings-panel">
       <div className="border-b border-[#1a1a1a] pb-[22px] mb-8">
-        <div className="font-display text-[34px]">Configuración</div>
-        <p className="text-[#888] text-[11px] mt-1.5">Feedback visual y apoyo pedagógico</p>
+        <div className="display-brutal text-[34px] sm:text-[40px]">Ajustes</div>
+        <p className="text-[#888] text-[11px] mt-2">Feedback visual y apoyo pedagógico</p>
       </div>
 
       <div className="flex flex-col border-t border-[#1a1a1a]">

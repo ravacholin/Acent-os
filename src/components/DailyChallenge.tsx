@@ -65,15 +65,15 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
   return (
     <div id="daily-challenge">
       <div className="border-b border-[#1a1a1a] pb-[22px] mb-8">
-        <div className="font-display text-[34px]">Desafío diario</div>
-        <p className="text-[#888] text-[11px] mt-1.5">Una prueba fija de 20 palabras, una vez al día</p>
+        <div className="display-brutal text-[34px] sm:text-[40px]">Desafío diario</div>
+        <p className="text-[#888] text-[11px] mt-2">Una prueba fija de 20 palabras, una vez al día</p>
       </div>
 
       {!isCompleted ? (
         <div className="flex justify-between items-center gap-10 flex-wrap" id="daily-challenge-pending">
           <div className="flex-1 min-w-[280px]">
             <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase mb-4">Hoy · 20 palabras</div>
-            <div className="font-display text-[30px] leading-[1.2]">Poné a prueba tu intuición diaria</div>
+            <div className="display-heavy text-[30px] leading-[1.15]">Poné a prueba tu intuición diaria</div>
             <p className="text-[#888] text-xs mt-3.5 leading-relaxed max-w-[420px]">
               Combinación balanceada de hiatos, agudas y tildes diacríticas. Tiempo estimado: 1.5 minutos. Recompensa: +100 XP.
             </p>
@@ -94,15 +94,15 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
           <div className="grid grid-cols-3 border-t border-b border-[#1a1a1a] mt-5">
             <div className="py-[26px] text-center border-r border-[#1a1a1a]">
               <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Puntuación</div>
-              <div className="font-display text-[34px] sm:text-[42px] mt-2.5">{resultData.correctCount} / 20</div>
+              <div className="display-heavy text-[34px] sm:text-[42px] mt-2.5">{resultData.correctCount} / 20</div>
             </div>
             <div className="py-[26px] text-center border-r border-[#1a1a1a]">
               <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Tiempo</div>
-              <div className="font-display text-[34px] sm:text-[42px] mt-2.5">{(resultData.timeTakenSeconds || 0).toFixed(0)}s</div>
+              <div className="display-heavy text-[34px] sm:text-[42px] mt-2.5">{(resultData.timeTakenSeconds || 0).toFixed(0)}s</div>
             </div>
             <div className="py-[26px] text-center">
               <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Recompensa</div>
-              <div className="font-display text-[34px] sm:text-[42px] mt-2.5">+{resultData.xpEarned || 100} XP</div>
+              <div className="display-heavy text-[34px] sm:text-[42px] mt-2.5">+{resultData.xpEarned || 100} XP</div>
             </div>
           </div>
 
