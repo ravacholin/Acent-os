@@ -13,12 +13,13 @@ import { WORDS_DATABASE, isAmbiguousWord } from './data/words';
 import { calculateErrorProfiles, getWeakCategories } from './utils/errorAnalysis';
 import PracticeSelector from './components/PracticeSelector';
 import StatsDashboard from './components/StatsDashboard';
-import AchievementsPanel, { INITIAL_ACHIEVEMENTS } from './components/AchievementsPanel';
+import { INITIAL_ACHIEVEMENTS } from './components/AchievementsPanel';
 import DailyChallenge from './components/DailyChallenge';
 import SettingsPanel, { DEFAULT_SETTINGS } from './components/SettingsPanel';
 import ExerciseCard from './components/ExerciseCard';
 import { playClickSound, playCorrectSound, speakWord } from './utils/audio';
 import { motion, AnimatePresence } from 'motion/react';
+import { Settings } from 'lucide-react';
 
 // Default empty stats template
 const DEFAULT_STATS: UserStats = {
@@ -102,17 +103,18 @@ function rememberSeen(ids: string[]) {
   }
 }
 
-const NAV_ITEMS: { id: 'inicio' | 'practicar' | 'desafio' | 'estadisticas' | 'logros' | 'configuracion'; label: string }[] = [
-  { id: 'inicio', label: 'Inicio' },
-  { id: 'practicar', label: 'Entrenar' },
-  { id: 'desafio', label: 'Desafío diario' },
-  { id: 'estadisticas', label: 'Estadísticas' },
-  { id: 'logros', label: 'Logros' },
-  { id: 'configuracion', label: 'Configuración' }
+// Tres destinos de nivel superior. "desafio" es una sub-vista de Entrenar (no aparece
+// en la barra; se llega desde la tarjeta de la portada) — se conserva como valor propio
+// porque triggerSessionWrapUp lo usa para detectar el desafío diario.
+type Tab = 'entrenar' | 'progreso' | 'ajustes' | 'desafio';
+
+const NAV_ITEMS: { id: Tab; label: string }[] = [
+  { id: 'entrenar', label: 'Entrenar' },
+  { id: 'progreso', label: 'Progreso' }
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'inicio' | 'practicar' | 'desafio' | 'estadisticas' | 'logros' | 'configuracion'>('inicio');
+  const [activeTab, setActiveTab] = useState<Tab>('entrenar');
 
   // LocalStorage driven states
   const [stats, setStats] = useState<UserStats>(DEFAULT_STATS);
@@ -175,7 +177,7 @@ export default function App() {
 
     setStats(DEFAULT_STATS);
     setAchievements(INITIAL_ACHIEVEMENTS);
-    setActiveTab('inicio');
+    setActiveTab('entrenar');
     setSession(null);
     setSessionCompleted(false);
   };
@@ -681,7 +683,7 @@ export default function App() {
             id="toast-level-up"
           >
             <div className="text-[9px] tracking-[0.2em] uppercase opacity-60">¡Subida de nivel!</div>
-            <div className="font-display text-lg mt-0.5">Has alcanzado el Nivel {levelUpAlert.level}</div>
+            <div className="display-heavy text-lg mt-1">Nivel {levelUpAlert.level}</div>
           </motion.div>
         )}
 
@@ -695,7 +697,7 @@ export default function App() {
             id="toast-achievement"
           >
             <div className="text-[9px] tracking-[0.2em] uppercase text-[#666] mb-1.5">Logro desbloqueado</div>
-            <div className="font-display text-lg truncate">{unlockedAchievementToast.title}</div>
+            <div className="display-heavy text-lg truncate">{unlockedAchievementToast.title}</div>
             <p className="text-[#888] text-xs leading-relaxed mt-1">{unlockedAchievementToast.description}</p>
           </motion.div>
         )}
@@ -713,29 +715,42 @@ export default function App() {
           {/* TOPBAR */}
           <div className="px-6 sm:px-[52px] pt-6 sm:pt-[34px]">
             <div className="flex justify-between items-center gap-3 text-[9px] tracking-[0.22em] text-[#666] uppercase flex-wrap">
-              <span onClick={goTo('inicio')} className="cursor-pointer text-[#999] hover:text-[#F5F5F0] transition-colors" id="brand-logo">
+              <span onClick={goTo('entrenar')} className="cursor-pointer text-[#999] hover:text-[#F5F5F0] transition-colors" id="brand-logo">
                 AcentOS — ES
               </span>
-              <span>Nivel {stats.level} · {stats.accuracy}% precisión · racha {stats.currentStreak}</span>
+              <span>Nivel {stats.level} · {stats.accuracy}% · racha {stats.currentStreak}</span>
             </div>
 
-            {/* NAV */}
-            <div className="flex gap-6 sm:gap-[30px] mt-5 pt-5 border-t border-[#1f1f1f] text-[10px] tracking-[0.18em] uppercase flex-wrap" id="main-navigation">
-              {NAV_ITEMS.map(item => {
-                const active = !session && activeTab === item.id;
-                return (
-                  <span
-                    key={item.id}
-                    onClick={goTo(item.id)}
-                    className={`cursor-pointer pb-1.5 border-b transition-colors ${
-                      active ? 'border-[#F5F5F0] text-[#F5F5F0]' : 'border-transparent text-[#777] hover:text-[#F5F5F0]'
-                    }`}
-                    id={`nav-tab-${item.id}`}
-                  >
-                    {item.label}
-                  </span>
-                );
-              })}
+            {/* NAV — dos destinos de texto + engranaje de Ajustes */}
+            <div className="flex justify-between items-center gap-6 mt-5 pt-5 border-t border-[#1f1f1f]" id="main-navigation">
+              <div className="flex gap-6 sm:gap-[30px] text-[10px] tracking-[0.18em] uppercase">
+                {NAV_ITEMS.map(item => {
+                  const active = !session && (activeTab === item.id || (item.id === 'entrenar' && activeTab === 'desafio'));
+                  return (
+                    <span
+                      key={item.id}
+                      onClick={goTo(item.id)}
+                      className={`cursor-pointer pb-1.5 border-b transition-colors ${
+                        active ? 'border-[#F5F5F0] text-[#F5F5F0]' : 'border-transparent text-[#777] hover:text-[#F5F5F0]'
+                      }`}
+                      id={`nav-tab-${item.id}`}
+                    >
+                      {item.label}
+                    </span>
+                  );
+                })}
+              </div>
+              <button
+                onClick={goTo('ajustes')}
+                aria-label="Ajustes"
+                title="Ajustes"
+                className={`shrink-0 pb-1.5 transition-colors ${
+                  !session && activeTab === 'ajustes' ? 'text-[#F5F5F0]' : 'text-[#777] hover:text-[#F5F5F0]'
+                }`}
+                id="nav-tab-ajustes"
+              >
+                <Settings size={16} strokeWidth={1.5} />
+              </button>
             </div>
           </div>
 
@@ -795,24 +810,24 @@ export default function App() {
                     <span className="text-[9px] tracking-[0.2em] text-[#666] uppercase border border-[#2a2a2a] px-3 py-1 inline-block">
                       Sesión completada
                     </span>
-                    <div className="font-display text-[34px] mt-4">Resumen de práctica</div>
+                    <div className="display-brutal text-[34px] sm:text-[44px] mt-5">Resumen</div>
                     <p className="text-[#888] text-xs mt-2">Análisis de rendimiento sobre el set de acentuación</p>
                   </div>
 
                   <div className="max-w-xl mx-auto grid grid-cols-3 border-b border-[#1a1a1a]">
                     <div className="py-[26px] text-center border-r border-[#1a1a1a]">
                       <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Aciertos</div>
-                      <div className="font-display text-[34px] sm:text-[42px] mt-2.5">{session.correctCount} / {session.words.length}</div>
+                      <div className="display-heavy text-[34px] sm:text-[42px] mt-2.5">{session.correctCount} / {session.words.length}</div>
                     </div>
                     <div className="py-[26px] text-center border-r border-[#1a1a1a]">
                       <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Precisión</div>
-                      <div className="font-display text-[34px] sm:text-[42px] mt-2.5">
+                      <div className="display-heavy text-[34px] sm:text-[42px] mt-2.5">
                         {session.words.length > 0 ? Math.round((session.correctCount / session.words.length) * 100) : 0}%
                       </div>
                     </div>
                     <div className="py-[26px] text-center">
                       <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Tiempo</div>
-                      <div className="font-display text-[34px] sm:text-[42px] mt-2.5">
+                      <div className="display-heavy text-[34px] sm:text-[42px] mt-2.5">
                         {((Date.now() - session.startTime) / 1000).toFixed(0)}s
                       </div>
                     </div>
@@ -835,7 +850,7 @@ export default function App() {
                               }}
                               className="flex justify-between items-center cursor-pointer hover:bg-[#0d0d0d] px-2 py-2.5 transition-colors"
                             >
-                              <span className="font-display text-lg">{w.word}</span>
+                              <span className="display-heavy text-lg">{w.word}</span>
                               <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-mono text-[#666] uppercase">{w.classification}</span>
                                 <span className={`text-sm ${isWordCorrect ? 'text-[#F5F5F0]' : 'text-[#777]'}`}>
@@ -881,87 +896,50 @@ export default function App() {
                 </motion.div>
               )}
 
-              {/* LANDING TAB: INICIO */}
-              {!session && activeTab === 'inicio' && (
+              {/* ENTRENAR — portada mínima + desafío diario + modos */}
+              {!session && activeTab === 'entrenar' && (
                 <motion.div
-                  key="inicio-tab"
+                  key="entrenar-tab"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.12 }}
-                  id="inicio-view"
+                  id="entrenar-view"
                 >
-                  <div className="text-center pt-9 pb-[52px] border-b border-[#1a1a1a]">
-                    <div className="text-[9px] tracking-[0.3em] text-[#666] uppercase mb-[26px]">
-                      Entrenador de acentuación en español
+                  {/* Hero */}
+                  <div className="pt-4 pb-9 border-b border-[#1a1a1a]">
+                    <div className="text-[9px] tracking-[0.3em] text-[#666] uppercase mb-5">
+                      Entrenador de acentuación · Español
                     </div>
-                    <div className="font-display italic text-[64px] sm:text-[104px] leading-[0.95]">AcentOS</div>
-                    <p className="text-[#999] text-[13px] max-w-[440px] mx-auto mt-6 leading-[1.8]">
+                    <div className="display-brutal normal-case text-[52px] sm:text-[92px]">AcentOS</div>
+                    <p className="text-[#999] text-[13px] max-w-[440px] mt-5 leading-[1.7]">
                       Sesiones de 2 a 10 minutos para saber, sin dudar, cuándo una palabra lleva tilde.
                     </p>
-                    <div className="flex justify-center gap-3.5 mt-9 flex-wrap">
-                      <button
-                        onClick={goTo('practicar')}
-                        className="px-8 py-[15px] border border-[#F5F5F0] text-xs tracking-[0.1em] cursor-pointer hover:bg-[#F5F5F0] hover:text-black transition-colors"
-                      >
-                        Comenzar entrenamiento
-                      </button>
-                      <button
-                        onClick={goTo('desafio')}
-                        className="px-8 py-[15px] border border-[#2a2a2a] text-[#999] text-xs tracking-[0.1em] cursor-pointer hover:border-[#F5F5F0] hover:text-[#F5F5F0] transition-colors"
-                      >
-                        Desafío diario
-                      </button>
-                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3">
-                    <div
-                      onClick={goTo('desafio')}
-                      className="pt-6 sm:pt-[26px] pb-6 sm:pb-0 px-0 sm:pr-[26px] border-b sm:border-b-0 sm:border-r border-[#1a1a1a] cursor-pointer"
-                    >
-                      <div className="text-[9px] tracking-[0.2em] text-[#666] mb-3">02</div>
-                      <div className="font-display text-[22px]">Desafío Diario</div>
-                      <p className="text-[#888] text-[11px] mt-2 leading-relaxed">Prueba fija de 20 palabras.</p>
+                  {/* Desafío diario — entrada destacada */}
+                  <button
+                    onClick={goTo('desafio')}
+                    className="group w-full flex justify-between items-center gap-6 border-b border-[#1a1a1a] py-7 px-2 -mx-2 text-left cursor-pointer hover:bg-[#F5F5F0] hover:text-black transition-colors"
+                    id="entry-daily-challenge"
+                  >
+                    <div>
+                      <div className="text-[9px] tracking-[0.2em] text-[#666] group-hover:text-black/60 uppercase mb-2 transition-colors">
+                        Hoy · 20 palabras · +100 XP
+                      </div>
+                      <div className="display-heavy text-[26px]">Desafío diario</div>
                     </div>
-                    <div
-                      onClick={goTo('estadisticas')}
-                      className="pt-6 sm:pt-[26px] pb-6 sm:pb-0 px-0 sm:px-[26px] border-b sm:border-b-0 sm:border-r border-[#1a1a1a] cursor-pointer"
-                    >
-                      <div className="text-[9px] tracking-[0.2em] text-[#666] mb-3">03</div>
-                      <div className="font-display text-[22px]">Estadísticas</div>
-                      <p className="text-[#888] text-[11px] mt-2 leading-relaxed">Analizá tus perfiles de error.</p>
-                    </div>
-                    <div
-                      onClick={goTo('configuracion')}
-                      className="pt-6 sm:pt-[26px] px-0 sm:pl-[26px] cursor-pointer"
-                    >
-                      <div className="text-[9px] tracking-[0.2em] text-[#666] mb-3">04</div>
-                      <div className="font-display text-[22px]">Configuración</div>
-                      <p className="text-[#888] text-[11px] mt-2 leading-relaxed">Audio, sílabas y explicaciones.</p>
-                    </div>
-                  </div>
+                    <span className="text-[11px] tracking-[0.15em] uppercase shrink-0">Empezar →</span>
+                  </button>
 
-                  <p className="text-center text-[10px] text-[#555] mt-[52px] leading-[1.8] max-w-[440px] mx-auto">
-                    AcentOS — pensado para estudiantes de ELE, docentes y autodidactas. Todo el progreso se guarda localmente.
-                  </p>
+                  {/* Modos */}
+                  <div className="pt-9">
+                    <PracticeSelector onSelectMode={handleStartPractice} />
+                  </div>
                 </motion.div>
               )}
 
-              {/* PRACTICE SELECTOR TAB */}
-              {!session && activeTab === 'practicar' && (
-                <motion.div
-                  key="practicar-tab"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.12 }}
-                >
-                  <PracticeSelector onSelectMode={handleStartPractice} />
-                </motion.div>
-              )}
-
-              {/* DAILY CHALLENGE TAB */}
+              {/* DESAFÍO DIARIO — sub-vista de Entrenar */}
               {!session && activeTab === 'desafio' && (
                 <motion.div
                   key="desafio-tab"
@@ -970,14 +948,20 @@ export default function App() {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.12 }}
                 >
+                  <span
+                    onClick={goTo('entrenar')}
+                    className="inline-block mb-8 text-[10px] text-[#666] cursor-pointer underline underline-offset-2 hover:text-[#F5F5F0] transition-colors"
+                  >
+                    ← volver a entrenar
+                  </span>
                   <DailyChallenge stats={stats} onStartChallenge={handleStartDailyChallenge} />
                 </motion.div>
               )}
 
-              {/* STATS TAB */}
-              {!session && activeTab === 'estadisticas' && (
+              {/* PROGRESO — estadísticas + logros fusionados */}
+              {!session && activeTab === 'progreso' && (
                 <motion.div
-                  key="estadisticas-tab"
+                  key="progreso-tab"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -985,6 +969,7 @@ export default function App() {
                 >
                   <StatsDashboard
                     stats={stats}
+                    achievements={achievements}
                     onResetStats={handleResetProgress}
                     onStartFocusSession={(categories) => {
                       handleStartPractice('personalizado', {
@@ -997,23 +982,10 @@ export default function App() {
                 </motion.div>
               )}
 
-              {/* ACHIEVEMENTS TAB */}
-              {!session && activeTab === 'logros' && (
+              {/* AJUSTES — desde el engranaje */}
+              {!session && activeTab === 'ajustes' && (
                 <motion.div
-                  key="logros-tab"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.12 }}
-                >
-                  <AchievementsPanel stats={stats} achievements={achievements} />
-                </motion.div>
-              )}
-
-              {/* CONFIGURATION TAB */}
-              {!session && activeTab === 'configuracion' && (
-                <motion.div
-                  key="configuracion-tab"
+                  key="ajustes-tab"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}

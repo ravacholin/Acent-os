@@ -143,8 +143,8 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       <div id="custom-setup-panel">
         <div className="flex justify-between items-baseline border-b border-[#1a1a1a] pb-[22px] mb-8 gap-4 flex-wrap">
           <div>
-            <div className="font-display text-[34px]">Configuración personalizada</div>
-            <p className="text-[#888] text-[11px] mt-1.5">Elegí niveles, categorías y duración</p>
+            <div className="display-brutal text-[30px] sm:text-[36px]">Personalizado</div>
+            <p className="text-[#888] text-[11px] mt-2">Elegí niveles, categorías y duración</p>
           </div>
           <span
             onClick={() => setSelectedMode(null)}
@@ -202,9 +202,8 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
 
   return (
     <div id="practice-selector">
-      <div className="border-b border-[#1a1a1a] pb-[22px] mb-8">
-        <div className="font-display text-[34px]">Modos de entrenamiento</div>
-        <p className="text-[#888] text-[11px] mt-1.5">Nueve formatos distintos, todos pensados para sesiones cortas</p>
+      <div className="border-b border-[#1a1a1a] pb-[18px] mb-8">
+        <div className="text-[9px] tracking-[0.25em] text-[#666] uppercase">Modos de entrenamiento</div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-[#1a1a1a]" id="modes-grid">
@@ -225,12 +224,11 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
             id={`mode-card-${mode.id}`}
           >
             <div>
-              <div className="flex justify-between items-baseline">
-                <span className="text-[9px] tracking-[0.15em] text-[#666] group-hover:text-black/60 uppercase transition-colors">{mode.badge}</span>
+              <div className="flex justify-end items-baseline">
                 <span className="text-[9px] text-[#555] group-hover:text-black/40 transition-colors">{String(idx + 1).padStart(2, '0')}</span>
               </div>
-              <div className="font-display text-2xl mt-3.5">{mode.title}</div>
-              <p className="text-[#888] group-hover:text-black/70 text-[11px] mt-2 leading-relaxed transition-colors">{mode.description}</p>
+              <div className="display-heavy text-2xl mt-3">{mode.title}</div>
+              <p className="text-[#888] group-hover:text-black/70 text-[11px] mt-2.5 leading-relaxed transition-colors">{mode.description}</p>
             </div>
             <div className="text-[10px] text-[#666] group-hover:text-black/60 mt-4 transition-colors">{mode.difficulty}</div>
           </motion.div>

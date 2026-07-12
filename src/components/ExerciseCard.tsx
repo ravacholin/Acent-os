@@ -252,7 +252,7 @@ export default function ExerciseCard({
                 </div>
               )}
               {word.example && (
-                <p className="font-display text-lg mt-2">{word.example.replace(/___/g, '_____')}</p>
+                <p className="display-heavy text-lg mt-2">{word.example.replace(/___/g, '_____')}</p>
               )}
             </div>
           )}
@@ -262,7 +262,7 @@ export default function ExerciseCard({
             <div>
               <div className="text-center pt-2.5 pb-[46px]">
                 <div className="text-[9px] tracking-[0.3em] text-[#666] uppercase mb-[26px]">¿Lleva tilde?</div>
-                <div className="font-display text-[64px] sm:text-[120px] leading-none lowercase">{word.wordClean}</div>
+                <div className="display-heavy text-[64px] sm:text-[120px] leading-none lowercase">{word.wordClean}</div>
               </div>
               <div className="flex justify-center gap-4">
                 <button
@@ -270,7 +270,7 @@ export default function ExerciseCard({
                   className={`w-[180px] text-center py-5 border border-[#F5F5F0] hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
                   id="btn-lleva-si"
                 >
-                  <div className="font-display text-xl">Sí</div>
+                  <div className="display-heavy text-xl">Sí</div>
                   <div className="text-[9px] text-[#666] mt-1.5">[ S ]</div>
                 </button>
                 <button
@@ -278,7 +278,7 @@ export default function ExerciseCard({
                   className={`w-[180px] text-center py-5 border border-[#2a2a2a] text-[#999] hover:bg-[#F5F5F0] hover:text-black hover:border-[#F5F5F0] ${btnBase}`}
                   id="btn-lleva-no"
                 >
-                  <div className="font-display text-xl">No</div>
+                  <div className="display-heavy text-xl">No</div>
                   <div className="text-[9px] text-[#666] mt-1.5">[ N ]</div>
                 </button>
               </div>
@@ -288,7 +288,7 @@ export default function ExerciseCard({
           {/* MODE 2: Escribí la tilde */}
           {mode === 'escribi-tilde' && (
             <div className="text-center max-w-[360px] mx-auto">
-              <div className="font-display text-[#999] text-5xl">{word.wordClean}</div>
+              <div className="display-heavy text-[#999] text-5xl">{word.wordClean}</div>
               <p className="text-[11px] text-[#888] mt-3.5">Escribí la palabra correctamente acentuada</p>
               <form onSubmit={handleEscribiTildeSubmit}>
                 <input
@@ -341,7 +341,7 @@ export default function ExerciseCard({
                     id={`btn-option-${oIdx}`}
                   >
                     <div className="text-[9px] text-[#666] tracking-[0.1em] mb-3 uppercase">Opción {oIdx + 1}</div>
-                    <div className="font-display text-[32px]">{opt}</div>
+                    <div className="display-heavy text-[32px]">{opt}</div>
                   </button>
                 ))}
               </div>
@@ -377,7 +377,7 @@ export default function ExerciseCard({
           {mode === 'clasificacion' && (
             <div>
               <div className="text-center">
-                <div className="font-display text-6xl">{word.word}</div>
+                <div className="display-heavy text-6xl">{word.word}</div>
                 <p className="text-[11px] text-[#888] mt-4">¿Cómo se clasifica esta palabra según su sílaba tónica?</p>
               </div>
               <div className="flex justify-center gap-2.5 mt-[26px] flex-wrap">
@@ -393,7 +393,7 @@ export default function ExerciseCard({
                     className={`w-[140px] text-center py-4 border border-[#2a2a2a] hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
                     id={`btn-classification-${item.id}`}
                   >
-                    <div className="font-display text-base">{item.label}</div>
+                    <div className="display-heavy text-base">{item.label}</div>
                     <div className="text-[9px] text-[#666] mt-1.5">[ {item.key} ]</div>
                   </button>
                 ))}
@@ -465,7 +465,7 @@ export default function ExerciseCard({
             {isCorrect ? '¡Respuesta correcta!' : 'Respuesta incorrecta'}
           </div>
 
-          <div className="font-display text-[58px] mt-5">{word.word}</div>
+          <div className="display-heavy text-[58px] mt-5">{word.word}</div>
 
           {settings.showSyllables && (
             <div className="flex justify-center gap-1.5 mt-3.5 text-xs">

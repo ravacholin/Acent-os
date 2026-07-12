@@ -5,9 +5,11 @@ import { motion } from 'motion/react';
 interface AchievementsPanelProps {
   stats: UserStats;
   achievements: Achievement[];
+  // Cuando se monta dentro de Progreso ya hay un encabezado; ocultamos el propio.
+  embedded?: boolean;
 }
 
-export default function AchievementsPanel({ stats, achievements }: AchievementsPanelProps) {
+export default function AchievementsPanel({ stats, achievements, embedded }: AchievementsPanelProps) {
 
   // Check progress toward each achievement dynamically
   const calculateProgress = (ach: Achievement): number => {
@@ -53,10 +55,12 @@ export default function AchievementsPanel({ stats, achievements }: AchievementsP
 
   return (
     <div id="achievements-panel">
-      <div className="border-b border-[#1a1a1a] pb-[22px] mb-8">
-        <div className="font-display text-[34px]">Logros</div>
-        <p className="text-[#888] text-[11px] mt-1.5">Hitos de dominio de la prosodia y ortografía</p>
-      </div>
+      {!embedded && (
+        <div className="border-b border-[#1a1a1a] pb-[22px] mb-8">
+          <div className="display-brutal text-[34px] sm:text-[40px]">Logros</div>
+          <p className="text-[#888] text-[11px] mt-2">Hitos de dominio de la prosodia y ortografía</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 border-t border-l border-[#1a1a1a]" id="achievements-grid">
         {achievements.map((ach, idx) => {
@@ -71,8 +75,8 @@ export default function AchievementsPanel({ stats, achievements }: AchievementsP
               transition={{ duration: 0.15, delay: idx * 0.03 }}
               className={`border-r border-b border-[#1a1a1a] p-6 ${isUnlocked ? '' : 'opacity-55'}`}
             >
-              <div className="flex justify-between items-baseline">
-                <span className="font-display text-[19px]">{ach.title}</span>
+              <div className="flex justify-between items-baseline gap-3">
+                <span className="display-heavy text-[19px]">{ach.title}</span>
                 <span
                   className={`text-[9px] tracking-[0.1em] px-2 py-0.5 border ${
                     isUnlocked ? 'border-[#F5F5F0] text-[#F5F5F0]' : 'border-[#2a2a2a] text-[#666]'
