@@ -2,21 +2,6 @@ import React, { useState } from 'react';
 import { UserStats, WordCategory, LevelMCER, Word } from '../types';
 import { WORDS_DATABASE } from '../data/words';
 import { calculateErrorProfiles } from '../utils/errorAnalysis';
-import {
-  Trophy,
-  Flame,
-  Target,
-  Clock,
-  Eye,
-  CheckCircle,
-  AlertTriangle,
-  Bookmark,
-  BookmarkCheck,
-  Calendar,
-  Grid,
-  Play
-} from 'lucide-react';
-import { motion } from 'motion/react';
 
 interface StatsDashboardProps {
   stats: UserStats;
@@ -29,7 +14,6 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
 
   // Helper to format average time
   const formatAverageTime = () => {
-    if (stats.wordsSeen === 0) return '0.0s';
     const totalWords = stats.correctAnswers + stats.incorrectAnswers;
     if (totalWords === 0) return '0.0s';
     const avg = stats.totalTimeSeconds / totalWords;
@@ -67,189 +51,118 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
       date.setDate(today.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       const count = stats.dailyHistory?.[dateStr] || 0;
-      days.push({
-        dateStr,
-        dayLabel: date.toLocaleDateString('es-ES', { weekday: 'narrow' }),
-        dayNum: date.getDate(),
-        count
-      });
+      days.push({ dateStr, count });
     }
     return days;
   };
 
   const heatmapDays = getHeatmapDays();
+  const heatmapBg = (count: number) => {
+    if (count === 0) return '#0d0d0d';
+    if (count < 5) return '#161616';
+    if (count < 15) return '#8a8a8a';
+    return '#F5F5F0';
+  };
 
   // Frequent mistakes array sorted
   const frequentMistakesArray = Object.values(stats.frequentMistakes || {})
     .sort((a, b) => b.incorrectCount - a.incorrectCount)
     .slice(0, 5);
 
-  const tabButtonClass = (tab: typeof activeTab) =>
-    `px-3 py-1.5 text-xs font-mono border cursor-pointer transition-all ${
-      activeTab === tab
-        ? 'bg-white text-black border-white font-semibold'
-        : 'bg-[#161616] text-[#A1A1A1] border-[#262626] hover:text-white'
-    }`;
+  const subTabs: { id: typeof activeTab; label: string }[] = [
+    { id: 'overview', label: 'Resumen' },
+    { id: 'profiles', label: 'Perfiles' },
+    { id: 'categories', label: 'Categorías' },
+    { id: 'mistakes', label: 'Errores' }
+  ];
 
   return (
-    <div className="space-y-6" id="stats-dashboard">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-[#1F1F1F] pb-5 gap-4">
+    <div id="stats-dashboard">
+      <div className="flex justify-between items-baseline border-b border-[#1a1a1a] pb-[22px] mb-8 flex-wrap gap-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-[#EDEDED] font-display">Estadísticas de Rendimiento</h2>
-          <p className="text-[#A1A1A1] text-sm mt-1">
-            Análisis detallado de tu intuición de acentuación y perfiles de error detectados.
-          </p>
+          <div className="font-display text-[34px]">Estadísticas</div>
+          <p className="text-[#888] text-[11px] mt-1.5">Análisis de tu intuición de acentuación</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={() => setActiveTab('overview')} className={tabButtonClass('overview')}>
-            Resumen
-          </button>
-          <button onClick={() => setActiveTab('profiles')} className={tabButtonClass('profiles')}>
-            Perfiles de Error
-          </button>
-          <button onClick={() => setActiveTab('categories')} className={tabButtonClass('categories')}>
-            Categorías y Niveles
-          </button>
-          <button onClick={() => setActiveTab('mistakes')} className={tabButtonClass('mistakes')}>
-            Errores Frecuentes ({frequentMistakesArray.length})
-          </button>
+        <div className="flex gap-[22px] text-[10px] tracking-[0.15em] uppercase">
+          {subTabs.map(st => (
+            <span
+              key={st.id}
+              onClick={() => setActiveTab(st.id)}
+              className={`cursor-pointer transition-colors ${
+                activeTab === st.id ? 'text-[#F5F5F0] underline underline-offset-[6px]' : 'text-[#777] hover:text-[#F5F5F0]'
+              }`}
+            >
+              {st.label}
+            </span>
+          ))}
         </div>
       </div>
 
       {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Key Grid Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-[#161616] border border-[#262626] p-5 flex flex-col justify-between">
-              <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono flex items-center gap-1">
-                <Flame className="w-3.5 h-3.5 text-[#A1A1A1]" /> Racha Actual
-              </span>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-[#EDEDED] tracking-tight">{stats.currentStreak}</span>
-                <span className="text-xs text-[#A1A1A1]">palabras</span>
-              </div>
-              <span className="text-[10px] text-[#A1A1A1] font-mono mt-1">Mejor racha: {stats.bestStreak}</span>
+        <div>
+          <div className="grid grid-cols-2 md:grid-cols-4 border-t border-l border-[#1a1a1a] mb-8">
+            <div className="border-r border-b border-[#1a1a1a] p-[24px_22px]">
+              <div className="text-[9px] tracking-[0.15em] text-[#666] uppercase">Racha actual</div>
+              <div className="font-display text-[38px] mt-3">{stats.currentStreak}</div>
+              <div className="text-[10px] text-[#666] mt-1.5">mejor racha: {stats.bestStreak}</div>
             </div>
-
-            <div className="bg-[#161616] border border-[#262626] p-5 flex flex-col justify-between">
-              <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono flex items-center gap-1">
-                <Target className="w-3.5 h-3.5 text-[#A1A1A1]" /> Precisión General
-              </span>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-white tracking-tight">{stats.accuracy}%</span>
-              </div>
-              <span className="text-[10px] text-[#A1A1A1] font-mono mt-1">
-                {stats.correctAnswers} correctas de {stats.correctAnswers + stats.incorrectAnswers}
-              </span>
+            <div className="border-r border-b border-[#1a1a1a] p-[24px_22px]">
+              <div className="text-[9px] tracking-[0.15em] text-[#666] uppercase">Precisión general</div>
+              <div className="font-display text-[38px] mt-3">{stats.accuracy}%</div>
+              <div className="text-[10px] text-[#666] mt-1.5">{stats.correctAnswers} correctas de {stats.correctAnswers + stats.incorrectAnswers}</div>
             </div>
-
-            <div className="bg-[#161616] border border-[#262626] p-5 flex flex-col justify-between">
-              <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono flex items-center gap-1">
-                <Trophy className="w-3.5 h-3.5 text-[#A1A1A1]" /> Nivel y XP
-              </span>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-[#EDEDED] tracking-tight font-display">Nvl {stats.level || 1}</span>
-              </div>
-              <span className="text-[10px] text-[#A1A1A1] font-mono mt-1">{stats.xp} XP acumulado</span>
+            <div className="border-r border-b border-[#1a1a1a] p-[24px_22px]">
+              <div className="text-[9px] tracking-[0.15em] text-[#666] uppercase">Nivel y XP</div>
+              <div className="font-display text-[38px] mt-3">Nvl {stats.level || 1}</div>
+              <div className="text-[10px] text-[#666] mt-1.5">{stats.xp} XP acumulado</div>
             </div>
-
-            <div className="bg-[#161616] border border-[#262626] p-5 flex flex-col justify-between">
-              <span className="text-[#A1A1A1] text-[10px] uppercase tracking-widest font-mono flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-[#A1A1A1]" /> Tiempo Promedio
-              </span>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-[#EDEDED] tracking-tight">{formatAverageTime()}</span>
-              </div>
-              <span className="text-[10px] text-[#A1A1A1] font-mono mt-1">Respuesta rápida</span>
+            <div className="border-r border-b border-[#1a1a1a] p-[24px_22px]">
+              <div className="text-[9px] tracking-[0.15em] text-[#666] uppercase">Tiempo promedio</div>
+              <div className="font-display text-[38px] mt-3">{formatAverageTime()}</div>
+              <div className="text-[10px] text-[#666] mt-1.5">respuesta rápida</div>
             </div>
           </div>
 
-          {/* Activity Heatmap Grid */}
-          <div className="bg-[#161616] border border-[#262626] p-5 space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-[#A1A1A1]" /> Constancia de Práctica
-              </span>
-              <span className="text-[#A1A1A1] text-[10px] font-mono">Últimos 21 días</span>
-            </div>
-
-            <div className="flex flex-wrap gap-2 justify-between py-2">
-              {heatmapDays.map((day) => {
-                let intensityClass = 'bg-[#0d0d0d] border-[#262626] text-[#555]';
-                if (day.count > 0 && day.count < 5) intensityClass = 'bg-[#161616] border-[#262626] text-[#A1A1A1]';
-                else if (day.count >= 5 && day.count < 15) intensityClass = 'bg-[#EDEDED] text-black border-white';
-                else if (day.count >= 15) intensityClass = 'bg-white text-black border-white font-bold scale-105';
-
-                return (
-                  <div
-                    key={day.dateStr}
-                    className={`w-10 h-12 border flex flex-col items-center justify-center transition-all ${intensityClass}`}
-                    title={`${day.count} palabras practicadas el ${day.dateStr}`}
-                  >
-                    <span className="text-[9px] font-mono opacity-60 uppercase">{day.dayLabel}</span>
-                    <span className="text-xs font-mono font-medium mt-0.5">{day.dayNum}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="flex justify-between items-center text-[10px] text-[#A1A1A1] pt-2 border-t border-[#1F1F1F]">
-              <span>Menos activo</span>
-              <div className="flex gap-1.5 items-center">
-                <div className="w-2.5 h-2.5 bg-[#0d0d0d] border border-[#262626]"></div>
-                <div className="w-2.5 h-2.5 bg-[#161616] border border-[#262626]"></div>
-                <div className="w-2.5 h-2.5 bg-[#EDEDED]"></div>
-                <div className="w-2.5 h-2.5 bg-white"></div>
-              </div>
-              <span>Más activo</span>
-            </div>
+          <div className="mb-2 text-[9px] tracking-[0.2em] text-[#666] uppercase">Constancia — últimos 21 días</div>
+          <div className="flex gap-1 flex-wrap mt-3.5 mb-8">
+            {heatmapDays.map(day => (
+              <div
+                key={day.dateStr}
+                title={`${day.count} palabras practicadas el ${day.dateStr}`}
+                className="w-6 h-[30px] border border-[#2a2a2a]"
+                style={{ background: heatmapBg(day.count) }}
+              />
+            ))}
           </div>
 
-          {/* Quick analysis boxes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Mastered words */}
-            <div className="bg-[#161616] border border-[#262626] p-5 space-y-3">
-              <span className="text-xs font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
-                <BookmarkCheck className="w-4 h-4 text-[#A1A1A1]" /> Palabras Dominadas ({stats.masteredWords?.length || 0})
-              </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-t border-[#1a1a1a] pt-8">
+            <div>
+              <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase mb-3.5">
+                Palabras dominadas ({stats.masteredWords?.length || 0})
+              </div>
               {stats.masteredWords && stats.masteredWords.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-2 pt-1">
-                  {stats.masteredWords.map((id) => {
+                <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1">
+                  {stats.masteredWords.map(id => {
                     const matched = WORDS_DATABASE.find(w => w.id === id);
                     return (
-                      <span key={id} className="text-[11px] font-mono px-2 py-0.5 border border-[#262626] bg-[#0d0d0d] text-[#EDEDED]">
+                      <span key={id} className="text-[11px] font-mono px-2 py-0.5 border border-[#2a2a2a] text-[#999]">
                         {matched?.word || id}
                       </span>
                     );
                   })}
                 </div>
               ) : (
-                <p className="text-[#A1A1A1] text-xs italic py-4">
-                  Las palabras correctas varias veces consecutivas aparecerán aquí como dominadas.
-                </p>
+                <p className="text-[#666] text-xs italic">Las palabras correctas varias veces consecutivas aparecerán acá.</p>
               )}
             </div>
-
-            {/* General progress info */}
-            <div className="bg-[#161616] border border-[#262626] p-5 space-y-3">
-              <span className="text-xs font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
-                <Bookmark className="w-4 h-4 text-[#A1A1A1]" /> Cobertura del Banco de Palabras
-              </span>
-              <div className="space-y-1.5 pt-1">
-                <div className="flex justify-between text-xs font-mono text-[#A1A1A1]">
-                  <span>Vistas</span>
-                  <span>{stats.wordsSeen} / {WORDS_DATABASE.length} palabras</span>
-                </div>
-                <div className="w-full bg-[#0d0d0d] h-1.5 overflow-hidden border border-[#262626]">
-                  <div
-                    className="bg-[#EDEDED] h-full transition-all duration-500"
-                    style={{ width: `${Math.min(100, (stats.wordsSeen / WORDS_DATABASE.length) * 100)}%` }}
-                  />
-                </div>
-                <p className="text-[#A1A1A1] text-[10px] leading-relaxed pt-1">
-                  Practica diferentes modos para encontrar más palabras del banco de datos (esdrújulas, latinismos, hiatos, diacríticas, etc.)
-                </p>
+            <div>
+              <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase mb-3.5">Cobertura del banco de palabras</div>
+              <div className="flex justify-between text-xs font-mono text-[#888] mb-1.5">
+                <span>Vistas</span>
+                <span>{stats.wordsSeen} / {WORDS_DATABASE.length} palabras</span>
+              </div>
+              <div className="w-full bg-[#161616] h-[2px]">
+                <div className="bg-[#F5F5F0] h-full" style={{ width: `${Math.min(100, (stats.wordsSeen / WORDS_DATABASE.length) * 100)}%` }} />
               </div>
             </div>
           </div>
@@ -257,106 +170,39 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
       )}
 
       {activeTab === 'profiles' && (
-        <div className="space-y-6">
-          <div className="bg-[#161616] border border-[#262626] p-6 space-y-2">
-            <h3 className="text-sm font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
-              <Target className="w-4 h-4 text-white" /> Análisis Dinámico del Perfil de Errores
-            </h3>
-            <p className="text-[#A1A1A1] text-xs leading-relaxed max-w-2xl">
-              Nuestro sistema analiza cada acierto y error que cometes para agrupar tus fallos en perfiles ortográficos y pedagógicos concretos. Los perfiles marcados en <span className="text-white font-semibold underline underline-offset-2">crítico</span> se inyectan automáticamente con mayor frecuencia en tus sesiones de práctica generales para acelerar tu aprendizaje.
-            </p>
-          </div>
+        <div>
+          <p className="text-[#888] text-xs leading-relaxed max-w-2xl mb-8">
+            Cada acierto y error se agrupa en perfiles ortográficos concretos. Los perfiles marcados en{' '}
+            <span className="text-[#F5F5F0] underline underline-offset-2">crítico</span> se priorizan automáticamente en tus próximas sesiones.
+          </p>
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="border-t border-[#1a1a1a]">
             {calculateErrorProfiles(stats).map((p) => {
               const hasData = p.total > 0;
-
-              // Status badges & monochrome styling (distinción por forma, no color)
-              let statusText = 'Estable';
-              let statusStyles = 'border-[#262626] bg-[#0d0d0d] text-[#A1A1A1]';
-              let Icon = Target;
-              let barColor = 'bg-white';
-
-              if (p.status === 'excelente') {
-                statusText = 'Excelente';
-                statusStyles = 'border-white bg-white text-black';
-                Icon = CheckCircle;
-                barColor = 'bg-white';
-              } else if (p.status === 'crítico') {
-                statusText = 'Crítico (Priorizado)';
-                statusStyles = 'border-white bg-transparent text-white';
-                Icon = AlertTriangle;
-                barColor = 'bg-white';
-              } else if (hasData) {
-                statusText = 'En Progreso';
-                statusStyles = 'border-[#3a3a3a] bg-[#161616] text-[#A1A1A1]';
-                barColor = 'bg-[#8a8a8a]';
-              } else {
-                statusText = 'Sin Datos';
-                statusStyles = 'border-[#262626] bg-[#0d0d0d] text-[#555]';
-                barColor = 'bg-[#333]';
-              }
+              const statusLabel = p.status === 'excelente' ? 'excelente' : p.status === 'crítico' ? 'crítico' : hasData ? 'en progreso' : 'sin datos';
 
               return (
-                <div key={p.id} className="bg-[#161616] border border-[#262626] p-6 space-y-4 flex flex-col md:flex-row gap-6 justify-between items-start">
-                  <div className="space-y-4 flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <h4 className="text-base font-semibold text-[#EDEDED] tracking-tight font-display">{p.name}</h4>
-                      <span className={`px-2 py-0.5 border text-[10px] font-mono font-medium flex items-center gap-1 ${statusStyles}`}>
-                        <Icon className="w-3 h-3" />
-                        {statusText}
-                      </span>
+                <div key={p.id} className="border-b border-[#1a1a1a] py-[26px] flex justify-between gap-8 flex-wrap">
+                  <div className="flex-1 min-w-[280px]">
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                      <span className="font-display text-[22px]">{p.name}</span>
+                      <span className="text-[9px] tracking-[0.1em] text-[#999] border border-[#2a2a2a] px-2.5 py-0.5 uppercase">{statusLabel}</span>
                     </div>
-
-                    <p className="text-xs text-[#A1A1A1] leading-relaxed">
-                      {p.description}
-                    </p>
-
-                    {/* Progress tracker */}
-                    <div className="space-y-1.5 max-w-md">
-                      <div className="flex justify-between text-[11px] font-mono">
-                        <span className="text-[#A1A1A1]">Precisión:</span>
-                        <span className="text-[#EDEDED] font-bold">
-                          {hasData ? `${p.accuracy}% (${p.correct}/${p.total} aciertos)` : 'Sin datos registrados'}
-                        </span>
-                      </div>
-                      <div className="w-full bg-[#0d0d0d] h-1.5 overflow-hidden border border-[#262626]">
-                        <div
-                          className={`h-full transition-all duration-500 ${barColor}`}
-                          style={{ width: `${hasData ? p.accuracy : 0}%` }}
-                        />
-                      </div>
+                    <p className="text-[#888] text-[11px] mt-2.5 max-w-[460px] leading-relaxed">{p.description}</p>
+                    <div className="mt-3.5 h-[2px] bg-[#161616] max-w-[320px]">
+                      <div className="h-full bg-[#F5F5F0]" style={{ width: `${hasData ? p.accuracy : 0}%` }} />
                     </div>
-
-                    {/* Pedagogical recommendations box */}
-                    <div className="p-3.5 bg-[#0d0d0d] border border-[#262626] space-y-1">
-                      <span className="text-[10px] font-semibold tracking-widest text-white uppercase font-mono">
-                        Consejo Pedagógico:
-                      </span>
-                      <p className="text-xs text-[#A1A1A1] leading-relaxed italic">
-                        {p.recommendation}
-                      </p>
+                    <div className="text-[10px] text-[#666] mt-2">
+                      {hasData ? `${p.accuracy}% (${p.correct}/${p.total} aciertos)` : 'Sin datos registrados'}
                     </div>
-
-                    {/* Examples taglist */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-mono text-[#555] uppercase">Ejemplos:</span>
-                      {p.examples.map((ex, exIdx) => (
-                        <span key={exIdx} className="text-[11px] font-mono px-2 py-0.5 bg-[#0d0d0d] border border-[#262626] text-[#A1A1A1]">
-                          {ex}
-                        </span>
-                      ))}
-                    </div>
+                    <p className="text-[#999] text-[11px] mt-3 italic leading-relaxed max-w-[460px]">{p.recommendation}</p>
                   </div>
-
-                  {/* Immediate focus session trigger button */}
                   {onStartFocusSession && (
                     <button
                       onClick={() => onStartFocusSession(p.categories)}
-                      className="w-full md:w-auto shrink-0 px-4 py-2.5 bg-white text-black text-xs font-semibold font-mono hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer border border-white"
+                      className="self-center px-5 py-3 border border-[#F5F5F0] text-[11px] tracking-[0.08em] cursor-pointer whitespace-nowrap h-fit hover:bg-[#F5F5F0] hover:text-black transition-colors"
                     >
-                      <Play className="w-3.5 h-3.5 fill-black stroke-[3]" />
-                      Entrenar Perfil
+                      Entrenar perfil
                     </button>
                   )}
                 </div>
@@ -367,129 +213,83 @@ export default function StatsDashboard({ stats, onResetStats, onStartFocusSessio
       )}
 
       {activeTab === 'categories' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Categories Stats Card */}
-          <div className="bg-[#161616] border border-[#262626] p-5 space-y-4">
-            <h3 className="text-sm font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
-              <Grid className="w-4 h-4 text-[#A1A1A1]" /> Precisión por Regla / Categoría
-            </h3>
-
-            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div>
+            <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase mb-4">Por categoría</div>
+            <div className="flex flex-col gap-3.5">
               {(Object.keys(categoryLabels) as WordCategory[]).map((cat) => {
                 const progress = stats.categoryStats?.[cat] || { correct: 0, total: 0 };
                 const pct = progress.total > 0 ? Math.round((progress.correct / progress.total) * 100) : 0;
-
+                const barColor = pct >= 80 ? '#F5F5F0' : pct >= 50 ? '#8a8a8a' : progress.total > 0 ? '#555' : '#333';
                 return (
-                  <div key={cat} className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-[#EDEDED] font-medium">{categoryLabels[cat]}</span>
-                      <span className="text-[#A1A1A1] font-mono">
-                        {progress.total > 0 ? `${pct}% (${progress.correct}/${progress.total})` : 'Sin entrenar'}
-                      </span>
+                  <div key={cat}>
+                    <div className="flex justify-between text-[11px] mb-1.5">
+                      <span>{categoryLabels[cat]}</span>
+                      <span className="text-[#666]">{progress.total > 0 ? `${pct}%` : '—'}</span>
                     </div>
-                    <div className="w-full bg-[#0d0d0d] h-1 overflow-hidden border border-[#262626]">
-                      <div
-                        className={`h-full ${
-                          pct >= 80 ? 'bg-white' : pct >= 50 ? 'bg-[#8a8a8a]' : progress.total > 0 ? 'bg-[#555]' : 'bg-[#333]'
-                        }`}
-                        style={{ width: `${progress.total > 0 ? pct : 0}%` }}
-                      />
+                    <div className="h-[2px] bg-[#161616]">
+                      <div className="h-full" style={{ width: `${progress.total > 0 ? pct : 0}%`, background: barColor }} />
                     </div>
                   </div>
                 );
               })}
             </div>
           </div>
-
-          {/* Levels Stats Card */}
-          <div className="bg-[#161616] border border-[#262626] p-5 space-y-4 flex flex-col justify-between">
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
-                <Target className="w-4 h-4 text-[#A1A1A1]" /> Precisión por Nivel MCER
-              </h3>
-
-              <div className="space-y-3">
-                {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as LevelMCER[]).map((lvl) => {
-                  const progress = stats.levelStats?.[lvl] || { correct: 0, total: 0 };
-                  const pct = progress.total > 0 ? Math.round((progress.correct / progress.total) * 100) : 0;
-
-                  return (
-                    <div key={lvl} className="space-y-1">
-                      <div className="flex justify-between text-xs font-mono">
-                        <span className="text-[#EDEDED] font-medium">Nivel {lvl}</span>
-                        <span className="text-[#A1A1A1]">
-                          {progress.total > 0 ? `${pct}% (${progress.correct}/${progress.total})` : 'Sin entrenar'}
-                        </span>
-                      </div>
-                      <div className="w-full bg-[#0d0d0d] h-1 overflow-hidden border border-[#262626]">
-                        <div
-                          className="bg-white h-full"
-                          style={{ width: `${progress.total > 0 ? pct : 0}%` }}
-                        />
-                      </div>
+          <div>
+            <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase mb-4">Por nivel MCER</div>
+            <div className="flex flex-col gap-3.5">
+              {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as LevelMCER[]).map((lvl) => {
+                const progress = stats.levelStats?.[lvl] || { correct: 0, total: 0 };
+                const pct = progress.total > 0 ? Math.round((progress.correct / progress.total) * 100) : 0;
+                return (
+                  <div key={lvl}>
+                    <div className="flex justify-between text-[11px] mb-1.5">
+                      <span>Nivel {lvl}</span>
+                      <span className="text-[#666]">{progress.total > 0 ? `${pct}%` : '—'}</span>
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="h-[2px] bg-[#161616]">
+                      <div className="h-full bg-[#F5F5F0]" style={{ width: `${progress.total > 0 ? pct : 0}%` }} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            <p className="text-[#A1A1A1] text-xs leading-relaxed border-t border-[#1F1F1F] pt-4 mt-4">
-              AcentOS analiza continuamente tus respuestas. A medida que resuelves desafíos de niveles superiores (B2, C1), la dificultad media de tus entrenamientos se adapta automáticamente.
-            </p>
           </div>
         </div>
       )}
 
       {activeTab === 'mistakes' && (
-        <div className="bg-[#161616] border border-[#262626] p-5 space-y-4">
-          <h3 className="text-sm font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono flex items-center gap-1.5">
-            <AlertTriangle className="w-4 h-4 text-white" /> Perfil de Errores Críticos
-          </h3>
-          <p className="text-[#A1A1A1] text-xs">
-            Palabras que has fallado más veces. El algoritmo de Spaced Repetition (repaso espaciado) las insertará con prioridad en tus próximas sesiones.
-          </p>
-
+        <div className="border-t border-[#1a1a1a]">
           {frequentMistakesArray.length > 0 ? (
-            <div className="divide-y divide-[#1F1F1F] pt-2">
-              {frequentMistakesArray.map((m) => (
-                <div key={m.wordId} className="py-3 flex flex-col sm:flex-row justify-between items-start gap-2 text-xs">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base font-semibold text-[#EDEDED] font-display">{m.word}</span>
-                      <span className="px-2 py-0.5 border border-white bg-transparent text-white font-mono text-[10px]">
-                        Fallada {m.incorrectCount} veces
-                      </span>
-                    </div>
-                    <p className="text-[#A1A1A1] italic">"{m.explanation}"</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <span className="text-[#A1A1A1] font-mono text-[10px]">Corrección</span>
-                    <div className="font-bold text-white font-mono">{m.word}</div>
-                  </div>
+            frequentMistakesArray.map((m) => (
+              <div key={m.wordId} className="border-b border-[#1a1a1a] py-5">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-display text-xl">{m.word}</span>
+                  <span className="text-[9px] text-[#999] border border-[#2a2a2a] px-2 py-0.5">fallada {m.incorrectCount} veces</span>
                 </div>
-              ))}
-            </div>
+                <p className="text-[#888] text-[11px] mt-2 italic">"{m.explanation}"</p>
+              </div>
+            ))
           ) : (
-            <div className="text-center py-8 text-[#A1A1A1] text-xs italic">
-              ¡Excelente! No tienes errores críticos registrados todavía. Sigue practicando para generar tu perfil.
-            </div>
+            <p className="text-center py-8 text-[#888] text-xs italic">
+              Sin errores críticos registrados todavía. Segui practicando para generar tu perfil.
+            </p>
           )}
         </div>
       )}
 
-      {/* Danger zone / Reset */}
       {onResetStats && (
-        <div className="flex justify-end pt-4">
-          <button
+        <div className="flex justify-end pt-8">
+          <span
             onClick={() => {
               if (window.confirm('¿Estás seguro de que deseas reiniciar todas las estadísticas? Esta acción es irreversible.')) {
                 onResetStats();
               }
             }}
-            className="text-[10px] font-mono text-[#555] hover:text-white border border-transparent hover:border-[#262626] px-2.5 py-1 transition-all cursor-pointer"
+            className="text-[10px] text-[#555] hover:text-[#F5F5F0] cursor-pointer transition-colors"
           >
             Reiniciar historial de entrenamiento
-          </button>
+          </span>
         </div>
       )}
     </div>

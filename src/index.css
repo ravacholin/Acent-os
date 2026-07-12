@@ -1,19 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600;700&family=Geist:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
-  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "JetBrains Mono", ui-monospace, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Instrument Serif", serif;
 
   /* Monochrome palette — negro, blanco y grises. Sin acentos de color. */
   --color-ink: #000000;        /* base background */
   --color-surface: #0d0d0d;    /* elevated surface */
   --color-surface-2: #161616;  /* cards / insets */
-  --color-line: #262626;       /* borders / dividers */
+  --color-line: #2a2a2a;       /* borders / dividers */
   --color-line-soft: #1a1a1a;  /* subtle dividers */
-  --color-fg: #f5f5f5;         /* primary text */
-  --color-fg-muted: #8a8a8a;   /* secondary text */
+  --color-fg: #F5F5F0;         /* primary text */
+  --color-fg-muted: #888888;   /* secondary text */
   --color-fg-faint: #555555;   /* tertiary text */
   --color-paper: #ffffff;      /* inverted / primary action */
 }

@@ -1,24 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Word, GameMode, AppSettings, WordClassification } from '../types';
 import { isAmbiguousWord, getHomophonePartner } from '../data/words';
-import { 
-  playClickSound, 
-  playCorrectSound, 
-  playIncorrectSound, 
-  speakWord 
+import {
+  playClickSound,
+  playCorrectSound,
+  playIncorrectSound,
+  speakWord
 } from '../utils/audio';
-import { 
-  Volume2, 
-  ChevronRight, 
-  Check, 
-  X, 
-  HelpCircle, 
-  Sparkles, 
-  Timer as TimerIcon,
-  Flame,
-  ArrowRight
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 
 interface ExerciseCardProps {
   word: Word;
@@ -30,20 +18,22 @@ interface ExerciseCardProps {
   onNext: () => void;
 }
 
-export default function ExerciseCard({ 
-  word, 
-  mode, 
-  settings, 
+const ACCENT_HELPERS = ['á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ'];
+
+export default function ExerciseCard({
+  word,
+  mode,
+  settings,
   comboStreak,
-  timeLeft, 
-  onAnswer, 
-  onNext 
+  timeLeft,
+  onAnswer,
+  onNext
 }: ExerciseCardProps) {
   const [answered, setAnswered] = useState<boolean>(false);
   const [isCorrect, setIsCorrect] = useState<boolean>(false);
   const [userVal, setUserVal] = useState<string>('');
   const [selectedLetterIdx, setSelectedLetterIdx] = useState<number | null>(null);
-  
+
   const startTimeRef = useRef<number>(Date.now());
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -189,7 +179,7 @@ export default function ExerciseCard({
   const findCorrectTildeIndex = () => {
     const correctWordLower = word.word.toLowerCase();
     const cleanWordLower = word.wordClean.toLowerCase();
-    
+
     for (let i = 0; i < correctWordLower.length; i++) {
       if (correctWordLower[i] !== cleanWordLower[i]) {
         return i;
@@ -202,7 +192,7 @@ export default function ExerciseCard({
 
   const handleLetterClick = (idx: number, char: string) => {
     if (answered) return;
-    
+
     // Check if the character selected is a vowel (vowels can carry accents)
     const isVowel = 'aeiou'.includes(char.toLowerCase());
     if (!isVowel) {
@@ -237,374 +227,283 @@ export default function ExerciseCard({
     onAnswer(correct, timeTaken / 1000);
   };
 
-  // Syllables visualization highlights
-  const renderSyllables = () => {
-    return (
-      <div className="flex gap-1.5 font-mono text-sm justify-center py-1">
-        {word.syllables.map((syllable, idx) => {
-          const isStressed = idx === word.stressedSyllableIdx;
-          return (
-            <React.Fragment key={idx}>
-              {idx > 0 && <span className="text-neutral-700">•</span>}
-              <span className={`px-2 py-0.5 ${
-                isStressed
-                  ? 'bg-[#161616] border border-[#262626] text-white font-semibold'
-                  : 'text-[#8a8a8a]'
-              }`}>
-                {syllable}
-              </span>
-            </React.Fragment>
-          );
-        })}
-      </div>
-    );
-  };
+  const btnBase = 'cursor-pointer transition-colors';
 
   return (
-    <div className="space-y-6" id={`exercise-${word.id}`}>
-      
-      {/* Top Indicators bar */}
-      <div className="flex justify-between items-center bg-[#161616] p-4 border border-[#262626]">
-        <div className="flex gap-3 items-center text-xs font-mono text-[#A1A1A1]">
-          {settings.showLevel && (
-            <span className="px-2 py-0.5 bg-black border border-[#262626] text-[#A1A1A1]">
-              Nivel {word.level}
-            </span>
-          )}
-          <span className="capitalize">{word.category}</span>
-        </div>
+    <div id={`exercise-${word.id}`}>
 
-        {/* Combo metrics & timer */}
-        <div className="flex items-center gap-4 text-xs font-mono">
-          {timeLeft !== undefined && (
-            <div className="flex items-center gap-1 text-white font-bold">
-              <TimerIcon className="w-3.5 h-3.5" />
-              <span>{timeLeft}s</span>
+      {/* Combo / timer strip — only present when relevant (survival / streak) */}
+      {(timeLeft !== undefined || comboStreak > 1) && (
+        <div className="flex justify-end gap-6 text-[10px] text-[#666] uppercase tracking-[0.12em] mb-6">
+          {timeLeft !== undefined && <span className="text-[#F5F5F0]">{timeLeft}s</span>}
+          {comboStreak > 1 && <span className="text-[#F5F5F0]">{comboStreak}x combo</span>}
+        </div>
+      )}
+
+      {!answered ? (
+        <div>
+          {/* Disambiguation context for diacritic / interrogative pairs.
+              Without this, "el" vs "él" (etc.) is impossible to answer. */}
+          {isAmbiguous && (word.sense || word.example) && (
+            <div className="max-w-md mx-auto border border-[#1a1a1a] px-4 py-3 mb-8 text-center">
+              {word.sense && (
+                <div className="text-[10px] tracking-[0.2em] uppercase text-[#666]">
+                  Se pide: <span className="text-[#F5F5F0] normal-case tracking-normal">{word.sense}</span>
+                </div>
+              )}
+              {word.example && (
+                <p className="font-display text-lg mt-2">{word.example.replace(/___/g, '_____')}</p>
+              )}
             </div>
           )}
-          {comboStreak > 1 && (
-            <div className="flex items-center gap-1 text-white font-bold animate-pulse">
-              <Flame className="w-3.5 h-3.5 fill-current" />
-              <span>{comboStreak}x Combo</span>
+
+          {/* MODE 1: ¿Lleva tilde? */}
+          {mode === 'lleva-tilde' && (
+            <div>
+              <div className="text-center pt-2.5 pb-[46px]">
+                <div className="text-[9px] tracking-[0.3em] text-[#666] uppercase mb-[26px]">¿Lleva tilde?</div>
+                <div className="font-display text-[64px] sm:text-[120px] leading-none lowercase">{word.wordClean}</div>
+              </div>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => handleLlevaTildeAnswer(true)}
+                  className={`w-[180px] text-center py-5 border border-[#F5F5F0] hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
+                  id="btn-lleva-si"
+                >
+                  <div className="font-display text-xl">Sí</div>
+                  <div className="text-[9px] text-[#666] mt-1.5">[ S ]</div>
+                </button>
+                <button
+                  onClick={() => handleLlevaTildeAnswer(false)}
+                  className={`w-[180px] text-center py-5 border border-[#2a2a2a] text-[#999] hover:bg-[#F5F5F0] hover:text-black hover:border-[#F5F5F0] ${btnBase}`}
+                  id="btn-lleva-no"
+                >
+                  <div className="font-display text-xl">No</div>
+                  <div className="text-[9px] text-[#666] mt-1.5">[ N ]</div>
+                </button>
+              </div>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Main interaction Card */}
-      <div className="bg-[#161616] border border-[#262626] p-8 relative overflow-hidden min-h-[280px] flex flex-col justify-between">
-        
-        {/* Dynamic game mode canvas */}
-        <div className="flex-1 flex flex-col justify-center items-center py-6">
-          <AnimatePresence mode="wait">
-            {!answered ? (
-              <motion.div 
-                key="active-exercise"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 0.15 }}
-                className="w-full text-center space-y-6"
-              >
-
-                {/* Disambiguation context for diacritic / interrogative pairs.
-                    Without this, "el" vs "él" (etc.) is impossible to answer. */}
-                {isAmbiguous && (word.sense || word.example) && (
-                  <div className="max-w-md mx-auto bg-[#0d0d0d] border border-[#262626] px-4 py-3 space-y-2">
-                    {word.sense && (
-                      <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#A1A1A1]">
-                        Se pide: <span className="text-white font-semibold normal-case tracking-normal">{word.sense}</span>
-                      </div>
-                    )}
-                    {word.example && (
-                      <p className="text-sm md:text-base text-[#EDEDED] font-display leading-relaxed">
-                        {word.example.replace(/___/g, '_____')}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* MODE 1: ¿Lleva tilde? */}
-                {mode === 'lleva-tilde' && (
-                  <div className="flex flex-col items-center gap-8">
-                    <div className="flex flex-col items-center gap-4">
-                      <span className="text-[11px] text-[#A1A1A1] uppercase tracking-[0.3em] font-medium font-mono">¿Lleva tilde?</span>
-                      <div className="text-[72px] md:text-[100px] font-medium tracking-tight leading-none lowercase text-[#EDEDED] font-display select-none">
-                        {word.wordClean}
-                      </div>
-                    </div>
-                    
-                    {/* Interactive Buttons matching the Clean Minimalism mockup */}
-                    <div className="flex gap-6 justify-center pt-2">
-                      <button
-                        onClick={() => handleLlevaTildeAnswer(true)}
-                        className="group relative w-44 py-5 bg-[#0d0d0d] border border-[#262626] hover:bg-white hover:text-black transition-all duration-200 flex flex-col items-center gap-2 cursor-pointer"
-                        id="btn-lleva-si"
-                      >
-                        <span className="text-lg font-medium">Sí</span>
-                        <span className="text-[10px] opacity-40 font-mono">[ S ]</span>
-                      </button>
-                      <button
-                        onClick={() => handleLlevaTildeAnswer(false)}
-                        className="group relative w-44 py-5 bg-[#0d0d0d] border border-[#262626] hover:bg-white hover:text-black transition-all duration-200 flex flex-col items-center gap-2 cursor-pointer"
-                        id="btn-lleva-no"
-                      >
-                        <span className="text-lg font-medium">No</span>
-                        <span className="text-[10px] opacity-40 font-mono">[ N ]</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* MODE 2: Escribí la tilde */}
-                {mode === 'escribi-tilde' && (
-                  <div className="space-y-6 w-full max-w-sm mx-auto">
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#A1A1A1] font-display">
-                      {word.wordClean}
-                    </h1>
-                    <p className="text-xs font-mono text-[#A1A1A1]">Escribe la palabra correctamente acentuada</p>
-                    
-                    <form onSubmit={handleEscribiTildeSubmit} className="space-y-3">
-                      <input
-                        ref={inputRef}
-                        type="text"
-                        value={userVal}
-                        onChange={(e) => setUserVal(e.target.value)}
-                        placeholder="Escribe aquí..."
-                        className="w-full bg-[#0d0d0d] border border-[#262626] focus:border-white text-white font-mono text-center text-lg py-2.5 px-4 outline-none transition-colors"
-                        autoComplete="off"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        id="input-escribi-tilde"
-                      />
-                      
-                      {/* Virtual Accents Helper */}
-                      <div className="flex justify-center gap-1.5 pt-1">
-                        {['á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ'].map((vowel) => (
-                          <button
-                            key={vowel}
-                            type="button"
-                            onClick={() => handleInsertAccent(vowel)}
-                            className="w-8 h-8 flex items-center justify-center bg-[#0d0d0d] border border-[#262626] text-xs font-mono text-[#A1A1A1] hover:bg-white hover:text-black transition-colors cursor-pointer"
-                          >
-                            {vowel}
-                          </button>
-                        ))}
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={!userVal.trim()}
-                        className="w-full py-2.5 bg-white text-black font-semibold hover:bg-neutral-200 disabled:opacity-40 disabled:hover:bg-white transition-all text-sm cursor-pointer"
-                      >
-                        Validar <span className="text-[10px] opacity-60 font-mono ml-1">(Enter)</span>
-                      </button>
-                    </form>
-                  </div>
-                )}
-
-                {/* MODE 3: Encontrá el error */}
-                {mode === 'encontra-error' && (
-                  <div className="space-y-6">
-                    <p className="text-xs font-mono text-[#A1A1A1]">
-                      {isAmbiguous ? 'Elige la forma correcta para la frase' : 'Elige la palabra escrita correctamente'}
-                    </p>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto pt-2">
-                      {options.map((opt, oIdx) => (
-                        <button
-                          key={oIdx}
-                          onClick={() => handleComparisonAnswer(opt)}
-                          className="p-5 bg-[#0d0d0d] border border-[#262626] hover:bg-white hover:text-black group text-center font-display text-2xl font-bold text-[#EDEDED] transition-all cursor-pointer"
-                          id={`btn-option-${oIdx}`}
-                        >
-                          <div className="text-[10px] font-mono text-[#A1A1A1] group-hover:text-black/60 transition-colors uppercase tracking-widest text-left mb-2">Opción {oIdx + 1}</div>
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* MODE 4: ¿Dónde va la tilde? */}
-                {mode === 'donde-va-tilde' && (
-                  <div className="space-y-6">
-                    <p className="text-xs font-mono text-[#A1A1A1]">Haz clic sobre la vocal que lleva la tilde</p>
-                    
-                    <div className="flex gap-2 justify-center py-4">
-                      {word.wordClean.split('').map((char, letterIdx) => {
-                        const isVowel = 'aeiou'.includes(char.toLowerCase());
-                        return (
-                          <button
-                            key={letterIdx}
-                            onClick={() => handleLetterClick(letterIdx, char)}
-                            className={`w-12 h-14 border flex items-center justify-center text-2xl font-bold font-mono transition-all ${
-                              isVowel
-                                ? 'bg-[#0d0d0d] border-[#262626] text-white hover:bg-white hover:text-black cursor-pointer'
-                                : 'bg-[#161616] border-[#161616] text-[#555] cursor-not-allowed'
-                            }`}
-                          >
-                            {char}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* MODE 5: Clasificación */}
-                {mode === 'clasificacion' && (
-                  <div className="space-y-6">
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED] font-display">
-                      {word.word}
-                    </h1>
-                    <p className="text-xs font-mono text-[#A1A1A1]">¿Cómo se clasifica esta palabra según su sílaba tónica?</p>
-                    
-                    <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto pt-2">
-                      {[
-                        { id: 'aguda' as WordClassification, label: 'Aguda', key: '1' },
-                        { id: 'grave' as WordClassification, label: 'Grave', key: '2' },
-                        { id: 'esdrújula' as WordClassification, label: 'Esdrújula', key: '3' },
-                        { id: 'sobreesdrújula' as WordClassification, label: 'Sobreesdrújula', key: '4' }
-                      ].map((item) => (
-                        <button
-                          key={item.id}
-                          onClick={() => handleClassificationAnswer(item.id)}
-                          className="p-3 bg-[#0d0d0d] border border-[#262626] hover:bg-white hover:text-black group text-xs text-[#EDEDED] font-semibold transition-all cursor-pointer flex flex-col justify-center items-center gap-1"
-                          id={`btn-classification-${item.id}`}
-                        >
-                          <span className="font-display text-sm font-semibold">{item.label}</span>
-                          <span className="text-[9px] font-mono text-[#A1A1A1] group-hover:text-black/60 transition-colors">Atajo: {item.key}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* MODE 6: Dictado */}
-                {mode === 'dictado' && (
-                  <div className="space-y-6 w-full max-w-sm mx-auto">
-                    <div className="flex justify-center">
-                      <button
-                        type="button"
-                        onClick={() => speakWord(word.word, settings.soundEnabled)}
-                        className="p-4 bg-[#0d0d0d] border border-[#262626] hover:bg-white hover:text-black transition-all active:scale-90 cursor-pointer flex items-center justify-center"
-                        title="Escuchar palabra"
-                      >
-                        <Volume2 className="w-6 h-6 stroke-[2]" />
-                      </button>
-                    </div>
-                    <p className="text-xs font-mono text-[#A1A1A1]">Escucha y escribe correctamente la palabra</p>
-                    
-                    <form onSubmit={handleEscribiTildeSubmit} className="space-y-3">
-                      <input
-                        ref={inputRef}
-                        type="text"
-                        value={userVal}
-                        onChange={(e) => setUserVal(e.target.value)}
-                        placeholder="Escribe la palabra..."
-                        className="w-full bg-[#0d0d0d] border border-[#262626] focus:border-white text-white font-mono text-center text-lg py-2.5 px-4 outline-none transition-colors"
-                        autoComplete="off"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        id="input-dictado"
-                      />
-
-                      {/* Virtual Accents Helper */}
-                      <div className="flex justify-center gap-1.5 pt-1">
-                        {['á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ'].map((vowel) => (
-                          <button
-                            key={vowel}
-                            type="button"
-                            onClick={() => handleInsertAccent(vowel)}
-                            className="w-8 h-8 flex items-center justify-center bg-[#0d0d0d] border border-[#262626] text-xs font-mono text-[#A1A1A1] hover:bg-white hover:text-black transition-colors cursor-pointer"
-                          >
-                            {vowel}
-                          </button>
-                        ))}
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={!userVal.trim()}
-                        className="w-full py-2.5 bg-white text-black font-semibold hover:bg-neutral-200 disabled:opacity-40 disabled:hover:bg-white transition-all text-sm cursor-pointer"
-                      >
-                        Validar <span className="text-[10px] opacity-60 font-mono ml-1">(Enter)</span>
-                      </button>
-                    </form>
-                  </div>
-                )}
-
-              </motion.div>
-            ) : (
-              <motion.div 
-                key="feedback-canvas"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.15 }}
-                className="w-full space-y-6"
-              >
-                {/* Result Announcement */}
-                <div className="flex flex-col items-center space-y-3">
-                  <div className={`p-3 border-2 ${
-                    isCorrect
-                      ? 'bg-white border-white text-black'
-                      : 'bg-transparent border-white text-white'
-                  }`}>
-                    {isCorrect ? (
-                      <Check className="w-8 h-8 stroke-[3]" />
-                    ) : (
-                      <X className="w-8 h-8 stroke-[3]" />
-                    )}
-                  </div>
-                  <h2 className="text-sm font-semibold tracking-widest font-mono text-[#A1A1A1] uppercase">
-                    {isCorrect ? '¡Respuesta Correcta!' : 'Respuesta Incorrecta'}
-                  </h2>
+          {/* MODE 2: Escribí la tilde */}
+          {mode === 'escribi-tilde' && (
+            <div className="text-center max-w-[360px] mx-auto">
+              <div className="font-display text-[#999] text-5xl">{word.wordClean}</div>
+              <p className="text-[11px] text-[#888] mt-3.5">Escribí la palabra correctamente acentuada</p>
+              <form onSubmit={handleEscribiTildeSubmit}>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={userVal}
+                  onChange={(e) => setUserVal(e.target.value)}
+                  placeholder="Escribí aquí…"
+                  className="mt-5 w-full bg-transparent border border-[#2a2a2a] focus:border-[#F5F5F0] text-[#F5F5F0] text-center text-lg py-3.5 px-4 outline-none transition-colors"
+                  autoComplete="off"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  id="input-escribi-tilde"
+                />
+                <div className="flex justify-center gap-2 mt-4">
+                  {ACCENT_HELPERS.map((vowel) => (
+                    <button
+                      key={vowel}
+                      type="button"
+                      onClick={() => handleInsertAccent(vowel)}
+                      className={`w-[30px] h-[30px] flex items-center justify-center border border-[#2a2a2a] text-xs text-[#999] hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
+                    >
+                      {vowel}
+                    </button>
+                  ))}
                 </div>
+                <button
+                  type="submit"
+                  disabled={!userVal.trim()}
+                  className={`mt-5 w-full py-3.5 bg-[#F5F5F0] text-black text-xs disabled:opacity-40 hover:bg-[#d4d4d4] ${btnBase}`}
+                >
+                  Validar <span className="opacity-60">(Enter)</span>
+                </button>
+              </form>
+            </div>
+          )}
 
-                {/* Primary Comparison Info */}
-                <div className="text-center space-y-3">
-                  <div className="text-4xl md:text-5xl font-bold tracking-tight text-[#EDEDED] font-display">
-                    {word.word}
-                  </div>
-                  
-                  {settings.showSyllables && renderSyllables()}
-                </div>
-
-                {/* Pedagogical support details */}
-                <div className="max-w-md mx-auto bg-[#0d0d0d] p-4 border border-[#262626] space-y-2.5 text-center">
-                  {settings.showRule && (
-                    <div className="text-[10px] font-mono text-[#A1A1A1] uppercase tracking-widest">
-                      {word.rule}
-                    </div>
-                  )}
-                  {settings.showExplanationOnError && (!isCorrect || settings.showExplanationOnError) && (
-                    <p className="text-xs text-[#A1A1A1] leading-relaxed max-w-sm mx-auto">
-                      {word.explanation}
-                    </p>
-                  )}
-                </div>
-
-                {/* Next button */}
-                <div className="flex justify-center pt-3">
+          {/* MODE 3: Encontrá el error */}
+          {mode === 'encontra-error' && (
+            <div>
+              <p className="text-center text-[11px] text-[#888] mb-7">
+                {isAmbiguous ? 'Elegí la forma correcta para la frase' : 'Elegí la palabra escrita correctamente'}
+              </p>
+              <div className="flex justify-center gap-5 flex-wrap">
+                {options.map((opt, oIdx) => (
                   <button
-                    onClick={onNext}
-                    className="px-6 py-2.5 bg-white text-black font-semibold hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center gap-2 text-sm cursor-pointer"
-                    id="btn-next-exercise"
+                    key={oIdx}
+                    onClick={() => handleComparisonAnswer(opt)}
+                    className={`w-[220px] p-7 border border-[#2a2a2a] text-left hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
+                    id={`btn-option-${oIdx}`}
                   >
-                    Siguiente Palabra
-                    <ArrowRight className="w-4 h-4 text-black" />
+                    <div className="text-[9px] text-[#666] tracking-[0.1em] mb-3 uppercase">Opción {oIdx + 1}</div>
+                    <div className="font-display text-[32px]">{opt}</div>
                   </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* MODE 4: ¿Dónde va la tilde? */}
+          {mode === 'donde-va-tilde' && (
+            <div>
+              <p className="text-center text-[11px] text-[#888] mb-[30px]">Hacé clic sobre la vocal que lleva la tilde</p>
+              <div className="flex justify-center gap-2">
+                {word.wordClean.split('').map((char, letterIdx) => {
+                  const isVowel = 'aeiou'.includes(char.toLowerCase());
+                  return (
+                    <button
+                      key={letterIdx}
+                      onClick={() => handleLetterClick(letterIdx, char)}
+                      className={
+                        isVowel
+                          ? `w-11 h-[52px] flex items-center justify-center text-xl border border-[#2a2a2a] text-[#F5F5F0] hover:bg-[#F5F5F0] hover:text-black ${btnBase}`
+                          : 'w-11 h-[52px] flex items-center justify-center text-xl border border-[#161616] bg-[#161616] text-[#444] cursor-not-allowed'
+                      }
+                    >
+                      {char}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* MODE 5: Clasificación */}
+          {mode === 'clasificacion' && (
+            <div>
+              <div className="text-center">
+                <div className="font-display text-6xl">{word.word}</div>
+                <p className="text-[11px] text-[#888] mt-4">¿Cómo se clasifica esta palabra según su sílaba tónica?</p>
+              </div>
+              <div className="flex justify-center gap-2.5 mt-[26px] flex-wrap">
+                {[
+                  { id: 'aguda' as WordClassification, label: 'Aguda', key: '1' },
+                  { id: 'grave' as WordClassification, label: 'Grave', key: '2' },
+                  { id: 'esdrújula' as WordClassification, label: 'Esdrújula', key: '3' },
+                  { id: 'sobreesdrújula' as WordClassification, label: 'Sobreesdrújula', key: '4' }
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleClassificationAnswer(item.id)}
+                    className={`w-[140px] text-center py-4 border border-[#2a2a2a] hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
+                    id={`btn-classification-${item.id}`}
+                  >
+                    <div className="font-display text-base">{item.label}</div>
+                    <div className="text-[9px] text-[#666] mt-1.5">[ {item.key} ]</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* MODE 6: Dictado */}
+          {mode === 'dictado' && (
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => speakWord(word.word, settings.soundEnabled)}
+                className={`w-16 h-16 rounded-full border border-[#2a2a2a] flex items-center justify-center mx-auto text-xl hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
+                title="Escuchar palabra"
+              >
+                ♪
+              </button>
+              <p className="text-[11px] text-[#888] mt-[18px]">Escuchá y escribí correctamente la palabra</p>
+              <form onSubmit={handleEscribiTildeSubmit} className="max-w-[320px] mx-auto mt-5">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={userVal}
+                  onChange={(e) => setUserVal(e.target.value)}
+                  placeholder="Escribí la palabra…"
+                  className="w-full bg-transparent border border-[#2a2a2a] focus:border-[#F5F5F0] text-[#F5F5F0] text-center text-lg py-3.5 px-4 outline-none transition-colors"
+                  autoComplete="off"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  id="input-dictado"
+                />
+                <div className="flex justify-center gap-2 mt-4">
+                  {ACCENT_HELPERS.map((vowel) => (
+                    <button
+                      key={vowel}
+                      type="button"
+                      onClick={() => handleInsertAccent(vowel)}
+                      className={`w-[30px] h-[30px] flex items-center justify-center border border-[#2a2a2a] text-xs text-[#999] hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
+                    >
+                      {vowel}
+                    </button>
+                  ))}
                 </div>
-                <div className="text-[10px] text-neutral-500 font-mono text-center">
-                  Atajo: pulsa <span className="text-[#EDEDED] bg-[#0d0d0d] px-1.5 py-0.5 border border-[#262626] font-mono">Enter</span> o <span className="text-[#EDEDED] bg-[#0d0d0d] px-1.5 py-0.5 border border-[#262626] font-mono">Espacio</span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <button
+                  type="submit"
+                  disabled={!userVal.trim()}
+                  className={`mt-5 w-full py-3.5 bg-[#F5F5F0] text-black text-xs disabled:opacity-40 hover:bg-[#d4d4d4] ${btnBase}`}
+                >
+                  Validar <span className="opacity-60">(Enter)</span>
+                </button>
+              </form>
+            </div>
+          )}
         </div>
-      </div>
+      ) : (
+        <div className="text-center" id="feedback-canvas">
+          <div
+            className="inline-flex items-center justify-center w-12 h-12 rounded-full text-lg"
+            style={
+              isCorrect
+                ? { background: '#F5F5F0', color: '#000', border: '2px solid #F5F5F0' }
+                : { background: 'transparent', color: '#F5F5F0', border: '2px solid #F5F5F0' }
+            }
+          >
+            {isCorrect ? '✓' : '✗'}
+          </div>
+          <div className="text-[11px] tracking-[0.15em] text-[#999] uppercase mt-4">
+            {isCorrect ? '¡Respuesta correcta!' : 'Respuesta incorrecta'}
+          </div>
+
+          <div className="font-display text-[58px] mt-5">{word.word}</div>
+
+          {settings.showSyllables && (
+            <div className="flex justify-center gap-1.5 mt-3.5 text-xs">
+              {word.syllables.map((syllable, idx) => {
+                const isStressed = idx === word.stressedSyllableIdx;
+                return (
+                  <React.Fragment key={idx}>
+                    {idx > 0 && <span className="text-[#555]">•</span>}
+                    <span className={isStressed ? 'px-2 py-0.5 border-b border-[#F5F5F0] text-[#F5F5F0]' : 'px-2 py-0.5 text-[#888]'}>
+                      {syllable}
+                    </span>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          )}
+
+          {(settings.showRule || settings.showExplanationOnError) && (
+            <div className="max-w-[420px] mx-auto mt-6 border border-[#1a1a1a] py-[18px] px-[22px]">
+              {settings.showRule && (
+                <div className="text-[9px] tracking-[0.15em] text-[#666] uppercase">{word.rule}</div>
+              )}
+              {settings.showExplanationOnError && (
+                <p className="text-xs text-[#999] mt-2.5 leading-relaxed">{word.explanation}</p>
+              )}
+            </div>
+          )}
+
+          <button
+            onClick={onNext}
+            className={`inline-block mt-7 px-8 py-3.5 bg-[#F5F5F0] text-black text-xs tracking-[0.08em] hover:bg-[#d4d4d4] ${btnBase}`}
+            id="btn-next-exercise"
+          >
+            Siguiente palabra →
+          </button>
+          <div className="text-[10px] text-[#666] mt-3">Atajo: Enter o Espacio</div>
+        </div>
+      )}
     </div>
   );
 }

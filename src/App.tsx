@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  GameMode, 
-  AppSettings, 
-  UserStats, 
-  Achievement, 
-  GameSessionState, 
-  Word, 
-  WordCategory, 
-  LevelMCER 
+import {
+  GameMode,
+  AppSettings,
+  UserStats,
+  Achievement,
+  GameSessionState,
+  Word,
+  WordCategory,
+  LevelMCER
 } from './types';
 import { WORDS_DATABASE, isAmbiguousWord } from './data/words';
 import { calculateErrorProfiles, getWeakCategories } from './utils/errorAnalysis';
@@ -18,26 +18,6 @@ import DailyChallenge from './components/DailyChallenge';
 import SettingsPanel, { DEFAULT_SETTINGS } from './components/SettingsPanel';
 import ExerciseCard from './components/ExerciseCard';
 import { playClickSound, playCorrectSound, speakWord } from './utils/audio';
-import { 
-  Home, 
-  BookOpen, 
-  Calendar, 
-  BarChart3, 
-  Award, 
-  Settings as SettingsIcon, 
-  Flame, 
-  Zap, 
-  Play, 
-  Trophy, 
-  Sparkles,
-  ChevronRight,
-  ArrowLeft,
-  RotateCcw,
-  Volume2,
-  Check,
-  X,
-  Plus
-} from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 // Default empty stats template
@@ -122,14 +102,23 @@ function rememberSeen(ids: string[]) {
   }
 }
 
+const NAV_ITEMS: { id: 'inicio' | 'practicar' | 'desafio' | 'estadisticas' | 'logros' | 'configuracion'; label: string }[] = [
+  { id: 'inicio', label: 'Inicio' },
+  { id: 'practicar', label: 'Entrenar' },
+  { id: 'desafio', label: 'Desafío diario' },
+  { id: 'estadisticas', label: 'Estadísticas' },
+  { id: 'logros', label: 'Logros' },
+  { id: 'configuracion', label: 'Configuración' }
+];
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'inicio' | 'practicar' | 'desafio' | 'estadisticas' | 'logros' | 'configuracion'>('inicio');
-  
+
   // LocalStorage driven states
   const [stats, setStats] = useState<UserStats>(DEFAULT_STATS);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [achievements, setAchievements] = useState<Achievement[]>(INITIAL_ACHIEVEMENTS);
-  
+
   // Active game states
   const [session, setSession] = useState<GameSessionState | null>(null);
   const [sessionCompleted, setSessionCompleted] = useState<boolean>(false);
@@ -279,7 +268,7 @@ export default function App() {
 
   // 4. Session Operations
   const handleStartPractice = (
-    mode: GameMode, 
+    mode: GameMode,
     customOptions?: { levels: LevelMCER[]; categories: WordCategory[]; timeLimit?: number }
   ) => {
     playClickSound(settings.soundEnabled);
@@ -377,7 +366,7 @@ export default function App() {
     if (!session) return;
 
     const currentWord = session.words[session.currentIndex];
-    
+
     // Calculate Score multiplier
     const comboMultiplier = Math.min(3, 1 + Math.floor(session.streak / 5));
     const xpEarned = isCorrect ? (10 * comboMultiplier) : 0;
@@ -417,7 +406,7 @@ export default function App() {
     };
 
     wordSR.lastSeenTimestamp = Date.now();
-    
+
     if (isCorrect) {
       updatedStats.correctAnswers += 1;
       updatedStats.xp += xpEarned;
@@ -425,7 +414,7 @@ export default function App() {
       if (updatedStats.currentStreak > updatedStats.bestStreak) {
         updatedStats.bestStreak = updatedStats.currentStreak;
       }
-      
+
       // Spaced Repetition consecutive correct tracking
       if (!updatedStats.masteredWords.includes(currentWord.id)) {
         updatedStats.masteredWords.push(currentWord.id);
@@ -435,7 +424,7 @@ export default function App() {
       wordSR.consecutiveCorrect += 1;
       wordSR.failCount = 0; // reset fail count upon correct answer
       wordSR.box = Math.min(5, wordSR.box + 1);
-      
+
       // Box intervals: Box 1 (30s), Box 2 (2m), Box 3 (10m), Box 4 (1h), Box 5 (1d)
       const intervals = [0, 30 * 1000, 120 * 1000, 600 * 1000, 3600 * 1000, 86400 * 1000];
       wordSR.nextReviewTimestamp = Date.now() + intervals[wordSR.box];
@@ -592,15 +581,15 @@ export default function App() {
     if (isDaily) {
       const todayStr = new Date().toISOString().split('T')[0];
       const dailyKey = `daily-challenge-${todayStr}`;
-      
+
       const resultObj = {
         correctCount: finalSession.correctCount,
         timeTakenSeconds: (Date.now() - finalSession.startTime) / 1000,
         xpEarned: 100 + finalSession.correctCount * 5
       };
-      
+
       localStorage.setItem(dailyKey, JSON.stringify(resultObj));
-      
+
       // Update stats with Daily challenge completion XP
       const updatedStats = { ...stats };
       updatedStats.xp += resultObj.xpEarned;
@@ -625,7 +614,7 @@ export default function App() {
     let newlyUnlocked: Achievement[] = [];
     const updated = currentAchievements.map(ach => {
       if (ach.unlockedAt) return ach;
-      
+
       let unlocked = false;
       switch (ach.id) {
         case 'ach-seen-100':
@@ -656,7 +645,7 @@ export default function App() {
           break;
         }
       }
-      
+
       if (unlocked) {
         const updatedAch = { ...ach, unlockedAt: new Date().toLocaleDateString('es-ES') };
         newlyUnlocked.push(updatedAch);
@@ -667,503 +656,381 @@ export default function App() {
     return { updated, newlyUnlocked };
   };
 
+  // Navigating away from an in-progress session (via brand mark or nav tabs)
+  // exits it first so the tab underneath is what's shown next.
+  const goTo = (tab: typeof activeTab) => () => {
+    playClickSound(settings.soundEnabled);
+    if (session) handleExitSession();
+    setActiveTab(tab);
+  };
+
+  const totalAnswered = session ? session.words.length : 0;
+  const sessionIsEndless = session ? (session.mode === 'infinito' || session.mode === 'supervivencia') : false;
+
   return (
-    <div className="min-h-screen bg-black text-[#EDEDED] flex flex-col font-sans relative overflow-x-hidden select-none" id="app-root">
-      
-      {/* 1. Global Alert/Toast Notifications */}
+    <>
+      {/* Global Alert/Toast Notifications */}
       <AnimatePresence>
         {levelUpAlert.show && (
-          <motion.div 
-            initial={{ opacity: 0, y: -50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-white text-black px-6 py-3.5 border border-black flex items-center gap-3"
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.12 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#F5F5F0] text-black px-6 py-3.5 border border-black font-mono"
             id="toast-level-up"
           >
-            <div className="p-1.5 bg-black text-white animate-bounce">
-              <Sparkles className="w-5 h-5 fill-current text-white" />
-            </div>
-            <div>
-              <div className="text-xs font-mono font-bold tracking-widest uppercase opacity-60">¡SUBIDA DE NIVEL!</div>
-              <div className="font-display font-bold text-sm">Has alcanzado el Nivel {levelUpAlert.level}</div>
-            </div>
+            <div className="text-[9px] tracking-[0.2em] uppercase opacity-60">¡Subida de nivel!</div>
+            <div className="font-display text-lg mt-0.5">Has alcanzado el Nivel {levelUpAlert.level}</div>
           </motion.div>
         )}
 
         {unlockedAchievementToast && (
-          <motion.div 
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-6 right-6 z-50 bg-[#0d0d0d] text-white p-5 border border-[#262626] flex gap-3 max-w-sm"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.12 }}
+            className="fixed bottom-6 right-6 z-50 bg-black text-[#F5F5F0] p-5 border border-[#2a2a2a] max-w-sm font-mono"
             id="toast-achievement"
           >
-            <div className="p-2.5 bg-[#161616] border border-[#262626] text-white shrink-0">
-              <Trophy className="w-5 h-5" />
-            </div>
-            <div className="space-y-1 min-w-0">
-              <div className="text-[10px] font-mono font-bold tracking-widest uppercase text-[#8a8a8a]">Logro Desbloqueado</div>
-              <div className="font-semibold text-sm truncate">{unlockedAchievementToast.title}</div>
-              <p className="text-neutral-500 text-xs leading-relaxed">{unlockedAchievementToast.description}</p>
-            </div>
+            <div className="text-[9px] tracking-[0.2em] uppercase text-[#666] mb-1.5">Logro desbloqueado</div>
+            <div className="font-display text-lg truncate">{unlockedAchievementToast.title}</div>
+            <p className="text-[#888] text-xs leading-relaxed mt-1">{unlockedAchievementToast.description}</p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 2. Top Navigation / Status Bar matching the Clean Minimalism theme */}
-      <nav className="flex items-center justify-between px-8 py-6 border-b border-[#1F1F1F] bg-[#0A0A0A]" id="main-nav-header">
-        <div 
-          onClick={() => { if (!session) setActiveTab('inicio'); }}
-          className="flex items-center gap-3 cursor-pointer group select-none"
-          id="brand-logo"
-        >
-          <div className="w-8 h-8 bg-white flex items-center justify-center transition-all group-hover:scale-105 duration-200">
-            <span className="text-black font-black text-xl leading-none">A</span>
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight leading-none text-[#EDEDED] font-display">AcentOS</h1>
-            <p className="text-[10px] text-[#A1A1A1] uppercase tracking-[0.2em] mt-1 font-mono">Spanish Accent Trainer</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-8">
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] text-[#A1A1A1] uppercase tracking-wider font-mono">Racha</span>
-            <span className="text-sm font-mono text-[#EDEDED]">{stats.currentStreak}</span>
-          </div>
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] text-[#A1A1A1] uppercase tracking-wider font-mono">Precisión</span>
-            <span className="text-sm font-mono text-[#EDEDED]">{stats.accuracy}%</span>
-          </div>
-          <div className="flex flex-col items-end hidden sm:flex">
-            <span className="text-[10px] text-[#A1A1A1] uppercase tracking-wider font-mono">Nivel {stats.level}</span>
-            <span className="text-sm font-mono text-[#A1A1A1]">{stats.xp} XP</span>
-          </div>
-          <div 
-            onClick={() => {
-              playClickSound(settings.soundEnabled);
-              if (session) handleExitSession();
-              setActiveTab('configuracion');
-            }}
-            className="w-10 h-10 border border-[#262626] flex items-center justify-center cursor-pointer hover:bg-[#161616] transition-colors"
-          >
-            <div className="w-4 h-4 border-2 border-white"></div>
-          </div>
-        </div>
-      </nav>
+      <div className="min-h-screen bg-black flex justify-center px-4 sm:px-6 py-8 sm:py-12 font-mono box-border" id="app-root">
+        <div className="relative w-[1040px] max-w-full border border-[#2a2a2a] bg-black text-[#F5F5F0]">
 
-      {/* 3. Main Split Screen Shell */}
-      <div className="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto px-4 md:px-6 py-6 gap-6">
-        
-        {/* SIDE NAV - Hidden when in active practice session */}
-        {!session && (
-          <nav className="w-full md:w-56 shrink-0 flex flex-row md:flex-col gap-2 border-b md:border-b-0 md:border-r border-[#1F1F1F] pb-4 md:pb-0 md:pr-4 overflow-x-auto scrollbar-none" id="main-navigation">
-            {[
-              { id: 'inicio', label: 'Inicio', icon: Home },
-              { id: 'practicar', label: 'Entrenar', icon: Play },
-              { id: 'desafio', label: 'Desafío Diario', icon: Calendar },
-              { id: 'estadisticas', label: 'Estadísticas', icon: BarChart3 },
-              { id: 'logros', label: 'Logros', icon: Award },
-              { id: 'configuracion', label: 'Configuración', icon: SettingsIcon }
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    playClickSound(settings.soundEnabled);
-                    setActiveTab(tab.id as any);
-                  }}
-                  className={`flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-mono font-medium transition-all cursor-pointer border shrink-0 ${
-                    active
-                      ? 'bg-white text-black border-white'
-                      : 'bg-[#161616] border border-[#262626] text-[#A1A1A1] hover:bg-white hover:text-black hover:border-white'
-                  }`}
-                  id={`nav-tab-${tab.id}`}
+          {/* Corner registration marks */}
+          <div className="absolute -top-px -left-px w-3.5 h-3.5 border-t border-l border-[#555]" />
+          <div className="absolute -top-px -right-px w-3.5 h-3.5 border-t border-r border-[#555]" />
+          <div className="absolute -bottom-px -left-px w-3.5 h-3.5 border-b border-l border-[#555]" />
+          <div className="absolute -bottom-px -right-px w-3.5 h-3.5 border-b border-r border-[#555]" />
+
+          {/* TOPBAR */}
+          <div className="px-6 sm:px-[52px] pt-6 sm:pt-[34px]">
+            <div className="flex justify-between items-center gap-3 text-[9px] tracking-[0.22em] text-[#666] uppercase flex-wrap">
+              <span onClick={goTo('inicio')} className="cursor-pointer text-[#999] hover:text-[#F5F5F0] transition-colors" id="brand-logo">
+                AcentOS — ES
+              </span>
+              <span>Nivel {stats.level} · {stats.accuracy}% precisión · racha {stats.currentStreak}</span>
+            </div>
+
+            {/* NAV */}
+            <div className="flex gap-6 sm:gap-[30px] mt-5 pt-5 border-t border-[#1f1f1f] text-[10px] tracking-[0.18em] uppercase flex-wrap" id="main-navigation">
+              {NAV_ITEMS.map(item => {
+                const active = !session && activeTab === item.id;
+                return (
+                  <span
+                    key={item.id}
+                    onClick={goTo(item.id)}
+                    className={`cursor-pointer pb-1.5 border-b transition-colors ${
+                      active ? 'border-[#F5F5F0] text-[#F5F5F0]' : 'border-transparent text-[#777] hover:text-[#F5F5F0]'
+                    }`}
+                    id={`nav-tab-${item.id}`}
+                  >
+                    {item.label}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* CONTENT */}
+          <div className="px-6 sm:px-[52px] pt-8 sm:pt-11 pb-12 sm:pb-[60px]">
+            <AnimatePresence mode="wait">
+
+              {/* ACTIVE TRAINING VIEW */}
+              {session && !sessionCompleted && (
+                <motion.div
+                  key="active-session-tab"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
+                  id="active-session-container"
                 >
-                  <Icon className="w-4 h-4 shrink-0 stroke-[2]" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        )}
-
-        {/* MAIN VIEWER */}
-        <main className="flex-1 min-w-0" id="main-viewer">
-          <AnimatePresence mode="wait">
-            
-            {/* ACTIVE TRAINING VIEW */}
-            {session && !sessionCompleted && (
-              <motion.div
-                key="active-session-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-6"
-                id="active-session-container"
-              >
-                {/* Back out button */}
-                <div className="flex justify-between items-center">
-                  <button
-                    onClick={handleExitSession}
-                    className="flex items-center gap-1.5 text-xs font-mono text-neutral-500 hover:text-white transition-colors cursor-pointer"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Abandonar sesión</span>
-                  </button>
-                  <span className="text-xs font-mono text-neutral-500">
-                    Palabra {session.currentIndex + 1} de {session.mode === 'infinito' || session.mode === 'supervivencia' ? '∞' : session.words.length}
-                  </span>
-                </div>
-
-                {session.words[session.currentIndex] && (
-                  // Keyed wrapper: changing the key on each word remounts ExerciseCard
-                  // with fresh state, so the previous word's answer/feedback never
-                  // flashes for a frame before the new exercise renders.
-                  <div key={`${session.mode}-${session.currentIndex}`}>
-                    <ExerciseCard
-                      word={session.words[session.currentIndex]}
-                      mode={resolveRenderMode(session.mode, session.currentIndex)}
-                      settings={settings}
-                      comboStreak={session.streak}
-                      timeLeft={session.mode === 'supervivencia' ? session.timeLeft : undefined}
-                      onAnswer={handleAnswerReceived}
-                      onNext={handleNextWord}
-                    />
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {/* RESULTS VIEW */}
-            {session && sessionCompleted && (
-              <motion.div
-                key="session-completed-tab"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                className="space-y-6 max-w-xl mx-auto"
-                id="session-completed-panel"
-              >
-                <div className="text-center space-y-2">
-                  <span className="text-[10px] font-mono tracking-widest text-white uppercase border border-[#262626] bg-[#161616] px-3 py-1">
-                    Sesión Completada
-                  </span>
-                  <h2 className="text-3xl font-bold tracking-tight text-white font-display pt-2">Resumen de Práctica</h2>
-                  <p className="text-neutral-500 text-sm">Análisis de rendimiento inmediato sobre el set de acentuación</p>
-                </div>
-
-                {/* Score stats grid */}
-                <div className="grid grid-cols-3 gap-4 border border-[#262626] p-6 bg-[#0d0d0d] text-center">
-                  <div>
-                    <span className="text-[#8a8a8a] text-[10px] uppercase font-mono tracking-widest block">Aciertos</span>
-                    <span className="text-2xl font-bold text-white block mt-1">{session.correctCount} / {session.words.length}</span>
-                    <span className="text-[10px] text-[#8a8a8a] font-mono">palabras</span>
-                  </div>
-                  <div>
-                    <span className="text-[#8a8a8a] text-[10px] uppercase font-mono tracking-widest block">Precisión</span>
-                    <span className="text-2xl font-bold text-white block mt-1">
-                      {session.words.length > 0 ? Math.round((session.correctCount / session.words.length) * 100) : 0}%
-                    </span>
-                    <span className="text-[10px] text-[#8a8a8a] font-mono">porcentaje</span>
-                  </div>
-                  <div>
-                    <span className="text-[#8a8a8a] text-[10px] uppercase font-mono tracking-widest block">Tiempo</span>
-                    <span className="text-2xl font-bold text-white block mt-1">
-                      {((Date.now() - session.startTime) / 1000).toFixed(0)}s
-                    </span>
-                    <span className="text-[10px] text-[#8a8a8a] font-mono">duración total</span>
-                  </div>
-                </div>
-
-                {/* Word review list */}
-                <div className="bg-[#0d0d0d] border border-[#262626] p-5 space-y-4">
-                  <h3 className="text-xs font-semibold tracking-widest text-[#A1A1A1] uppercase font-mono">
-                    Revisión del Vocabulario
-                  </h3>
-                  <div className="divide-y divide-[#1a1a1a] max-h-56 overflow-y-auto pr-1">
-                    {session.words.map((w, wIdx) => {
-                      const histItem = session.history.find(h => h.wordId === w.id);
-                      const isWordCorrect = histItem ? histItem.isCorrect : false;
-                      const isSelected = selectedResultWord?.id === w.id;
-
-                      return (
-                        <div key={wIdx} className="py-2.5">
-                          <div 
-                            onClick={() => {
-                              playClickSound(settings.soundEnabled);
-                              setSelectedResultWord(isSelected ? null : w);
-                            }}
-                            className="flex justify-between items-center cursor-pointer hover:bg-[#161616] px-2 py-1 transition-colors"
-                          >
-                            <span className="font-display text-sm font-semibold text-white">{w.word}</span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-mono text-[#8a8a8a] uppercase">{w.classification}</span>
-                              {isWordCorrect ? (
-                                <span className="w-5 h-5 flex items-center justify-center bg-white text-black">
-                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                </span>
-                              ) : (
-                                <span className="w-5 h-5 flex items-center justify-center border border-white text-white">
-                                  <X className="w-3.5 h-3.5 stroke-[3]" />
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Extra info collapsible details */}
-                          {isSelected && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              className="mt-2 p-3 bg-[#161616] border border-[#262626] text-xs space-y-2"
-                            >
-                              <div className="flex justify-between text-[11px] font-mono text-[#A1A1A1]">
-                                <span>Silabeo: {w.syllables.join(' • ')}</span>
-                                <span>Regla: {w.rule}</span>
-                              </div>
-                              <p className="text-[#EDEDED] italic">"{w.explanation}"</p>
-                            </motion.div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Return controls */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-3">
-                  <button
-                    onClick={() => handleStartPractice(session.mode)}
-                    className="flex-1 py-3 bg-white text-black font-semibold hover:bg-neutral-200 transition-all flex justify-center items-center gap-2 text-sm cursor-pointer"
-                  >
-                    <RotateCcw className="w-4 h-4 text-black" />
-                    Practicar de Nuevo
-                  </button>
-                  <button
-                    onClick={handleExitSession}
-                    className="flex-1 py-3 bg-[#0d0d0d] hover:bg-[#161616] border border-[#262626] text-white font-semibold transition-all text-sm cursor-pointer"
-                  >
-                    Volver a Modos
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* LANDING TAB: INICIO */}
-            {!session && activeTab === 'inicio' && (
-              <motion.div
-                key="inicio-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-8"
-                id="inicio-view"
-              >
-                {/* Hero Card layout */}
-                <div className="bg-[#161616] border border-[#262626] p-8 md:p-12 space-y-6 text-center max-w-2xl mx-auto relative overflow-hidden">
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-mono tracking-widest text-[#A1A1A1] uppercase">
-                      SPANISH ACCENT TRAINER
-                    </span>
-                    <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#EDEDED] font-display">AcentOS</h2>
-                    <p className="text-[#A1A1A1] text-sm max-w-md mx-auto leading-relaxed pt-2">
-                      Desarrollá intuición ortográfica instantánea sobre cuándo una palabra lleva tilde y cuándo no. Práctica rápida, inteligente y adictiva diseñada para sesiones de 2 a 10 minutos.
-                    </p>
-                  </div>
-
-                  <div className="flex justify-center pt-3">
-                    <button
-                      onClick={() => setActiveTab('practicar')}
-                      className="px-8 py-3.5 bg-white text-black font-bold hover:bg-neutral-200 active:scale-[0.98] transition-all flex items-center gap-2 text-sm cursor-pointer"
+                  <div className="flex justify-between items-baseline mb-11">
+                    <span
+                      onClick={handleExitSession}
+                      className="text-[10px] text-[#666] cursor-pointer underline underline-offset-2 hover:text-[#F5F5F0] transition-colors"
                     >
-                      Comenzar Entrenamiento
-                      <ChevronRight className="w-4 h-4 text-black stroke-[3]" />
+                      ← abandonar sesión
+                    </span>
+                    <span className="text-[10px] text-[#666] uppercase tracking-[0.12em]">
+                      Palabra {session.currentIndex + 1} de {sessionIsEndless ? '∞' : totalAnswered}
+                    </span>
+                  </div>
+
+                  {session.words[session.currentIndex] && (
+                    <div key={`${session.mode}-${session.currentIndex}`}>
+                      <ExerciseCard
+                        word={session.words[session.currentIndex]}
+                        mode={resolveRenderMode(session.mode, session.currentIndex)}
+                        settings={settings}
+                        comboStreak={session.streak}
+                        timeLeft={session.mode === 'supervivencia' ? session.timeLeft : undefined}
+                        onAnswer={handleAnswerReceived}
+                        onNext={handleNextWord}
+                      />
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* RESULTS VIEW */}
+              {session && sessionCompleted && (
+                <motion.div
+                  key="session-completed-tab"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
+                  id="session-completed-panel"
+                >
+                  <div className="max-w-xl mx-auto text-center pb-9 border-b border-[#1a1a1a]">
+                    <span className="text-[9px] tracking-[0.2em] text-[#666] uppercase border border-[#2a2a2a] px-3 py-1 inline-block">
+                      Sesión completada
+                    </span>
+                    <div className="font-display text-[34px] mt-4">Resumen de práctica</div>
+                    <p className="text-[#888] text-xs mt-2">Análisis de rendimiento sobre el set de acentuación</p>
+                  </div>
+
+                  <div className="max-w-xl mx-auto grid grid-cols-3 border-b border-[#1a1a1a]">
+                    <div className="py-[26px] text-center border-r border-[#1a1a1a]">
+                      <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Aciertos</div>
+                      <div className="font-display text-[34px] sm:text-[42px] mt-2.5">{session.correctCount} / {session.words.length}</div>
+                    </div>
+                    <div className="py-[26px] text-center border-r border-[#1a1a1a]">
+                      <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Precisión</div>
+                      <div className="font-display text-[34px] sm:text-[42px] mt-2.5">
+                        {session.words.length > 0 ? Math.round((session.correctCount / session.words.length) * 100) : 0}%
+                      </div>
+                    </div>
+                    <div className="py-[26px] text-center">
+                      <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Tiempo</div>
+                      <div className="font-display text-[34px] sm:text-[42px] mt-2.5">
+                        {((Date.now() - session.startTime) / 1000).toFixed(0)}s
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="max-w-xl mx-auto mt-9">
+                    <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase mb-3">Revisión del vocabulario</div>
+                    <div className="divide-y divide-[#1a1a1a] border-t border-[#1a1a1a] max-h-56 overflow-y-auto pr-1">
+                      {session.words.map((w, wIdx) => {
+                        const histItem = session.history.find(h => h.wordId === w.id);
+                        const isWordCorrect = histItem ? histItem.isCorrect : false;
+                        const isSelected = selectedResultWord?.id === w.id;
+
+                        return (
+                          <div key={wIdx}>
+                            <div
+                              onClick={() => {
+                                playClickSound(settings.soundEnabled);
+                                setSelectedResultWord(isSelected ? null : w);
+                              }}
+                              className="flex justify-between items-center cursor-pointer hover:bg-[#0d0d0d] px-2 py-2.5 transition-colors"
+                            >
+                              <span className="font-display text-lg">{w.word}</span>
+                              <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-mono text-[#666] uppercase">{w.classification}</span>
+                                <span className={`text-sm ${isWordCorrect ? 'text-[#F5F5F0]' : 'text-[#777]'}`}>
+                                  {isWordCorrect ? '✓' : '✗'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {isSelected && (
+                              <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.12 }}
+                                className="px-2 pb-3 space-y-1.5"
+                              >
+                                <div className="flex justify-between text-[11px] font-mono text-[#888]">
+                                  <span>Silabeo: {w.syllables.join(' • ')}</span>
+                                  <span>Regla: {w.rule}</span>
+                                </div>
+                                <p className="text-[#999] text-xs italic">"{w.explanation}"</p>
+                              </motion.div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="max-w-xl mx-auto flex flex-col sm:flex-row gap-3 pt-9">
+                    <button
+                      onClick={() => handleStartPractice(session.mode)}
+                      className="flex-1 py-3 bg-[#F5F5F0] text-black text-xs tracking-[0.1em] cursor-pointer hover:bg-[#d4d4d4] transition-colors"
+                    >
+                      Practicar de nuevo
+                    </button>
+                    <button
+                      onClick={handleExitSession}
+                      className="flex-1 py-3 border border-[#2a2a2a] text-[#999] text-xs tracking-[0.1em] cursor-pointer hover:border-[#F5F5F0] hover:text-[#F5F5F0] transition-colors"
+                    >
+                      Volver a modos
                     </button>
                   </div>
-                </div>
+                </motion.div>
+              )}
 
-                {/* Secondary Quick Access grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
-                  <div
-                    onClick={() => setActiveTab('desafio')}
-                    className="bg-[#161616] border border-[#262626] p-5 cursor-pointer hover:bg-white hover:text-black group transition-all duration-200 flex flex-col justify-between"
-                  >
-                    <div>
-                      <Calendar className="w-5 h-5 text-[#EDEDED] group-hover:text-black transition-colors" />
-                      <h4 className="text-sm font-semibold text-[#EDEDED] group-hover:text-black transition-colors mt-3 font-display">Desafío Diario</h4>
-                      <p className="text-[#A1A1A1] group-hover:text-black/80 transition-colors text-xs mt-1">Prueba fija de 20 palabras.</p>
+              {/* LANDING TAB: INICIO */}
+              {!session && activeTab === 'inicio' && (
+                <motion.div
+                  key="inicio-tab"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
+                  id="inicio-view"
+                >
+                  <div className="text-center pt-9 pb-[52px] border-b border-[#1a1a1a]">
+                    <div className="text-[9px] tracking-[0.3em] text-[#666] uppercase mb-[26px]">
+                      Entrenador de acentuación en español
                     </div>
-                    <span className="text-[10px] font-mono text-[#A1A1A1] group-hover:text-black transition-colors mt-4 flex items-center gap-1">Entrar <ChevronRight className="w-3 h-3" /></span>
+                    <div className="font-display italic text-[64px] sm:text-[104px] leading-[0.95]">AcentOS</div>
+                    <p className="text-[#999] text-[13px] max-w-[440px] mx-auto mt-6 leading-[1.8]">
+                      Sesiones de 2 a 10 minutos para saber, sin dudar, cuándo una palabra lleva tilde.
+                    </p>
+                    <div className="flex justify-center gap-3.5 mt-9 flex-wrap">
+                      <button
+                        onClick={goTo('practicar')}
+                        className="px-8 py-[15px] border border-[#F5F5F0] text-xs tracking-[0.1em] cursor-pointer hover:bg-[#F5F5F0] hover:text-black transition-colors"
+                      >
+                        Comenzar entrenamiento
+                      </button>
+                      <button
+                        onClick={goTo('desafio')}
+                        className="px-8 py-[15px] border border-[#2a2a2a] text-[#999] text-xs tracking-[0.1em] cursor-pointer hover:border-[#F5F5F0] hover:text-[#F5F5F0] transition-colors"
+                      >
+                        Desafío diario
+                      </button>
+                    </div>
                   </div>
 
-                  <div
-                    onClick={() => setActiveTab('estadisticas')}
-                    className="bg-[#161616] border border-[#262626] p-5 cursor-pointer hover:bg-white hover:text-black group transition-all duration-200 flex flex-col justify-between"
-                  >
-                    <div>
-                      <BarChart3 className="w-5 h-5 text-[#EDEDED] group-hover:text-black transition-colors" />
-                      <h4 className="text-sm font-semibold text-[#EDEDED] group-hover:text-black transition-colors mt-3 font-display">Estadísticas</h4>
-                      <p className="text-[#A1A1A1] group-hover:text-black/80 transition-colors text-xs mt-1">Analizá tus perfiles de error.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3">
+                    <div
+                      onClick={goTo('desafio')}
+                      className="pt-6 sm:pt-[26px] pb-6 sm:pb-0 px-0 sm:pr-[26px] border-b sm:border-b-0 sm:border-r border-[#1a1a1a] cursor-pointer"
+                    >
+                      <div className="text-[9px] tracking-[0.2em] text-[#666] mb-3">02</div>
+                      <div className="font-display text-[22px]">Desafío Diario</div>
+                      <p className="text-[#888] text-[11px] mt-2 leading-relaxed">Prueba fija de 20 palabras.</p>
                     </div>
-                    <span className="text-[10px] font-mono text-[#A1A1A1] group-hover:text-black transition-colors mt-4 flex items-center gap-1">Ver <ChevronRight className="w-3 h-3" /></span>
+                    <div
+                      onClick={goTo('estadisticas')}
+                      className="pt-6 sm:pt-[26px] pb-6 sm:pb-0 px-0 sm:px-[26px] border-b sm:border-b-0 sm:border-r border-[#1a1a1a] cursor-pointer"
+                    >
+                      <div className="text-[9px] tracking-[0.2em] text-[#666] mb-3">03</div>
+                      <div className="font-display text-[22px]">Estadísticas</div>
+                      <p className="text-[#888] text-[11px] mt-2 leading-relaxed">Analizá tus perfiles de error.</p>
+                    </div>
+                    <div
+                      onClick={goTo('configuracion')}
+                      className="pt-6 sm:pt-[26px] px-0 sm:pl-[26px] cursor-pointer"
+                    >
+                      <div className="text-[9px] tracking-[0.2em] text-[#666] mb-3">04</div>
+                      <div className="font-display text-[22px]">Configuración</div>
+                      <p className="text-[#888] text-[11px] mt-2 leading-relaxed">Audio, sílabas y explicaciones.</p>
+                    </div>
                   </div>
 
-                  <div
-                    onClick={() => setActiveTab('configuracion')}
-                    className="bg-[#161616] border border-[#262626] p-5 cursor-pointer hover:bg-white hover:text-black group transition-all duration-200 flex flex-col justify-between"
-                  >
-                    <div>
-                      <SettingsIcon className="w-5 h-5 text-[#EDEDED] group-hover:text-black transition-colors" />
-                      <h4 className="text-sm font-semibold text-[#EDEDED] group-hover:text-black transition-colors mt-3 font-display">Configuración</h4>
-                      <p className="text-[#A1A1A1] group-hover:text-black/80 transition-colors text-xs mt-1">Audio, sílabas y explicaciones.</p>
-                    </div>
-                    <span className="text-[10px] font-mono text-[#A1A1A1] group-hover:text-black transition-colors mt-4 flex items-center gap-1">Ajustar <ChevronRight className="w-3 h-3" /></span>
-                  </div>
-                </div>
+                  <p className="text-center text-[10px] text-[#555] mt-[52px] leading-[1.8] max-w-[440px] mx-auto">
+                    AcentOS — pensado para estudiantes de ELE, docentes y autodidactas. Todo el progreso se guarda localmente.
+                  </p>
+                </motion.div>
+              )}
 
-                {/* Elegant credits disclaimer */}
-                <div className="text-center text-[11px] font-mono text-neutral-600 max-w-sm mx-auto pt-6">
-                  AcentOS — Spanish Accent Trainer. Diseñado para estudiantes de ELE, docentes y autodidactas. Todo el progreso se almacena localmente.
-                </div>
-              </motion.div>
-            )}
+              {/* PRACTICE SELECTOR TAB */}
+              {!session && activeTab === 'practicar' && (
+                <motion.div
+                  key="practicar-tab"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
+                >
+                  <PracticeSelector onSelectMode={handleStartPractice} />
+                </motion.div>
+              )}
 
-            {/* PRACTICE SELECTOR TAB */}
-            {!session && activeTab === 'practicar' && (
-              <motion.div
-                key="practicar-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <PracticeSelector onSelectMode={handleStartPractice} />
-              </motion.div>
-            )}
+              {/* DAILY CHALLENGE TAB */}
+              {!session && activeTab === 'desafio' && (
+                <motion.div
+                  key="desafio-tab"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
+                >
+                  <DailyChallenge stats={stats} onStartChallenge={handleStartDailyChallenge} />
+                </motion.div>
+              )}
 
-            {/* DAILY CHALLENGE TAB */}
-            {!session && activeTab === 'desafio' && (
-              <motion.div
-                key="desafio-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <DailyChallenge stats={stats} onStartChallenge={handleStartDailyChallenge} />
-              </motion.div>
-            )}
+              {/* STATS TAB */}
+              {!session && activeTab === 'estadisticas' && (
+                <motion.div
+                  key="estadisticas-tab"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
+                >
+                  <StatsDashboard
+                    stats={stats}
+                    onResetStats={handleResetProgress}
+                    onStartFocusSession={(categories) => {
+                      handleStartPractice('personalizado', {
+                        levels: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+                        categories: categories,
+                        timeLimit: 120
+                      });
+                    }}
+                  />
+                </motion.div>
+              )}
 
-            {/* STATS TAB */}
-            {!session && activeTab === 'estadisticas' && (
-              <motion.div
-                key="estadisticas-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <StatsDashboard 
-                  stats={stats} 
-                  onResetStats={handleResetProgress} 
-                  onStartFocusSession={(categories) => {
-                    handleStartPractice('personalizado', {
-                      levels: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
-                      categories: categories,
-                      timeLimit: 120
-                    });
-                  }}
-                />
-              </motion.div>
-            )}
+              {/* ACHIEVEMENTS TAB */}
+              {!session && activeTab === 'logros' && (
+                <motion.div
+                  key="logros-tab"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
+                >
+                  <AchievementsPanel stats={stats} achievements={achievements} />
+                </motion.div>
+              )}
 
-            {/* ACHIEVEMENTS TAB */}
-            {!session && activeTab === 'logros' && (
-              <motion.div
-                key="logros-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <AchievementsPanel stats={stats} achievements={achievements} />
-              </motion.div>
-            )}
+              {/* CONFIGURATION TAB */}
+              {!session && activeTab === 'configuracion' && (
+                <motion.div
+                  key="configuracion-tab"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.12 }}
+                >
+                  <SettingsPanel
+                    settings={settings}
+                    onChangeSettings={saveSettingsToStorage}
+                    onResetStats={handleResetProgress}
+                  />
+                </motion.div>
+              )}
 
-            {/* CONFIGURATION TAB */}
-            {!session && activeTab === 'configuracion' && (
-              <motion.div
-                key="configuracion-tab"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-              >
-                <SettingsPanel 
-                  settings={settings} 
-                  onChangeSettings={saveSettingsToStorage}
-                  onResetStats={handleResetProgress}
-                />
-              </motion.div>
-            )}
-
-          </AnimatePresence>
-        </main>
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
-
-      {/* 4. Bottom Command Bar in Clean Minimalism Style */}
-      <footer className="px-8 py-6 border-t border-[#1F1F1F] bg-[#0A0A0A] flex flex-col sm:flex-row items-center justify-between gap-4 text-[#555] mt-auto select-none" id="app-footer">
-        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 text-[11px] uppercase tracking-wider font-medium">
-          <div 
-            onClick={() => {
-              playClickSound(settings.soundEnabled);
-              if (session) handleExitSession();
-              setActiveTab('inicio');
-            }}
-            className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors"
-          >
-            <span className="px-1.5 py-0.5 bg-[#161616] border border-[#262626] text-[#888] text-[9px] font-mono">ESC</span>
-            Menú
-          </div>
-          <div 
-            onClick={() => {
-              playClickSound(settings.soundEnabled);
-              if (session) handleExitSession();
-              setActiveTab('estadisticas');
-            }}
-            className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors"
-          >
-            <span className="px-1.5 py-0.5 bg-[#161616] border border-[#262626] text-[#888] text-[9px] font-mono">H</span>
-            Historial
-          </div>
-          <div 
-            onClick={() => {
-              playClickSound(settings.soundEnabled);
-              if (session) handleExitSession();
-              setActiveTab('configuracion');
-            }}
-            className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors"
-          >
-            <span className="px-1.5 py-0.5 bg-[#161616] border border-[#262626] text-[#888] text-[9px] font-mono">T</span>
-            Ajustes
-          </div>
-        </div>
-
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-32 h-1.5 bg-[#161616] overflow-hidden border border-[#262626]">
-              <div
-                className="h-full bg-[#EDEDED] transition-all duration-300"
-                style={{ width: `${Math.min(100, ((stats.xp % 150) / 150) * 100)}%` }}
-              />
-            </div>
-            <span className="text-[11px] uppercase tracking-widest text-[#A1A1A1] font-mono">Nivel {stats.level}</span>
-          </div>
-          <div className="w-[1px] h-4 bg-[#262626] hidden sm:block"></div>
-          <div className="text-[11px] flex items-center gap-2 text-[#A1A1A1] font-mono">
-            <span className="w-2 h-2 bg-[#A1A1A1] animate-pulse"></span>
-            Autoguardado
-          </div>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }
