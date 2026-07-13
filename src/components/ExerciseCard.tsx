@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Word, GameMode, AppSettings, WordClassification } from '../types';
-import { isAmbiguousWord, getHomophonePartner } from '../data/words';
+import { isAmbiguousWord, getHomophonePartner, getMisaccentedForm } from '../data/words';
 import {
   playClickSound,
   playCorrectSound,
@@ -146,19 +146,10 @@ export default function ExerciseCard({
       // (el↔él, qué↔que). The example sentence + sense decide which one is correct.
       incorrectOption = getHomophonePartner(word);
     } else if (!word.hasTilde) {
-      // If original doesn't have a tilde, create a fake incorrect accented syllable
-      // e.g., "reloj" -> "relój"
-      const syllables = [...word.syllables];
-      if (syllables.length > 0) {
-        // Place a tilde on the stressed syllable vowel incorrectly
-        if (word.id === 'reloj') incorrectOption = 'relój';
-        else if (word.id === 'pared') incorrectOption = 'paréd';
-        else if (word.id === 'cantar') incorrectOption = 'cantár';
-        else if (word.id === 'mesa') incorrectOption = 'mésa';
-        else if (word.id === 'examen') incorrectOption = 'exámen';
-        else if (word.id === 'joven') incorrectOption = 'jóven';
-        else incorrectOption = word.wordClean + '́'; // fallback marker
-      }
+      // If original doesn't have a tilde, the distractor is the same word with a tilde
+      // wrongly placed on its stressed vowel (e.g., "reloj" -> "relój"). The tilde always
+      // lands on a vowel — never on a consonant like "l" or "s".
+      incorrectOption = getMisaccentedForm(word);
     }
 
     // Deterministic ordering based on word id length
@@ -337,11 +328,11 @@ export default function ExerciseCard({
                   <button
                     key={oIdx}
                     onClick={() => handleComparisonAnswer(opt)}
-                    className={`w-[220px] p-7 border border-[#2a2a2a] text-left hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
+                    className={`w-full max-w-[220px] p-7 border border-[#2a2a2a] text-left hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
                     id={`btn-option-${oIdx}`}
                   >
                     <div className="text-[9px] text-[#666] tracking-[0.1em] mb-3 uppercase">Opción {oIdx + 1}</div>
-                    <div className="display-heavy text-[32px]">{opt}</div>
+                    <div className="display-heavy text-[32px] break-words">{opt}</div>
                   </button>
                 ))}
               </div>
@@ -393,7 +384,7 @@ export default function ExerciseCard({
                     className={`w-[140px] text-center py-4 border border-[#2a2a2a] hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
                     id={`btn-classification-${item.id}`}
                   >
-                    <div className="display-heavy text-base">{item.label}</div>
+                    <div className="display-heavy text-base break-words leading-tight">{item.label}</div>
                     <div className="text-[9px] text-[#666] mt-1.5">[ {item.key} ]</div>
                   </button>
                 ))}

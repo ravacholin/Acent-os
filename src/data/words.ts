@@ -443,3 +443,36 @@ export function getHomophonePartner(word: Word): string {
   // Sin pareja en la base: alterna la tilde.
   return word.hasTilde ? word.wordClean : word.word;
 }
+
+const VOWEL_TO_ACCENTED: Record<string, string> = { a: 'á', e: 'é', i: 'í', o: 'ó', u: 'ú' };
+
+// Coloca una tilde sobre la vocal tónica de una sílaba (prioriza la vocal abierta
+// a/e/o; si no hay, usa la última vocal). Nunca acentúa una consonante.
+function accentSyllableVowel(syllable: string): string {
+  const chars = [...syllable];
+  const vowelIdxs = chars.flatMap((c, i) => ('aeiou'.includes(c.toLowerCase()) ? [i] : []));
+  if (vowelIdxs.length === 0) return syllable;
+  const target =
+    vowelIdxs.find(i => 'aeo'.includes(chars[i].toLowerCase())) ?? vowelIdxs[vowelIdxs.length - 1];
+  chars[target] = VOWEL_TO_ACCENTED[chars[target].toLowerCase()] ?? chars[target];
+  return chars.join('');
+}
+
+/**
+ * Genera la grafía "distractora" para una palabra que correctamente NO lleva tilde:
+ * la misma palabra con una tilde mal colocada sobre su vocal tónica
+ * (p. ej. "reloj" → "relój", "papel" → "papél"). A diferencia del enfoque anterior,
+ * la tilde siempre cae sobre una vocal, nunca sobre una consonante (evita "papeĺ").
+ */
+export function getMisaccentedForm(word: Word): string {
+  const { syllables, stressedSyllableIdx: idx } = word;
+  const target = syllables[idx];
+  if (target) {
+    const accented = accentSyllableVowel(target);
+    if (accented !== target) {
+      return [...syllables.slice(0, idx), accented, ...syllables.slice(idx + 1)].join('');
+    }
+  }
+  // Respaldo: acentúa la primera vocal de la palabra limpia (sigue sin tocar consonantes).
+  return word.wordClean.replace(/[aeiou]/i, m => VOWEL_TO_ACCENTED[m.toLowerCase()] ?? m);
+}
