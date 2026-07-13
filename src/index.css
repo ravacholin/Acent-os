@@ -53,6 +53,7 @@ body {
     text-transform: uppercase;
     letter-spacing: -0.02em;
     line-height: 0.95;
+    overflow-wrap: break-word;
   }
 
   /* Titular secundario: pesado pero sin expandir, para subencabezados de panel. */
@@ -61,6 +62,8 @@ body {
     font-weight: 800;
     letter-spacing: -0.015em;
     line-height: 1;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .brutal-card {
