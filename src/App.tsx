@@ -7,7 +7,8 @@ import {
   GameSessionState,
   Word,
   WordCategory,
-  LevelMCER
+  LevelMCER,
+  DEFAULT_SETTINGS
 } from './types';
 import { WORDS_DATABASE, isAmbiguousWord } from './data/words';
 import { calculateErrorProfiles, getWeakCategories } from './utils/errorAnalysis';
@@ -15,11 +16,10 @@ import PracticeSelector from './components/PracticeSelector';
 import StatsDashboard from './components/StatsDashboard';
 import { INITIAL_ACHIEVEMENTS } from './components/AchievementsPanel';
 import DailyChallenge from './components/DailyChallenge';
-import SettingsPanel, { DEFAULT_SETTINGS } from './components/SettingsPanel';
 import ExerciseCard from './components/ExerciseCard';
 import { playClickSound, playCorrectSound, speakWord } from './utils/audio';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 
 // Default empty stats template
 const DEFAULT_STATS: UserStats = {
@@ -106,7 +106,7 @@ function rememberSeen(ids: string[]) {
 // Tres destinos de nivel superior. "desafio" es una sub-vista de Entrenar (no aparece
 // en la barra; se llega desde la tarjeta de la portada) — se conserva como valor propio
 // porque triggerSessionWrapUp lo usa para detectar el desafío diario.
-type Tab = 'entrenar' | 'progreso' | 'ajustes' | 'desafio';
+type Tab = 'entrenar' | 'progreso' | 'desafio';
 
 const NAV_ITEMS: { id: Tab; label: string }[] = [
   { id: 'entrenar', label: 'Entrenar' },
@@ -666,6 +666,14 @@ export default function App() {
     setActiveTab(tab);
   };
 
+  // Alterna los efectos de sonido desde el icono de altavoz de la barra.
+  // El clic de feedback solo se oye cuando el sonido queda activado.
+  const toggleSound = () => {
+    const nextSoundEnabled = !settings.soundEnabled;
+    playClickSound(nextSoundEnabled);
+    saveSettingsToStorage({ ...settings, soundEnabled: nextSoundEnabled });
+  };
+
   const totalAnswered = session ? session.words.length : 0;
   const sessionIsEndless = session ? (session.mode === 'infinito' || session.mode === 'supervivencia') : false;
 
@@ -721,7 +729,7 @@ export default function App() {
               <span>Nivel {stats.level} · {stats.accuracy}% · racha {stats.currentStreak}</span>
             </div>
 
-            {/* NAV — dos destinos de texto + engranaje de Ajustes */}
+            {/* NAV — dos destinos de texto + icono de sonido */}
             <div className="flex justify-between items-center gap-6 mt-5 pt-5 border-t border-[#1f1f1f]" id="main-navigation">
               <div className="flex gap-6 sm:gap-[30px] text-[10px] tracking-[0.18em] uppercase">
                 {NAV_ITEMS.map(item => {
@@ -741,15 +749,16 @@ export default function App() {
                 })}
               </div>
               <button
-                onClick={goTo('ajustes')}
-                aria-label="Ajustes"
-                title="Ajustes"
-                className={`shrink-0 pb-1.5 transition-colors ${
-                  !session && activeTab === 'ajustes' ? 'text-[#F5F5F0]' : 'text-[#777] hover:text-[#F5F5F0]'
-                }`}
-                id="nav-tab-ajustes"
+                onClick={toggleSound}
+                aria-label={settings.soundEnabled ? 'Silenciar sonido' : 'Activar sonido'}
+                title={settings.soundEnabled ? 'Silenciar sonido' : 'Activar sonido'}
+                aria-pressed={settings.soundEnabled}
+                className="shrink-0 pb-1.5 text-[#777] hover:text-[#F5F5F0] transition-colors"
+                id="nav-toggle-sound"
               >
-                <Settings size={16} strokeWidth={1.5} />
+                {settings.soundEnabled
+                  ? <Volume2 size={16} strokeWidth={1.5} />
+                  : <VolumeX size={16} strokeWidth={1.5} />}
               </button>
             </div>
           </div>
@@ -978,23 +987,6 @@ export default function App() {
                         timeLimit: 120
                       });
                     }}
-                  />
-                </motion.div>
-              )}
-
-              {/* AJUSTES — desde el engranaje */}
-              {!session && activeTab === 'ajustes' && (
-                <motion.div
-                  key="ajustes-tab"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.12 }}
-                >
-                  <SettingsPanel
-                    settings={settings}
-                    onChangeSettings={saveSettingsToStorage}
-                    onResetStats={handleResetProgress}
                   />
                 </motion.div>
               )}
