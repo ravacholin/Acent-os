@@ -61,6 +61,18 @@ export interface AppSettings {
   showLevel: boolean;
 }
 
+// Preferencias por defecto. El sonido es lo único que el usuario puede alternar
+// (icono de altavoz en la barra); el resto queda fijo en estos valores.
+export const DEFAULT_SETTINGS: AppSettings = {
+  darkModeOnly: true,
+  soundEnabled: true,
+  animationsEnabled: true,
+  showExplanationOnError: true,
+  showSyllables: true,
+  showRule: true,
+  showLevel: true
+};
+
 export interface UserStats {
   wordsSeen: number;
   correctAnswers: number;
