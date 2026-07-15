@@ -34,8 +34,15 @@ export default function ExerciseCard({
   const [userVal, setUserVal] = useState<string>('');
   const [selectedLetterIdx, setSelectedLetterIdx] = useState<number | null>(null);
 
+  // Swipe gesture state for Mode 1 (¿Lleva tilde?): drag right = Sí, left = No
+  const [swipeOffset, setSwipeOffset] = useState<number>(0);
+  const touchStartXRef = useRef<number | null>(null);
+
   const startTimeRef = useRef<number>(Date.now());
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Minimum horizontal distance (px) that counts as a deliberate swipe
+  const SWIPE_THRESHOLD = 70;
 
   // Restart state on word change
   useEffect(() => {
@@ -43,6 +50,8 @@ export default function ExerciseCard({
     setIsCorrect(false);
     setUserVal('');
     setSelectedLetterIdx(null);
+    setSwipeOffset(0);
+    touchStartXRef.current = null;
     startTimeRef.current = Date.now();
 
     // Auto focus inputs for keyboard entry modes
@@ -108,6 +117,33 @@ export default function ExerciseCard({
     if (answered) return;
     const correct = word.hasTilde === hasTildeAnswer;
     submitAnswer(correct);
+  };
+
+  // Swipe gestures for Mode 1: drag right → Sí, drag left → No
+  const handleSwipeTouchStart = (e: React.TouchEvent) => {
+    if (answered) return;
+    touchStartXRef.current = e.touches[0].clientX;
+  };
+
+  const handleSwipeTouchMove = (e: React.TouchEvent) => {
+    if (answered || touchStartXRef.current === null) return;
+    setSwipeOffset(e.touches[0].clientX - touchStartXRef.current);
+  };
+
+  const handleSwipeTouchEnd = () => {
+    if (answered || touchStartXRef.current === null) {
+      setSwipeOffset(0);
+      touchStartXRef.current = null;
+      return;
+    }
+    const delta = swipeOffset;
+    touchStartXRef.current = null;
+    setSwipeOffset(0);
+    if (delta > SWIPE_THRESHOLD) {
+      handleLlevaTildeAnswer(true); // Sí
+    } else if (delta < -SWIPE_THRESHOLD) {
+      handleLlevaTildeAnswer(false); // No
+    }
   };
 
   // Handle Mode 2: Escribí la tilde
@@ -250,28 +286,47 @@ export default function ExerciseCard({
 
           {/* MODE 1: ¿Lleva tilde? */}
           {mode === 'lleva-tilde' && (
-            <div>
-              <div className="text-center pt-2.5 pb-[46px]">
+            <div
+              onTouchStart={handleSwipeTouchStart}
+              onTouchMove={handleSwipeTouchMove}
+              onTouchEnd={handleSwipeTouchEnd}
+              style={{ touchAction: 'pan-y' }}
+            >
+              <div
+                className="text-center pt-2.5 pb-[46px] select-none"
+                style={{
+                  transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.02}deg)`,
+                  transition: swipeOffset === 0 ? 'transform 0.25s ease' : 'none'
+                }}
+              >
                 <div className="text-[9px] tracking-[0.3em] text-[#666] uppercase mb-[26px]">¿Lleva tilde?</div>
                 <div className="display-heavy text-[64px] sm:text-[120px] leading-none lowercase">{word.wordClean}</div>
+                {/* Swipe direction cue while dragging */}
+                <div className="h-4 mt-3 text-[10px] tracking-[0.2em] uppercase">
+                  {swipeOffset > SWIPE_THRESHOLD && <span className="text-[#F5F5F0]">Sí →</span>}
+                  {swipeOffset < -SWIPE_THRESHOLD && <span className="text-[#F5F5F0]">← No</span>}
+                </div>
               </div>
               <div className="flex justify-center gap-4">
-                <button
-                  onClick={() => handleLlevaTildeAnswer(true)}
-                  className={`w-[180px] text-center py-5 border border-[#F5F5F0] hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
-                  id="btn-lleva-si"
-                >
-                  <div className="display-heavy text-xl">Sí</div>
-                  <div className="text-[9px] text-[#666] mt-1.5">[ S ]</div>
-                </button>
                 <button
                   onClick={() => handleLlevaTildeAnswer(false)}
                   className={`w-[180px] text-center py-5 border border-[#2a2a2a] text-[#999] hover:bg-[#F5F5F0] hover:text-black hover:border-[#F5F5F0] ${btnBase}`}
                   id="btn-lleva-no"
                 >
                   <div className="display-heavy text-xl">No</div>
-                  <div className="text-[9px] text-[#666] mt-1.5">[ N ]</div>
+                  <div className="text-[9px] text-[#666] mt-1.5">[ N ] · ← swipe</div>
                 </button>
+                <button
+                  onClick={() => handleLlevaTildeAnswer(true)}
+                  className={`w-[180px] text-center py-5 border border-[#F5F5F0] hover:bg-[#F5F5F0] hover:text-black ${btnBase}`}
+                  id="btn-lleva-si"
+                >
+                  <div className="display-heavy text-xl">Sí</div>
+                  <div className="text-[9px] text-[#666] mt-1.5">[ S ] · swipe →</div>
+                </button>
+              </div>
+              <div className="text-center text-[10px] text-[#666] mt-4 sm:hidden">
+                Deslizá la palabra → para <span className="text-[#999]">Sí</span>, ← para <span className="text-[#999]">No</span>
               </div>
             </div>
           )}
