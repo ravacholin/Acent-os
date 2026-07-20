@@ -13,7 +13,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
   const [customLevels, setCustomLevels] = useState<LevelMCER[]>(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
   const [customCategories, setCustomCategories] = useState<WordCategory[]>([
     'aguda', 'grave', 'esdrújula', 'sobreesdrújula', 'hiato', 'diptongo', 'triptongo', 'monosílabo',
-    'diacrítica', 'interrogativo', 'exclamativo', 'solo-solo', 'demostrativo', 'mayúscula',
+    'diacrítica', 'interrogativo', 'exclamativo', 'mayúscula',
     'extranjerismo', 'latinismo', 'mente', 'pronombre'
   ]);
   const [customTime, setCustomTime] = useState<number>(60);
@@ -129,8 +129,6 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
     { id: 'diacrítica', label: 'Diacríticas' },
     { id: 'interrogativo', label: 'Interrogativos' },
     { id: 'exclamativo', label: 'Exclamativos' },
-    { id: 'solo-solo', label: 'Solo / Sólo' },
-    { id: 'demostrativo', label: 'Demostrativos' },
     { id: 'mayúscula', label: 'Mayúsculas' },
     { id: 'extranjerismo', label: 'Extranjerismos' },
     { id: 'latinismo', label: 'Latinismos' },

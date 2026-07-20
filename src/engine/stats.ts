@@ -2,12 +2,12 @@ import { UserStats, Word, WordCategory, LevelMCER } from '../types';
 import { applyAnswer as applySrs } from './srs';
 import { xpForAnswer, levelForXp } from './scoring';
 
-// Las 18 categorías y 6 niveles, sembrados a cero en un estado nuevo para que
+// Las 16 categorías y 6 niveles, sembrados a cero en un estado nuevo para que
 // cada bucket exista desde el arranque (sin creación lazy inconsistente).
 export const CATEGORY_LIST: WordCategory[] = [
   'aguda', 'grave', 'esdrújula', 'sobreesdrújula', 'hiato', 'diptongo', 'triptongo',
-  'monosílabo', 'diacrítica', 'interrogativo', 'exclamativo', 'solo-solo',
-  'demostrativo', 'mayúscula', 'extranjerismo', 'latinismo', 'mente', 'pronombre'
+  'monosílabo', 'diacrítica', 'interrogativo', 'exclamativo',
+  'mayúscula', 'extranjerismo', 'latinismo', 'mente', 'pronombre'
 ];
 export const LEVEL_LIST: LevelMCER[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 

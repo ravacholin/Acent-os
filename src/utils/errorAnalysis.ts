@@ -28,8 +28,8 @@ export function calculateErrorProfiles(stats: UserStats): ErrorProfile[] {
       id: 'diacriticas',
       name: 'Tildes Diacríticas y Monosílabos',
       description: 'Confusión al aplicar la tilde diferencial (diacrítica) en palabras homófonas o monosílabos para marcar funciones gramaticales distintas.',
-      categories: ['diacrítica', 'monosílabo', 'solo-solo', 'demostrativo', 'pronombre'] as WordCategory[],
-      recommendation: 'Estudia las parejas clave: "él" (pronombre) vs "el" (artículo), "tú" (pronombre) vs "tu" (posesivo), "sí" (afirmación/pronombre) vs "si" (conjunción condicional). Recuerda que los demostrativos y "solo" ya nunca llevan tilde.',
+      categories: ['diacrítica', 'monosílabo', 'pronombre'] as WordCategory[],
+      recommendation: 'Estudia las parejas clave: "él" (pronombre) vs "el" (artículo), "tú" (pronombre) vs "tu" (posesivo), "sí" (afirmación/pronombre) vs "si" (conjunción condicional).',
       examples: ['él', 'tú', 'mí', 'sí', 'más', 'té']
     },
     {
@@ -102,7 +102,7 @@ export function getWeakCategories(stats: UserStats): WordCategory[] {
   // Fallback: any category with accuracy < 75% and total > 0
   const weakCats: WordCategory[] = [];
   const categoriesList: WordCategory[] = [
-    'aguda', 'grave', 'esdrújula', 'sobreesdrújula', 'hiato', 'diptongo', 'triptongo', 'monosílabo', 'diacrítica', 'interrogativo', 'exclamativo', 'solo-solo', 'demostrativo', 'mayúscula', 'extranjerismo', 'latinismo', 'mente', 'pronombre'
+    'aguda', 'grave', 'esdrújula', 'sobreesdrújula', 'hiato', 'diptongo', 'triptongo', 'monosílabo', 'diacrítica', 'interrogativo', 'exclamativo', 'mayúscula', 'extranjerismo', 'latinismo', 'mente', 'pronombre'
   ];
   
   categoriesList.forEach(cat => {

@@ -334,14 +334,6 @@ export const WORDS_DATABASE: Word[] = [
   makeWord('cuántas', ['cuán', 'tas'], 0, 'grave', 'exclamativo', 'A2', 'media', R.interr, '"cuántas" exclamativo/interrogativo (¡Cuántas!) frente a "cuantas".', 'exclamativo/interrogativo', '¡___ cosas hay que hacer!'),
 
   // ============================================================
-  //  SOLO / DEMOSTRATIVOS (tilde diacrítica histórica)
-  // ============================================================
-  makeWord('sólo', ['só', 'lo'], 0, 'grave', 'solo-solo', 'B2', 'media', R.diac, 'La RAE lo desaconseja; solo se admite tilde en "sólo" (=solamente) si hay ambigüedad.', 'adverbio (= solamente)', '___ quiero un vaso de agua'),
-  makeWord('éste', ['és', 'te'], 0, 'grave', 'demostrativo', 'B2', 'baja', R.diac, 'Pronombre demostrativo con tilde histórica; hoy la RAE aconseja escribir "este".', 'pronombre demostrativo', 'Prefiero ___, no aquel'),
-  makeWord('ése', ['é', 'se'], 0, 'grave', 'demostrativo', 'B2', 'baja', R.diac, 'Demostrativo con tilde histórica; hoy se recomienda "ese" sin tilde.', 'pronombre demostrativo', 'Dame ___ de ahí, por favor'),
-  makeWord('aquél', ['a', 'quél'], 1, 'aguda', 'demostrativo', 'B2', 'baja', R.diac, 'Demostrativo con tilde histórica; hoy se recomienda "aquel" sin tilde.', 'pronombre demostrativo', 'Me quedo con ___ del fondo'),
-
-  // ============================================================
   //  MAYÚSCULAS (se acentúan igual)
   // ============================================================
   makeWord('Ángel', ['Án', 'gel'], 0, 'grave', 'mayúscula', 'A2', 'media', R.may, 'Grave terminada en L; las mayúsculas también se acentúan.'),
@@ -413,9 +405,7 @@ export const WORDS_DATABASE: Word[] = [
 export const AMBIGUOUS_CATEGORIES: ReadonlySet<WordCategory> = new Set<WordCategory>([
   'diacrítica',
   'interrogativo',
-  'exclamativo',
-  'solo-solo',
-  'demostrativo'
+  'exclamativo'
 ]);
 
 export const isAmbiguousWord = (word: Word): boolean =>
@@ -433,7 +423,7 @@ for (const w of WORDS_DATABASE) {
 /**
  * Devuelve la grafía "distractora" para el modo "Encontrá el error" en palabras
  * ambiguas: la pareja homófona real si existe en la base (p. ej. "el" para "él"),
- * o, si no existe (interrogativos, "aún", "sólo", demostrativos), la variante
+ * o, si no existe (interrogativos, "aún"), la variante
  * con/sin tilde. Nunca devuelve la misma grafía que la correcta.
  */
 export function getHomophonePartner(word: Word): string {

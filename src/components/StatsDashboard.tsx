@@ -53,8 +53,6 @@ export default function StatsDashboard({
     diacrítica: 'Diacríticas',
     interrogativo: 'Interrogativos',
     exclamativo: 'Exclamativos',
-    'solo-solo': 'Solo/Sólo',
-    demostrativo: 'Demostrativos',
     mayúscula: 'Mayúsculas',
     extranjerismo: 'Extranjerismos',
     latinismo: 'Latinismos',
