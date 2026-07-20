@@ -13,6 +13,8 @@ interface StatsDashboardProps {
 
 export default function StatsDashboard({ stats, achievements, onResetStats, onStartFocusSession }: StatsDashboardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'profiles' | 'logros'>('overview');
+  // Confirmación de reinicio por doble-tap en el propio botón (sin modal).
+  const [confirmReset, setConfirmReset] = useState(false);
 
   // Helper to format average time
   const formatAverageTime = () => {
@@ -283,16 +285,33 @@ export default function StatsDashboard({ stats, achievements, onResetStats, onSt
 
       {onResetStats && (
         <div className="flex justify-end pt-8">
-          <span
-            onClick={() => {
-              if (window.confirm('¿Estás seguro de que deseas reiniciar todas las estadísticas? Esta acción es irreversible.')) {
-                onResetStats();
-              }
-            }}
-            className="text-[10px] text-[#555] hover:text-[#F5F5F0] cursor-pointer transition-colors"
-          >
-            Reiniciar historial de entrenamiento
-          </span>
+          {confirmReset ? (
+            <span className="flex items-center gap-3 text-[10px]">
+              <span className="text-[#999]">¿Reiniciar todo? Es irreversible.</span>
+              <span
+                onClick={() => {
+                  setConfirmReset(false);
+                  onResetStats();
+                }}
+                className="text-[#F5F5F0] underline underline-offset-2 cursor-pointer"
+              >
+                Confirmar
+              </span>
+              <span
+                onClick={() => setConfirmReset(false)}
+                className="text-[#555] hover:text-[#F5F5F0] cursor-pointer transition-colors"
+              >
+                Cancelar
+              </span>
+            </span>
+          ) : (
+            <span
+              onClick={() => setConfirmReset(true)}
+              className="text-[10px] text-[#555] hover:text-[#F5F5F0] cursor-pointer transition-colors"
+            >
+              Reiniciar historial de entrenamiento
+            </span>
+          )}
         </div>
       )}
     </div>

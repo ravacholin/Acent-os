@@ -123,6 +123,7 @@ export interface GameSessionState {
   timeLeft: number; // Used in survival
   initialTime: number; // Used in survival
   startTime: number; // Timestamp of game start
+  finished?: boolean; // set by the session reducer when the session ends
   history: Array<{
     wordId: string;
     userAnswer: string | boolean | number;

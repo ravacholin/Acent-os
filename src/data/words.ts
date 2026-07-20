@@ -17,7 +17,7 @@ import { Word, WordClassification, WordCategory, LevelMCER } from '../types';
  * -------------------------------------------------------------------------
  */
 
-const stripAccents = (s: string): string =>
+export const stripAccents = (s: string): string =>
   s
     .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ü/g, 'u')
     .replace(/Á/g, 'A').replace(/É/g, 'E').replace(/Í/g, 'I').replace(/Ó/g, 'O').replace(/Ú/g, 'U').replace(/Ü/g, 'U');

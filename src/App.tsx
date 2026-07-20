@@ -1,62 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  GameMode,
-  AppSettings,
-  UserStats,
-  Achievement,
-  GameSessionState,
-  Word,
-  WordCategory,
-  LevelMCER,
-  DEFAULT_SETTINGS
-} from './types';
-import { WORDS_DATABASE, isAmbiguousWord } from './data/words';
-import { calculateErrorProfiles, getWeakCategories } from './utils/errorAnalysis';
+import React, { useState } from 'react';
+import { GameMode, Word } from './types';
 import PracticeSelector from './components/PracticeSelector';
 import StatsDashboard from './components/StatsDashboard';
-import { INITIAL_ACHIEVEMENTS } from './components/AchievementsPanel';
 import DailyChallenge from './components/DailyChallenge';
 import ExerciseCard from './components/ExerciseCard';
-import { playClickSound, playCorrectSound, speakWord } from './utils/audio';
+import { useGameSession } from './hooks/useGameSession';
+import { playClickSound } from './utils/audio';
 import { motion, AnimatePresence } from 'motion/react';
 import { Volume2, VolumeX } from 'lucide-react';
-
-// The 18 word categories and 6 MCER levels, seeded to zero in fresh stats so every
-// bucket exists from the start (no lazy, inconsistent creation later on).
-const CATEGORIES_LIST: WordCategory[] = [
-  'aguda', 'grave', 'esdrújula', 'sobreesdrújula', 'hiato', 'diptongo', 'triptongo',
-  'monosílabo', 'diacrítica', 'interrogativo', 'exclamativo', 'solo-solo',
-  'demostrativo', 'mayúscula', 'extranjerismo', 'latinismo', 'mente', 'pronombre'
-];
-const LEVELS_LIST: LevelMCER[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-
-const seedCategoryStats = (): UserStats['categoryStats'] =>
-  Object.fromEntries(CATEGORIES_LIST.map(cat => [cat, { correct: 0, total: 0 }])) as UserStats['categoryStats'];
-
-const seedLevelStats = (): UserStats['levelStats'] =>
-  Object.fromEntries(LEVELS_LIST.map(lvl => [lvl, { correct: 0, total: 0 }])) as UserStats['levelStats'];
-
-// Default empty stats template
-const DEFAULT_STATS: UserStats = {
-  wordsSeen: 0,
-  correctAnswers: 0,
-  incorrectAnswers: 0,
-  accuracy: 0,
-  currentStreak: 0,
-  bestStreak: 0,
-  totalTimeSeconds: 0,
-  xp: 0,
-  level: 1,
-  categoryStats: seedCategoryStats(),
-  levelStats: seedLevelStats(),
-  frequentMistakes: {},
-  masteredWords: [],
-  dailyHistory: {},
-  spacedRepetition: {}
-};
-
-// Number of words per regular practice session
-const SESSION_SIZE = 10;
 
 // "Meta" modes (timed / endless / filtered) don't have their own question format;
 // they present a concrete exercise type per word. We rotate through fast, tap-based
@@ -69,45 +20,8 @@ function resolveRenderMode(mode: GameMode, index: number): GameMode {
   if (!META_MODES.has(mode)) return mode;
   return META_ROTATION[index % META_ROTATION.length];
 }
-// How many recently-seen words we remember to avoid repeating them across sessions.
-// Capped well below the total database so there is always a fresh pool available.
-const RECENT_MEMORY_KEY = 'acentos-recent-words';
-const RECENT_MEMORY_CAP = 120;
 
-// Unbiased Fisher–Yates shuffle (returns a new array; does not mutate input)
-function shuffle<T>(input: T[]): T[] {
-  const arr = [...input];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-// Recently-seen memory persisted in localStorage. Newest ids first.
-function loadRecentlySeen(): string[] {
-  try {
-    const raw = localStorage.getItem(RECENT_MEMORY_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function rememberSeen(ids: string[]) {
-  try {
-    const prev = loadRecentlySeen();
-    // Prepend the new ids (newest first), de-duplicate, and cap the length.
-    const merged = [...ids, ...prev.filter(id => !ids.includes(id))].slice(0, RECENT_MEMORY_CAP);
-    localStorage.setItem(RECENT_MEMORY_KEY, JSON.stringify(merged));
-  } catch {
-    /* ignore storage errors */
-  }
-}
-
-// Tres destinos de nivel superior. "desafio" es una sub-vista de Entrenar (no aparece
-// en la barra; se llega desde la tarjeta de la portada) — se conserva como valor propio
-// porque triggerSessionWrapUp lo usa para detectar el desafío diario.
+// Tres destinos de nivel superior. "desafio" es una sub-vista de Entrenar.
 type Tab = 'entrenar' | 'progreso' | 'desafio';
 
 const NAV_ITEMS: { id: Tab; label: string }[] = [
@@ -116,568 +30,40 @@ const NAV_ITEMS: { id: Tab; label: string }[] = [
 ];
 
 export default function App() {
+  const {
+    stats,
+    settings,
+    achievements,
+    session,
+    sessionCompleted,
+    levelUpAlert,
+    achievementToast,
+    errorToast,
+    startPractice,
+    startDailyChallenge,
+    answer,
+    nextWord,
+    exitSession,
+    restartSameMode,
+    toggleSound,
+    resetProgress,
+    startFocusSession
+  } = useGameSession();
+
   const [activeTab, setActiveTab] = useState<Tab>('entrenar');
-
-  // LocalStorage driven states
-  const [stats, setStats] = useState<UserStats>(DEFAULT_STATS);
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
-  const [achievements, setAchievements] = useState<Achievement[]>(INITIAL_ACHIEVEMENTS);
-
-  // Active game states
-  const [session, setSession] = useState<GameSessionState | null>(null);
-  const [sessionCompleted, setSessionCompleted] = useState<boolean>(false);
   const [selectedResultWord, setSelectedResultWord] = useState<Word | null>(null);
-  const [levelUpAlert, setLevelUpAlert] = useState<{ show: boolean; level: number }>({ show: false, level: 1 });
-  const [unlockedAchievementToast, setUnlockedAchievementToast] = useState<Achievement | null>(null);
 
-  const survivalTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // 1. Initial State Hydration from Local Storage
-  useEffect(() => {
-    try {
-      const savedStats = localStorage.getItem('acentos-user-stats');
-      if (savedStats) {
-        setStats(JSON.parse(savedStats));
-      }
-
-      const savedSettings = localStorage.getItem('acentos-settings');
-      if (savedSettings) {
-        setSettings(JSON.parse(savedSettings));
-      }
-
-      const savedAchievements = localStorage.getItem('acentos-achievements');
-      if (savedAchievements) {
-        setAchievements(JSON.parse(savedAchievements));
-      }
-    } catch (e) {
-      console.warn('Failed to restore states from local storage', e);
-    }
-  }, []);
-
-  // 2. Persistence Synchronization triggers
-  const saveStatsToStorage = (updatedStats: UserStats) => {
-    setStats(updatedStats);
-    localStorage.setItem('acentos-user-stats', JSON.stringify(updatedStats));
-  };
-
-  const saveSettingsToStorage = (updatedSettings: AppSettings) => {
-    setSettings(updatedSettings);
-    localStorage.setItem('acentos-settings', JSON.stringify(updatedSettings));
-  };
-
-  const saveAchievementsToStorage = (updatedAchievements: Achievement[]) => {
-    setAchievements(updatedAchievements);
-    localStorage.setItem('acentos-achievements', JSON.stringify(updatedAchievements));
-  };
-
-  const handleResetProgress = () => {
-    localStorage.removeItem('acentos-user-stats');
-    localStorage.removeItem('acentos-achievements');
-    // Clear daily challenge completions
-    const todayStr = new Date().toISOString().split('T')[0];
-    localStorage.removeItem(`daily-challenge-${todayStr}`);
-
-    setStats(DEFAULT_STATS);
-    setAchievements(INITIAL_ACHIEVEMENTS);
-    setActiveTab('entrenar');
-    setSession(null);
-    setSessionCompleted(false);
-  };
-
-  // 3. Word selection (pure — never mutates the "recently seen" memory).
-  //
-  // Two-quota design so the hundreds of words actually surface:
-  //   - A *capped* slice of "review" words (failed / due for spaced repetition) so
-  //     struggle-words come back in moderation instead of flooding every session.
-  //   - The remaining slots are filled with genuinely fresh variety, preferring
-  //     never-recently-seen words, all shuffled at random.
-  // The caller is responsible for recording what it actually shows (rememberSeen).
-  const selectSessionWords = (
-    mode: GameMode,
-    customOptions?: { levels: LevelMCER[]; categories: WordCategory[] },
-    count: number = SESSION_SIZE,
-    allWords: Word[] = WORDS_DATABASE
-  ): Word[] => {
-    let filtered = [...allWords];
-
-    // Mode specific filters
-    if (mode === 'donde-va-tilde') {
-      // Must have tilde to let users click the vowel
-      filtered = filtered.filter(w => w.hasTilde);
-    }
-
-    if (mode === 'dictado') {
-      // Homophones (el/él, tu/tú, qué/que…) are indistinguishable by audio, so
-      // they cannot be dictated fairly — keep them out of this mode only.
-      filtered = filtered.filter(w => !isAmbiguousWord(w));
-    }
-
-    if (mode === 'personalizado' && customOptions) {
-      filtered = filtered.filter(w =>
-        customOptions.levels.includes(w.level) &&
-        customOptions.categories.includes(w.category)
-      );
-    }
-
-    if (filtered.length === 0) return [];
-
-    const now = Date.now();
-    const weakCats = getWeakCategories(stats);
-    const recentSet = new Set(loadRecentlySeen());
-    const sr = stats.spacedRepetition || {};
-
-    // Split into "due for review" and everything else.
-    const failed: Word[] = [];
-    const dueCorrect: Word[] = [];
-    const rest: Word[] = [];
-    for (const w of filtered) {
-      const record = sr[w.id];
-      if (record && record.failCount > 0) {
-        failed.push(w);
-      } else if (record && now >= record.nextReviewTimestamp) {
-        dueCorrect.push(w);
-      } else {
-        rest.push(w);
-      }
-    }
-
-    // Cap how many review words a single session may contain (failed first).
-    const reviewQuota = Math.min(Math.ceil(count * 0.4), failed.length + dueCorrect.length);
-    const reviewPool = [...shuffle(failed), ...shuffle(dueCorrect)].slice(0, reviewQuota);
-
-    // Fill the rest with fresh variety: prefer words not seen recently, and give a
-    // light preference to weak categories — but keep it heavily shuffled so we never
-    // show the same set twice.
-    const notRecent = shuffle(rest.filter(w => !recentSet.has(w.id)));
-    const recent = shuffle(rest.filter(w => recentSet.has(w.id)));
-    const weakFirst = (arr: Word[]) => {
-      const weak = arr.filter(w => weakCats.includes(w.category));
-      const other = arr.filter(w => !weakCats.includes(w.category));
-      return [...weak, ...other];
-    };
-    const freshPool = [...weakFirst(notRecent), ...recent];
-
-    // Assemble: review words + fresh fill. If still short (tiny custom filter),
-    // top up from any leftover review words so we never return fewer than possible.
-    const chosen = [...reviewPool, ...freshPool].slice(0, count);
-    if (chosen.length < count) {
-      const chosenIds = new Set(chosen.map(w => w.id));
-      const leftover = [...failed, ...dueCorrect].filter(w => !chosenIds.has(w.id));
-      chosen.push(...leftover.slice(0, count - chosen.length));
-    }
-
-    // Final shuffle so review words aren't always first.
-    return shuffle(chosen);
-  };
-
-  // 4. Session Operations
-  const handleStartPractice = (
-    mode: GameMode,
-    customOptions?: { levels: LevelMCER[]; categories: WordCategory[]; timeLimit?: number }
-  ) => {
+  // Navigating away from an in-progress session exits it first.
+  const goTo = (tab: Tab) => () => {
     playClickSound(settings.soundEnabled);
-
-    let words = [];
-    let initialTime = 0;
-
-    if (mode === 'supervivencia') {
-      words = selectSessionWords(mode);
-      initialTime = 30; // Starts with 30s
-    } else if (mode === 'infinito') {
-      words = selectSessionWords(mode);
-    } else if (mode === 'personalizado') {
-      words = selectSessionWords(mode, customOptions);
-      initialTime = customOptions?.timeLimit || 0;
-    } else {
-      words = selectSessionWords(mode);
-    }
-
-    // Empty selection guard: a very narrow custom filter (or a fully mastered set
-    // for a mode) can yield no words. Don't start a session that would hang on a
-    // blank card — tell the user and bail out.
-    if (words.length === 0) {
-      alert('No hay palabras disponibles para esta combinación de niveles y categorías. Prueba a ampliar la selección.');
-      return;
-    }
-
-    // Record what we're about to show so future sessions favor fresh words.
-    rememberSeen(words.map(w => w.id));
-
-    setSession({
-      mode,
-      words,
-      currentIndex: 0,
-      correctCount: 0,
-      incorrectCount: 0,
-      streak: 0,
-      score: 0,
-      timeLeft: initialTime,
-      initialTime,
-      startTime: Date.now(),
-      history: []
-    });
-
-    setSessionCompleted(false);
-    setSelectedResultWord(null);
-
-    // Setup Survival Timer if needed
-    if (mode === 'supervivencia') {
-      if (survivalTimerRef.current) clearInterval(survivalTimerRef.current);
-      survivalTimerRef.current = setInterval(() => {
-        setSession(prev => {
-          if (!prev) return null;
-          if (prev.timeLeft <= 1) {
-            if (survivalTimerRef.current) clearInterval(survivalTimerRef.current);
-            // End session
-            setSessionCompleted(true);
-            triggerSessionWrapUp(prev);
-            return { ...prev, timeLeft: 0 };
-          }
-          return { ...prev, timeLeft: prev.timeLeft - 1 };
-        });
-      }, 1000);
-    }
-  };
-
-  const handleStartDailyChallenge = (words: Word[]) => {
-    playClickSound(settings.soundEnabled);
-    setSession({
-      mode: 'lleva-tilde', // Default mode for daily challenge
-      words: words,
-      currentIndex: 0,
-      correctCount: 0,
-      incorrectCount: 0,
-      streak: 0,
-      score: 0,
-      timeLeft: 0,
-      initialTime: 0,
-      startTime: Date.now(),
-      history: []
-    });
-    setSessionCompleted(false);
-    setSelectedResultWord(null);
-  };
-
-  // Clean timer on unmount
-  useEffect(() => {
-    return () => {
-      if (survivalTimerRef.current) clearInterval(survivalTimerRef.current);
-    };
-  }, []);
-
-  // 5. Answer Assessment
-  const handleAnswerReceived = (isCorrect: boolean, timeTakenSeconds: number) => {
-    if (!session) return;
-
-    const currentWord = session.words[session.currentIndex];
-
-    // Calculate Score multiplier
-    const comboMultiplier = Math.min(3, 1 + Math.floor(session.streak / 5));
-    const xpEarned = isCorrect ? (10 * comboMultiplier) : 0;
-
-    // Acierto / Fallo logic
-    const nextStreak = isCorrect ? session.streak + 1 : 0;
-    const nextCorrectCount = isCorrect ? session.correctCount + 1 : session.correctCount;
-    const nextIncorrectCount = !isCorrect ? session.incorrectCount + 1 : session.incorrectCount;
-
-    // Survival addition
-    let extraTime = 0;
-    if (session.mode === 'supervivencia') {
-      if (isCorrect) {
-        extraTime = 3 + Math.min(5, Math.floor(session.streak / 3)); // adds 3s plus streak bonus
-      } else {
-        extraTime = -5; // subtracts 5s on failure
-      }
-    }
-
-    // Dynamic stats updates
-    const updatedStats = { ...stats };
-    updatedStats.wordsSeen += 1;
-    updatedStats.totalTimeSeconds += timeTakenSeconds;
-
-    // Ensure spacedRepetition dictionary is initialized
-    if (!updatedStats.spacedRepetition) {
-      updatedStats.spacedRepetition = {};
-    }
-
-    const wordSR = updatedStats.spacedRepetition[currentWord.id] || {
-      wordId: currentWord.id,
-      box: 3, // start in box 3 (neutral)
-      consecutiveCorrect: 0,
-      lastSeenTimestamp: 0,
-      nextReviewTimestamp: 0,
-      failCount: 0
-    };
-
-    wordSR.lastSeenTimestamp = Date.now();
-
-    if (isCorrect) {
-      updatedStats.correctAnswers += 1;
-      updatedStats.xp += xpEarned;
-      updatedStats.currentStreak += 1;
-      if (updatedStats.currentStreak > updatedStats.bestStreak) {
-        updatedStats.bestStreak = updatedStats.currentStreak;
-      }
-
-      // Spaced Repetition consecutive correct tracking
-      if (!updatedStats.masteredWords.includes(currentWord.id)) {
-        updatedStats.masteredWords.push(currentWord.id);
-      }
-
-      // Progress word in spaced repetition
-      wordSR.consecutiveCorrect += 1;
-      wordSR.failCount = 0; // reset fail count upon correct answer
-      wordSR.box = Math.min(5, wordSR.box + 1);
-
-      // Box intervals: Box 1 (30s), Box 2 (2m), Box 3 (10m), Box 4 (1h), Box 5 (1d)
-      const intervals = [0, 30 * 1000, 120 * 1000, 600 * 1000, 3600 * 1000, 86400 * 1000];
-      wordSR.nextReviewTimestamp = Date.now() + intervals[wordSR.box];
-    } else {
-      updatedStats.incorrectAnswers += 1;
-      updatedStats.currentStreak = 0;
-
-      // Unmaster word
-      updatedStats.masteredWords = updatedStats.masteredWords.filter(id => id !== currentWord.id);
-
-      // Save to frequent mistakes profile
-      if (!updatedStats.frequentMistakes[currentWord.id]) {
-        updatedStats.frequentMistakes[currentWord.id] = {
-          wordId: currentWord.id,
-          word: currentWord.word,
-          incorrectCount: 1,
-          explanation: currentWord.explanation
-        };
-      } else {
-        updatedStats.frequentMistakes[currentWord.id].incorrectCount += 1;
-      }
-
-      // Regress word in spaced repetition
-      wordSR.consecutiveCorrect = 0;
-      wordSR.failCount += 1;
-      wordSR.box = 1; // Demote to box 1 immediately on failure
-
-      // Penalty: reappears sooner. If they fail it repeatedly (failCount >= 2), reappears even sooner!
-      const penaltyInterval = wordSR.failCount >= 2 ? 5 * 1000 : 15 * 1000;
-      wordSR.nextReviewTimestamp = Date.now() + penaltyInterval;
-    }
-
-    updatedStats.spacedRepetition[currentWord.id] = wordSR;
-
-    // Update Category Metrics
-    if (!updatedStats.categoryStats[currentWord.category]) {
-      updatedStats.categoryStats[currentWord.category] = { correct: 0, total: 0 };
-    }
-    updatedStats.categoryStats[currentWord.category].total += 1;
-    if (isCorrect) {
-      updatedStats.categoryStats[currentWord.category].correct += 1;
-    }
-
-    // Update Level Metrics
-    if (!updatedStats.levelStats[currentWord.level]) {
-      updatedStats.levelStats[currentWord.level] = { correct: 0, total: 0 };
-    }
-    updatedStats.levelStats[currentWord.level].total += 1;
-    if (isCorrect) {
-      updatedStats.levelStats[currentWord.level].correct += 1;
-    }
-
-    // Update Accuracy Percentage
-    const totalAns = updatedStats.correctAnswers + updatedStats.incorrectAnswers;
-    updatedStats.accuracy = totalAns > 0 ? Math.round((updatedStats.correctAnswers / totalAns) * 100) : 0;
-
-    // Level progression (Level up check)
-    const newLevel = Math.floor(updatedStats.xp / 150) + 1;
-    if (newLevel > (updatedStats.level || 1)) {
-      setLevelUpAlert({ show: true, level: newLevel });
-      updatedStats.level = newLevel;
-      setTimeout(() => setLevelUpAlert({ show: false, level: 1 }), 4000);
-    }
-
-    // Daily History Calendar
-    const todayStr = new Date().toISOString().split('T')[0];
-    updatedStats.dailyHistory[todayStr] = (updatedStats.dailyHistory[todayStr] || 0) + 1;
-
-    // Check achievement rules
-    const achCheck = checkUnlockAchievements(updatedStats, achievements);
-    if (achCheck.newlyUnlocked.length > 0) {
-      setUnlockedAchievementToast(achCheck.newlyUnlocked[0]);
-      saveAchievementsToStorage(achCheck.updated);
-      setTimeout(() => setUnlockedAchievementToast(null), 4000);
-    }
-
-    saveStatsToStorage(updatedStats);
-
-    // Apply immediate session state transition
-    setSession(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        correctCount: nextCorrectCount,
-        incorrectCount: nextIncorrectCount,
-        streak: nextStreak,
-        timeLeft: Math.max(0, prev.timeLeft + extraTime),
-        history: [
-          ...prev.history,
-          {
-            wordId: currentWord.id,
-            userAnswer: isCorrect,
-            isCorrect,
-            timeTakenMs: timeTakenSeconds * 1000
-          }
-        ]
-      };
-    });
-  };
-
-  const handleNextWord = () => {
-    if (!session) return;
-
-    // Endless modes (Infinito + Supervivencia) never "complete" by running out of
-    // queue — they keep serving words. Survival ends only when its timer hits 0.
-    if (session.mode === 'infinito' || session.mode === 'supervivencia') {
-      const nextIdx = session.currentIndex + 1;
-      const needNewWords = nextIdx >= session.words.length - 1;
-
-      let updatedWords = session.words;
-      if (needNewWords) {
-        // Only select (and record as seen) when we actually append. Avoid words
-        // still upcoming in the queue so we never repeat back-to-back.
-        const upcomingIds = new Set(session.words.slice(nextIdx).map(w => w.id));
-        const fresh = selectSessionWords(session.mode).filter(w => !upcomingIds.has(w.id));
-        if (fresh.length > 0) {
-          rememberSeen(fresh.map(w => w.id));
-          updatedWords = [...session.words, ...fresh];
-        }
-      }
-
-      setSession(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          words: updatedWords,
-          currentIndex: nextIdx
-        };
-      });
-      return;
-    }
-
-    const nextIndex = session.currentIndex + 1;
-
-    if (nextIndex >= session.words.length) {
-      // Completed session
-      if (survivalTimerRef.current) clearInterval(survivalTimerRef.current);
-      setSessionCompleted(true);
-      triggerSessionWrapUp(session);
-    } else {
-      setSession(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          currentIndex: nextIndex
-        };
-      });
-    }
-  };
-
-  const triggerSessionWrapUp = (finalSession: GameSessionState) => {
-    // If it was a Daily Challenge, save to today's completed state
-    const isDaily = activeTab === 'desafio';
-    if (isDaily) {
-      const todayStr = new Date().toISOString().split('T')[0];
-      const dailyKey = `daily-challenge-${todayStr}`;
-
-      const resultObj = {
-        correctCount: finalSession.correctCount,
-        timeTakenSeconds: (Date.now() - finalSession.startTime) / 1000,
-        xpEarned: 100 + finalSession.correctCount * 5
-      };
-
-      localStorage.setItem(dailyKey, JSON.stringify(resultObj));
-
-      // Update stats with Daily challenge completion XP
-      const updatedStats = { ...stats };
-      updatedStats.xp += resultObj.xpEarned;
-      const newLevel = Math.floor(updatedStats.xp / 150) + 1;
-      if (newLevel > (updatedStats.level || 1)) {
-        setLevelUpAlert({ show: true, level: newLevel });
-        updatedStats.level = newLevel;
-        setTimeout(() => setLevelUpAlert({ show: false, level: 1 }), 4000);
-      }
-      saveStatsToStorage(updatedStats);
-    }
-  };
-
-  const handleExitSession = () => {
-    if (survivalTimerRef.current) clearInterval(survivalTimerRef.current);
-    setSession(null);
-    setSessionCompleted(false);
-  };
-
-  // 6. Achievement Checker Rules
-  const checkUnlockAchievements = (currentStats: UserStats, currentAchievements: Achievement[]) => {
-    let newlyUnlocked: Achievement[] = [];
-    const updated = currentAchievements.map(ach => {
-      if (ach.unlockedAt) return ach;
-
-      let unlocked = false;
-      switch (ach.id) {
-        case 'ach-seen-100':
-          unlocked = currentStats.wordsSeen >= 100;
-          break;
-        case 'ach-seen-500':
-          unlocked = currentStats.wordsSeen >= 500;
-          break;
-        case 'ach-streak-50':
-          unlocked = currentStats.bestStreak >= 50;
-          break;
-        case 'ach-accuracy-90':
-          unlocked = currentStats.wordsSeen >= 20 && currentStats.accuracy >= 90;
-          break;
-        case 'ach-hiatos': {
-          const catStat = currentStats.categoryStats['hiato'];
-          unlocked = catStat && catStat.total >= 5 && (catStat.correct / catStat.total) >= 0.85;
-          break;
-        }
-        case 'ach-esdrujulas': {
-          const catStat = currentStats.categoryStats['esdrújula'];
-          unlocked = catStat && catStat.total >= 5 && (catStat.correct / catStat.total) >= 0.85;
-          break;
-        }
-        case 'ach-diacriticas': {
-          const catStat = currentStats.categoryStats['diacrítica'];
-          unlocked = catStat && catStat.total >= 5 && (catStat.correct / catStat.total) >= 0.85;
-          break;
-        }
-      }
-
-      if (unlocked) {
-        const updatedAch = { ...ach, unlockedAt: new Date().toLocaleDateString('es-ES') };
-        newlyUnlocked.push(updatedAch);
-        return updatedAch;
-      }
-      return ach;
-    });
-    return { updated, newlyUnlocked };
-  };
-
-  // Navigating away from an in-progress session (via brand mark or nav tabs)
-  // exits it first so the tab underneath is what's shown next.
-  const goTo = (tab: typeof activeTab) => () => {
-    playClickSound(settings.soundEnabled);
-    if (session) handleExitSession();
+    if (session) exitSession();
     setActiveTab(tab);
   };
 
-  // Alterna los efectos de sonido desde el icono de altavoz de la barra.
-  // El clic de feedback solo se oye cuando el sonido queda activado.
-  const toggleSound = () => {
-    const nextSoundEnabled = !settings.soundEnabled;
-    playClickSound(nextSoundEnabled);
-    saveSettingsToStorage({ ...settings, soundEnabled: nextSoundEnabled });
-  };
-
   const totalAnswered = session ? session.words.length : 0;
-  const sessionIsEndless = session ? (session.mode === 'infinito' || session.mode === 'supervivencia') : false;
+  const sessionIsEndless = session
+    ? session.mode === 'infinito' || session.mode === 'supervivencia'
+    : false;
 
   return (
     <>
@@ -697,7 +83,22 @@ export default function App() {
           </motion.div>
         )}
 
-        {unlockedAchievementToast && (
+        {errorToast && (
+          <motion.div
+            key="toast-error"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.12 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-black text-[#F5F5F0] px-6 py-3.5 border border-[#2a2a2a] font-mono max-w-md text-center"
+            id="toast-error"
+          >
+            <div className="text-[9px] tracking-[0.2em] uppercase text-[#666] mb-1.5">Aviso</div>
+            <p className="text-xs text-[#999] leading-relaxed">{errorToast}</p>
+          </motion.div>
+        )}
+
+        {achievementToast && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -707,8 +108,8 @@ export default function App() {
             id="toast-achievement"
           >
             <div className="text-[9px] tracking-[0.2em] uppercase text-[#666] mb-1.5">Logro desbloqueado</div>
-            <div className="display-heavy text-lg truncate">{unlockedAchievementToast.title}</div>
-            <p className="text-[#888] text-xs leading-relaxed mt-1">{unlockedAchievementToast.description}</p>
+            <div className="display-heavy text-lg truncate">{achievementToast.title}</div>
+            <p className="text-[#888] text-xs leading-relaxed mt-1">{achievementToast.description}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -781,7 +182,7 @@ export default function App() {
                 >
                   <div className="flex justify-between items-baseline mb-11">
                     <span
-                      onClick={handleExitSession}
+                      onClick={exitSession}
                       className="text-[10px] text-[#666] cursor-pointer underline underline-offset-2 hover:text-[#F5F5F0] transition-colors"
                     >
                       ← abandonar sesión
@@ -799,8 +200,8 @@ export default function App() {
                         settings={settings}
                         comboStreak={session.streak}
                         timeLeft={session.mode === 'supervivencia' ? session.timeLeft : undefined}
-                        onAnswer={handleAnswerReceived}
-                        onNext={handleNextWord}
+                        onAnswer={answer}
+                        onNext={nextWord}
                       />
                     </div>
                   )}
@@ -892,13 +293,13 @@ export default function App() {
 
                   <div className="max-w-xl mx-auto flex flex-col sm:flex-row gap-3 pt-9">
                     <button
-                      onClick={() => handleStartPractice(session.mode)}
+                      onClick={restartSameMode}
                       className="flex-1 py-3 bg-[#F5F5F0] text-black text-xs tracking-[0.1em] cursor-pointer hover:bg-[#d4d4d4] transition-colors"
                     >
                       Practicar de nuevo
                     </button>
                     <button
-                      onClick={handleExitSession}
+                      onClick={exitSession}
                       className="flex-1 py-3 border border-[#2a2a2a] text-[#999] text-xs tracking-[0.1em] cursor-pointer hover:border-[#F5F5F0] hover:text-[#F5F5F0] transition-colors"
                     >
                       Volver a modos
@@ -945,7 +346,7 @@ export default function App() {
 
                   {/* Modos */}
                   <div className="pt-9">
-                    <PracticeSelector onSelectMode={handleStartPractice} />
+                    <PracticeSelector onSelectMode={startPractice} />
                   </div>
                 </motion.div>
               )}
@@ -965,7 +366,7 @@ export default function App() {
                   >
                     ← volver a entrenar
                   </span>
-                  <DailyChallenge stats={stats} onStartChallenge={handleStartDailyChallenge} />
+                  <DailyChallenge stats={stats} onStartChallenge={startDailyChallenge} />
                 </motion.div>
               )}
 
@@ -981,14 +382,8 @@ export default function App() {
                   <StatsDashboard
                     stats={stats}
                     achievements={achievements}
-                    onResetStats={handleResetProgress}
-                    onStartFocusSession={(categories) => {
-                      handleStartPractice('personalizado', {
-                        levels: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
-                        categories: categories,
-                        timeLimit: 120
-                      });
-                    }}
+                    onResetStats={resetProgress}
+                    onStartFocusSession={startFocusSession}
                   />
                 </motion.div>
               )}
