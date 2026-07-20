@@ -40,8 +40,8 @@ describe('getHomophonePartner', () => {
 });
 
 describe('consistencia del banco de palabras', () => {
-  it('tiene 253 palabras con ids únicos', () => {
-    expect(WORDS_DATABASE.length).toBe(253);
+  it('tiene 249 palabras con ids únicos', () => {
+    expect(WORDS_DATABASE.length).toBe(249);
     expect(new Set(WORDS_DATABASE.map(w => w.id)).size).toBe(WORDS_DATABASE.length);
   });
 

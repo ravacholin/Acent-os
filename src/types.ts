@@ -14,8 +14,6 @@ export type WordCategory =
   | 'diacrítica'
   | 'interrogativo'
   | 'exclamativo'
-  | 'solo-solo'
-  | 'demostrativo'
   | 'mayúscula'
   | 'extranjerismo'
   | 'latinismo'
