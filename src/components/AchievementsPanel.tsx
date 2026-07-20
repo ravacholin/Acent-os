@@ -56,13 +56,13 @@ export default function AchievementsPanel({ stats, achievements, embedded }: Ach
   return (
     <div id="achievements-panel">
       {!embedded && (
-        <div className="border-b border-[#1a1a1a] pb-[22px] mb-8">
+        <div className="border-b border-[var(--color-line-soft)] pb-[22px] mb-8">
           <div className="display-brutal text-[34px] sm:text-[40px]">Logros</div>
-          <p className="text-[#888] text-[11px] mt-2">Hitos de dominio de la prosodia y ortografía</p>
+          <p className="text-[var(--color-fg-muted)] text-[11px] mt-2">Hitos de dominio de la prosodia y ortografía</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 border-t border-l border-[#1a1a1a]" id="achievements-grid">
+      <div className="grid grid-cols-1 md:grid-cols-2 border-t border-l border-[var(--color-line-soft)]" id="achievements-grid">
         {achievements.map((ach, idx) => {
           const progress = calculateProgress(ach);
           const isUnlocked = !!ach.unlockedAt || progress >= 100;
@@ -73,21 +73,21 @@ export default function AchievementsPanel({ stats, achievements, embedded }: Ach
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15, delay: idx * 0.03 }}
-              className={`border-r border-b border-[#1a1a1a] p-6 ${isUnlocked ? '' : 'opacity-55'}`}
+              className={`border-r border-b border-[var(--color-line-soft)] p-6 ${isUnlocked ? '' : 'opacity-55'}`}
             >
               <div className="flex justify-between items-baseline gap-3">
                 <span className="display-heavy text-[19px]">{ach.title}</span>
                 <span
                   className={`text-[9px] tracking-[0.1em] px-2 py-0.5 border ${
-                    isUnlocked ? 'border-[#F5F5F0] text-[#F5F5F0]' : 'border-[#2a2a2a] text-[#666]'
+                    isUnlocked ? 'border-[var(--color-fg)] text-[var(--color-fg)]' : 'border-[var(--color-line)] text-[var(--color-fg-dim)]'
                   }`}
                 >
                   {ach.unlockedAt ? 'DESBLOQUEADO' : `${progress}%`}
                 </span>
               </div>
-              <p className="text-[#888] text-[11px] mt-2 leading-relaxed">{ach.description}</p>
-              <div className="mt-3.5 h-[2px] bg-[#161616]">
-                <div className="h-full bg-[#F5F5F0]" style={{ width: `${progress}%` }} />
+              <p className="text-[var(--color-fg-muted)] text-[11px] mt-2 leading-relaxed">{ach.description}</p>
+              <div className="mt-3.5 h-[2px] bg-[var(--color-surface-2)]">
+                <div className="h-full bg-[var(--color-fg)]" style={{ width: `${progress}%` }} />
               </div>
             </motion.div>
           );

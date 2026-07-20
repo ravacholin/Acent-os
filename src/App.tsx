@@ -75,7 +75,7 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.12 }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#F5F5F0] text-black px-6 py-3.5 border border-black font-mono"
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[var(--color-fg)] text-black px-6 py-3.5 border border-black font-mono"
             id="toast-level-up"
           >
             <div className="text-[9px] tracking-[0.2em] uppercase opacity-60">¡Subida de nivel!</div>
@@ -90,11 +90,11 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.12 }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-black text-[#F5F5F0] px-6 py-3.5 border border-[#2a2a2a] font-mono max-w-md text-center"
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-black text-[var(--color-fg)] px-6 py-3.5 border border-[var(--color-line)] font-mono max-w-md text-center"
             id="toast-error"
           >
-            <div className="text-[9px] tracking-[0.2em] uppercase text-[#666] mb-1.5">Aviso</div>
-            <p className="text-xs text-[#999] leading-relaxed">{errorToast}</p>
+            <div className="text-[9px] tracking-[0.2em] uppercase text-[var(--color-fg-dim)] mb-1.5">Aviso</div>
+            <p className="text-xs text-[var(--color-fg-soft)] leading-relaxed">{errorToast}</p>
           </motion.div>
         )}
 
@@ -104,36 +104,36 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.12 }}
-            className="fixed bottom-6 right-6 z-50 bg-black text-[#F5F5F0] p-5 border border-[#2a2a2a] max-w-sm font-mono"
+            className="fixed bottom-6 right-6 z-50 bg-black text-[var(--color-fg)] p-5 border border-[var(--color-line)] max-w-sm font-mono"
             id="toast-achievement"
           >
-            <div className="text-[9px] tracking-[0.2em] uppercase text-[#666] mb-1.5">Logro desbloqueado</div>
+            <div className="text-[9px] tracking-[0.2em] uppercase text-[var(--color-fg-dim)] mb-1.5">Logro desbloqueado</div>
             <div className="display-heavy text-lg truncate">{achievementToast.title}</div>
-            <p className="text-[#888] text-xs leading-relaxed mt-1">{achievementToast.description}</p>
+            <p className="text-[var(--color-fg-muted)] text-xs leading-relaxed mt-1">{achievementToast.description}</p>
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="min-h-screen bg-black flex justify-center px-4 sm:px-6 py-8 sm:py-12 font-mono box-border" id="app-root">
-        <div className="relative w-[1040px] max-w-full border border-[#2a2a2a] bg-black text-[#F5F5F0]">
+        <div className="relative w-[1040px] max-w-full border border-[var(--color-line)] bg-black text-[var(--color-fg)]">
 
           {/* Corner registration marks */}
-          <div className="absolute -top-px -left-px w-3.5 h-3.5 border-t border-l border-[#555]" />
-          <div className="absolute -top-px -right-px w-3.5 h-3.5 border-t border-r border-[#555]" />
-          <div className="absolute -bottom-px -left-px w-3.5 h-3.5 border-b border-l border-[#555]" />
-          <div className="absolute -bottom-px -right-px w-3.5 h-3.5 border-b border-r border-[#555]" />
+          <div className="absolute -top-px -left-px w-3.5 h-3.5 border-t border-l border-[var(--color-fg-faint)]" />
+          <div className="absolute -top-px -right-px w-3.5 h-3.5 border-t border-r border-[var(--color-fg-faint)]" />
+          <div className="absolute -bottom-px -left-px w-3.5 h-3.5 border-b border-l border-[var(--color-fg-faint)]" />
+          <div className="absolute -bottom-px -right-px w-3.5 h-3.5 border-b border-r border-[var(--color-fg-faint)]" />
 
           {/* TOPBAR */}
           <div className="px-6 sm:px-[52px] pt-6 sm:pt-[34px]">
-            <div className="flex justify-between items-center gap-3 text-[9px] tracking-[0.22em] text-[#666] uppercase flex-wrap">
-              <span onClick={goTo('entrenar')} className="cursor-pointer text-[#999] hover:text-[#F5F5F0] transition-colors" id="brand-logo">
+            <div className="flex justify-between items-center gap-3 text-[9px] tracking-[0.22em] text-[var(--color-fg-dim)] uppercase flex-wrap">
+              <span onClick={goTo('entrenar')} className="cursor-pointer text-[var(--color-fg-soft)] hover:text-[var(--color-fg)] transition-colors" id="brand-logo">
                 AcentOS — ES
               </span>
               <span>Nivel {stats.level} · {stats.accuracy}% · racha {stats.currentStreak}</span>
             </div>
 
             {/* NAV — dos destinos de texto + icono de sonido */}
-            <div className="flex justify-between items-center gap-6 mt-5 pt-5 border-t border-[#1f1f1f]" id="main-navigation">
+            <div className="flex justify-between items-center gap-6 mt-5 pt-5 border-t border-[var(--color-line-faint)]" id="main-navigation">
               <div className="flex gap-6 sm:gap-[30px] text-[10px] tracking-[0.18em] uppercase">
                 {NAV_ITEMS.map(item => {
                   const active = !session && (activeTab === item.id || (item.id === 'entrenar' && activeTab === 'desafio'));
@@ -142,7 +142,7 @@ export default function App() {
                       key={item.id}
                       onClick={goTo(item.id)}
                       className={`cursor-pointer pb-1.5 border-b transition-colors ${
-                        active ? 'border-[#F5F5F0] text-[#F5F5F0]' : 'border-transparent text-[#777] hover:text-[#F5F5F0]'
+                        active ? 'border-[var(--color-fg)] text-[var(--color-fg)]' : 'border-transparent text-[var(--color-fg-quiet)] hover:text-[var(--color-fg)]'
                       }`}
                       id={`nav-tab-${item.id}`}
                     >
@@ -156,7 +156,7 @@ export default function App() {
                 aria-label={settings.soundEnabled ? 'Silenciar sonido' : 'Activar sonido'}
                 title={settings.soundEnabled ? 'Silenciar sonido' : 'Activar sonido'}
                 aria-pressed={settings.soundEnabled}
-                className="shrink-0 pb-1.5 text-[#777] hover:text-[#F5F5F0] transition-colors"
+                className="shrink-0 pb-1.5 text-[var(--color-fg-quiet)] hover:text-[var(--color-fg)] transition-colors"
                 id="nav-toggle-sound"
               >
                 {settings.soundEnabled
@@ -183,11 +183,11 @@ export default function App() {
                   <div className="flex justify-between items-baseline mb-11">
                     <span
                       onClick={exitSession}
-                      className="text-[10px] text-[#666] cursor-pointer underline underline-offset-2 hover:text-[#F5F5F0] transition-colors"
+                      className="text-[10px] text-[var(--color-fg-dim)] cursor-pointer underline underline-offset-2 hover:text-[var(--color-fg)] transition-colors"
                     >
                       ← abandonar sesión
                     </span>
-                    <span className="text-[10px] text-[#666] uppercase tracking-[0.12em]">
+                    <span className="text-[10px] text-[var(--color-fg-dim)] uppercase tracking-[0.12em]">
                       Palabra {session.currentIndex + 1} de {sessionIsEndless ? '∞' : totalAnswered}
                     </span>
                   </div>
@@ -218,27 +218,27 @@ export default function App() {
                   transition={{ duration: 0.12 }}
                   id="session-completed-panel"
                 >
-                  <div className="max-w-xl mx-auto text-center pb-9 border-b border-[#1a1a1a]">
-                    <span className="text-[9px] tracking-[0.2em] text-[#666] uppercase border border-[#2a2a2a] px-3 py-1 inline-block">
+                  <div className="max-w-xl mx-auto text-center pb-9 border-b border-[var(--color-line-soft)]">
+                    <span className="text-[9px] tracking-[0.2em] text-[var(--color-fg-dim)] uppercase border border-[var(--color-line)] px-3 py-1 inline-block">
                       Sesión completada
                     </span>
                     <div className="display-brutal text-[34px] sm:text-[44px] mt-5">Resumen</div>
-                    <p className="text-[#888] text-xs mt-2">Análisis de rendimiento sobre el set de acentuación</p>
+                    <p className="text-[var(--color-fg-muted)] text-xs mt-2">Análisis de rendimiento sobre el set de acentuación</p>
                   </div>
 
-                  <div className="max-w-xl mx-auto grid grid-cols-3 border-b border-[#1a1a1a]">
-                    <div className="py-[26px] text-center border-r border-[#1a1a1a]">
-                      <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Aciertos</div>
+                  <div className="max-w-xl mx-auto grid grid-cols-3 border-b border-[var(--color-line-soft)]">
+                    <div className="py-[26px] text-center border-r border-[var(--color-line-soft)]">
+                      <div className="text-[9px] tracking-[0.2em] text-[var(--color-fg-dim)] uppercase">Aciertos</div>
                       <div className="display-heavy text-[34px] sm:text-[42px] mt-2.5">{session.correctCount} / {session.words.length}</div>
                     </div>
-                    <div className="py-[26px] text-center border-r border-[#1a1a1a]">
-                      <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Precisión</div>
+                    <div className="py-[26px] text-center border-r border-[var(--color-line-soft)]">
+                      <div className="text-[9px] tracking-[0.2em] text-[var(--color-fg-dim)] uppercase">Precisión</div>
                       <div className="display-heavy text-[34px] sm:text-[42px] mt-2.5">
                         {session.words.length > 0 ? Math.round((session.correctCount / session.words.length) * 100) : 0}%
                       </div>
                     </div>
                     <div className="py-[26px] text-center">
-                      <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase">Tiempo</div>
+                      <div className="text-[9px] tracking-[0.2em] text-[var(--color-fg-dim)] uppercase">Tiempo</div>
                       <div className="display-heavy text-[34px] sm:text-[42px] mt-2.5">
                         {((Date.now() - session.startTime) / 1000).toFixed(0)}s
                       </div>
@@ -246,8 +246,8 @@ export default function App() {
                   </div>
 
                   <div className="max-w-xl mx-auto mt-9">
-                    <div className="text-[9px] tracking-[0.2em] text-[#666] uppercase mb-3">Revisión del vocabulario</div>
-                    <div className="divide-y divide-[#1a1a1a] border-t border-[#1a1a1a] max-h-56 overflow-y-auto pr-1">
+                    <div className="text-[9px] tracking-[0.2em] text-[var(--color-fg-dim)] uppercase mb-3">Revisión del vocabulario</div>
+                    <div className="divide-y divide-[var(--color-line-soft)] border-t border-[var(--color-line-soft)] max-h-56 overflow-y-auto pr-1">
                       {session.words.map((w, wIdx) => {
                         const histItem = session.history.find(h => h.wordId === w.id);
                         const isWordCorrect = histItem ? histItem.isCorrect : false;
@@ -260,12 +260,12 @@ export default function App() {
                                 playClickSound(settings.soundEnabled);
                                 setSelectedResultWord(isSelected ? null : w);
                               }}
-                              className="flex justify-between items-center cursor-pointer hover:bg-[#0d0d0d] px-2 py-2.5 transition-colors"
+                              className="flex justify-between items-center cursor-pointer hover:bg-[var(--color-surface)] px-2 py-2.5 transition-colors"
                             >
                               <span className="display-heavy text-lg">{w.word}</span>
                               <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-mono text-[#666] uppercase">{w.classification}</span>
-                                <span className={`text-sm ${isWordCorrect ? 'text-[#F5F5F0]' : 'text-[#777]'}`}>
+                                <span className="text-[10px] font-mono text-[var(--color-fg-dim)] uppercase">{w.classification}</span>
+                                <span className={`text-sm ${isWordCorrect ? 'text-[var(--color-fg)]' : 'text-[var(--color-fg-quiet)]'}`}>
                                   {isWordCorrect ? '✓' : '✗'}
                                 </span>
                               </div>
@@ -278,11 +278,11 @@ export default function App() {
                                 transition={{ duration: 0.12 }}
                                 className="px-2 pb-3 space-y-1.5"
                               >
-                                <div className="flex justify-between text-[11px] font-mono text-[#888]">
+                                <div className="flex justify-between text-[11px] font-mono text-[var(--color-fg-muted)]">
                                   <span>Silabeo: {w.syllables.join(' • ')}</span>
                                   <span>Regla: {w.rule}</span>
                                 </div>
-                                <p className="text-[#999] text-xs italic">"{w.explanation}"</p>
+                                <p className="text-[var(--color-fg-soft)] text-xs italic">"{w.explanation}"</p>
                               </motion.div>
                             )}
                           </div>
@@ -294,13 +294,13 @@ export default function App() {
                   <div className="max-w-xl mx-auto flex flex-col sm:flex-row gap-3 pt-9">
                     <button
                       onClick={restartSameMode}
-                      className="flex-1 py-3 bg-[#F5F5F0] text-black text-xs tracking-[0.1em] cursor-pointer hover:bg-[#d4d4d4] transition-colors"
+                      className="flex-1 py-3 bg-[var(--color-fg)] text-black text-xs tracking-[0.1em] cursor-pointer hover:bg-[var(--color-paper-dim)] transition-colors"
                     >
                       Practicar de nuevo
                     </button>
                     <button
                       onClick={exitSession}
-                      className="flex-1 py-3 border border-[#2a2a2a] text-[#999] text-xs tracking-[0.1em] cursor-pointer hover:border-[#F5F5F0] hover:text-[#F5F5F0] transition-colors"
+                      className="flex-1 py-3 border border-[var(--color-line)] text-[var(--color-fg-soft)] text-xs tracking-[0.1em] cursor-pointer hover:border-[var(--color-fg)] hover:text-[var(--color-fg)] transition-colors"
                     >
                       Volver a modos
                     </button>
@@ -319,12 +319,12 @@ export default function App() {
                   id="entrenar-view"
                 >
                   {/* Hero */}
-                  <div className="pt-4 pb-9 border-b border-[#1a1a1a]">
-                    <div className="text-[9px] tracking-[0.3em] text-[#666] uppercase mb-5">
+                  <div className="pt-4 pb-9 border-b border-[var(--color-line-soft)]">
+                    <div className="text-[9px] tracking-[0.3em] text-[var(--color-fg-dim)] uppercase mb-5">
                       Entrenador de acentuación · Español
                     </div>
                     <div className="display-brutal normal-case text-[52px] sm:text-[92px]">AcentOS</div>
-                    <p className="text-[#999] text-[13px] max-w-[440px] mt-5 leading-[1.7]">
+                    <p className="text-[var(--color-fg-soft)] text-[13px] max-w-[440px] mt-5 leading-[1.7]">
                       Sesiones de 2 a 10 minutos para saber, sin dudar, cuándo una palabra lleva tilde.
                     </p>
                   </div>
@@ -332,11 +332,11 @@ export default function App() {
                   {/* Desafío diario — entrada destacada */}
                   <button
                     onClick={goTo('desafio')}
-                    className="group w-full flex justify-between items-center gap-6 border-b border-[#1a1a1a] py-7 px-2 -mx-2 text-left cursor-pointer hover:bg-[#F5F5F0] hover:text-black transition-colors"
+                    className="group w-full flex justify-between items-center gap-6 border-b border-[var(--color-line-soft)] py-7 px-2 -mx-2 text-left cursor-pointer hover:bg-[var(--color-fg)] hover:text-black transition-colors"
                     id="entry-daily-challenge"
                   >
                     <div>
-                      <div className="text-[9px] tracking-[0.2em] text-[#666] group-hover:text-black/60 uppercase mb-2 transition-colors">
+                      <div className="text-[9px] tracking-[0.2em] text-[var(--color-fg-dim)] group-hover:text-black/60 uppercase mb-2 transition-colors">
                         Hoy · 20 palabras · +100 XP
                       </div>
                       <div className="display-heavy text-[26px]">Desafío diario</div>
@@ -362,7 +362,7 @@ export default function App() {
                 >
                   <span
                     onClick={goTo('entrenar')}
-                    className="inline-block mb-8 text-[10px] text-[#666] cursor-pointer underline underline-offset-2 hover:text-[#F5F5F0] transition-colors"
+                    className="inline-block mb-8 text-[10px] text-[var(--color-fg-dim)] cursor-pointer underline underline-offset-2 hover:text-[var(--color-fg)] transition-colors"
                   >
                     ← volver a entrenar
                   </span>
