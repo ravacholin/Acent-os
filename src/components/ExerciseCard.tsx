@@ -9,6 +9,10 @@ import EncontraError from './exercises/EncontraError';
 import DondeVaTilde from './exercises/DondeVaTilde';
 import Clasificacion from './exercises/Clasificacion';
 import Dictado from './exercises/Dictado';
+import SilabaTonica from './exercises/SilabaTonica';
+import LaRegla from './exercises/LaRegla';
+import Contexto from './exercises/Contexto';
+import Corrector from './exercises/Corrector';
 
 interface ExerciseCardProps {
   word: Word;
@@ -27,7 +31,11 @@ const EXERCISES: Partial<Record<GameMode, React.ComponentType<ExerciseProps>>> =
   'encontra-error': EncontraError,
   'donde-va-tilde': DondeVaTilde,
   'clasificacion': Clasificacion,
-  'dictado': Dictado
+  'dictado': Dictado,
+  'silaba-tonica': SilabaTonica,
+  'la-regla': LaRegla,
+  'contexto': Contexto,
+  'corrector': Corrector
 };
 
 export default function ExerciseCard({

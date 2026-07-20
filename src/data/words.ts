@@ -56,7 +56,7 @@ function makeWord(
 }
 
 // Reglas reutilizables (texto corto y consistente)
-const R = {
+export const R = {
   agV: 'Agudas terminadas en vocal',
   agN: 'Agudas terminadas en N',
   agS: 'Agudas terminadas en S',
@@ -475,4 +475,39 @@ export function getMisaccentedForm(word: Word): string {
   }
   // Respaldo: acentúa la primera vocal de la palabra limpia (sigue sin tocar consonantes).
   return word.wordClean.replace(/[aeiou]/i, m => VOWEL_TO_ACCENTED[m.toLowerCase()] ?? m);
+}
+
+/**
+ * Grupos de reglas "plausibles" entre sí, para elegir distractores creíbles en
+ * el ejercicio «¿Por qué?» (la-regla): acentuación general vs. diacríticas vs.
+ * hiatos vs. -mente. Un distractor del mismo grupo evita que la respuesta sea
+ * trivial.
+ */
+export const RULE_GROUPS: readonly string[][] = [
+  [R.agV, R.agN, R.agS, R.agNo, R.grT, R.grNo, R.esd, R.sob, R.dip, R.trip, R.extr, R.lat, R.may],
+  [R.mono, R.diac, R.interr],
+  [R.hiato],
+  [R.mente]
+];
+
+const ALL_RULES: string[] = Array.from(new Set(RULE_GROUPS.flat()));
+
+/**
+ * Devuelve `count` reglas distractoras para una regla dada: primero del mismo
+ * grupo (plausibles), completando con otras si el grupo es chico. Nunca incluye
+ * la regla correcta ni repite. RNG inyectable para determinismo/tests.
+ */
+export function getRuleDistractors(rule: string, count: number, rng: () => number = Math.random): string[] {
+  const shuffle = (arr: string[]): string[] => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+  const group = RULE_GROUPS.find(g => g.includes(rule)) ?? [];
+  const sameGroup = shuffle(group.filter(r => r !== rule));
+  const others = shuffle(ALL_RULES.filter(r => r !== rule && !group.includes(r)));
+  return [...sameGroup, ...others].slice(0, count);
 }

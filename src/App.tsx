@@ -13,7 +13,12 @@ import { Volume2, VolumeX } from 'lucide-react';
 // they present a concrete exercise type per word. We rotate through fast, tap-based
 // formats that work for ANY word (including diacritic pairs, which show context).
 const META_MODES = new Set<GameMode>(['supervivencia', 'infinito', 'personalizado']);
-const META_ROTATION: GameMode[] = ['lleva-tilde', 'encontra-error', 'clasificacion'];
+// Formatos rápidos que sirven para cualquier palabra. Los nuevos formatos que
+// dependen de la elegibilidad (p. ej. `contexto`, solo ambiguas) entran con la
+// escalera adaptativa de la Fase 4.
+const META_ROTATION: GameMode[] = [
+  'lleva-tilde', 'encontra-error', 'clasificacion', 'silaba-tonica', 'la-regla', 'corrector'
+];
 
 // Resolve the concrete exercise type to render for a given session word index.
 function resolveRenderMode(mode: GameMode, index: number): GameMode {

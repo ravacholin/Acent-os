@@ -47,6 +47,10 @@ export type GameMode =
   | 'donde-va-tilde'   // Mode 4: ¿Dónde va la tilde?
   | 'clasificacion'    // Mode 5: Clasificación
   | 'dictado'          // Mode 6: Dictado (TTS)
+  | 'silaba-tonica'    // Mode: ¿Dónde suena? (tocar la sílaba tónica)
+  | 'la-regla'         // Mode: ¿Por qué? (elegir la regla)
+  | 'contexto'         // Mode: El contexto manda (par diacrítico en una frase)
+  | 'corrector'        // Mode: Cazador de erratas (marcar palabras mal escritas)
   | 'supervivencia'    // Mode 7: Supervivencia (Cronómetro)
   | 'infinito'         // Mode 8: Infinito
   | 'personalizado';   // Mode 9: Configuración personalizada
