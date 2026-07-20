@@ -203,7 +203,8 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
   return (
     <div id="practice-selector">
       <div className="border-b border-[var(--color-line-soft)] pb-[18px] mb-8">
-        <div className="text-[9px] tracking-[0.25em] text-[var(--color-fg-dim)] uppercase">Modos de entrenamiento</div>
+        <div className="text-[9px] tracking-[0.25em] text-[var(--color-fg-dim)] uppercase">Práctica dirigida</div>
+        <p className="text-[var(--color-fg-muted)] text-[11px] mt-2">Elegí un formato o modo concreto para enfocar tu práctica</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-[var(--color-line-soft)]" id="modes-grid">

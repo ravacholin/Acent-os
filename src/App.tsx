@@ -1,30 +1,20 @@
-import React, { useState } from 'react';
-import { GameMode, Word } from './types';
+import React, { useRef, useState } from 'react';
+import { GameMode, GameSessionState, Word } from './types';
 import PracticeSelector from './components/PracticeSelector';
 import StatsDashboard from './components/StatsDashboard';
 import DailyChallenge from './components/DailyChallenge';
 import ExerciseCard from './components/ExerciseCard';
 import { useGameSession } from './hooks/useGameSession';
+import { pickFormat, seededRng } from './engine/formats';
 import { playClickSound } from './utils/audio';
 import { motion, AnimatePresence } from 'motion/react';
 import { Volume2, VolumeX } from 'lucide-react';
 
-// "Meta" modes (timed / endless / filtered) don't have their own question format;
-// they present a concrete exercise type per word. We rotate through fast, tap-based
-// formats that work for ANY word (including diacritic pairs, which show context).
-const META_MODES = new Set<GameMode>(['supervivencia', 'infinito', 'personalizado']);
-// Formatos rápidos que sirven para cualquier palabra. Los nuevos formatos que
-// dependen de la elegibilidad (p. ej. `contexto`, solo ambiguas) entran con la
-// escalera adaptativa de la Fase 4.
-const META_ROTATION: GameMode[] = [
-  'lleva-tilde', 'encontra-error', 'clasificacion', 'silaba-tonica', 'la-regla', 'corrector'
-];
-
-// Resolve the concrete exercise type to render for a given session word index.
-function resolveRenderMode(mode: GameMode, index: number): GameMode {
-  if (!META_MODES.has(mode)) return mode;
-  return META_ROTATION[index % META_ROTATION.length];
-}
+// Modos "adaptativos": no son un formato en sí; el formato de cada palabra lo
+// decide la escalera (pickFormat) según su caja Leitner. El resto de los modos
+// (los de la grilla "Práctica dirigida") SON un formato concreto y se renderizan
+// tal cual.
+const ADAPTIVE_MODES = new Set<GameMode>(['adaptativo', 'supervivencia', 'infinito', 'personalizado']);
 
 // Tres destinos de nivel superior. "desafio" es una sub-vista de Entrenar.
 type Tab = 'entrenar' | 'progreso' | 'desafio';
@@ -57,6 +47,35 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<Tab>('entrenar');
   const [selectedResultWord, setSelectedResultWord] = useState<Word | null>(null);
+
+  // Cache de formato por índice de palabra dentro de la sesión activa. El
+  // formato se decide UNA vez (estable entre renders para no cambiar a mitad de
+  // pregunta) y de forma determinista (sembrada por id+índice), lo que hace que
+  // el Desafío Diario sea reproducible.
+  const formatCacheRef = useRef<{ startTime: number; formats: Record<number, GameMode> }>({
+    startTime: -1,
+    formats: {}
+  });
+
+  const resolveRenderMode = (s: GameSessionState, index: number): GameMode => {
+    if (!ADAPTIVE_MODES.has(s.mode)) return s.mode;
+
+    // Reinicia el cache cuando cambia la sesión.
+    if (formatCacheRef.current.startTime !== s.startTime) {
+      formatCacheRef.current = { startTime: s.startTime, formats: {} };
+    }
+    const cache = formatCacheRef.current.formats;
+    if (cache[index]) return cache[index];
+
+    const word = s.words[index];
+    const srs = stats.spacedRepetition?.[word.id];
+    const fmt = pickFormat(word, srs, {
+      lastFormat: cache[index - 1],
+      rng: seededRng(`${word.id}-${index}`)
+    });
+    cache[index] = fmt;
+    return fmt;
+  };
 
   // Navigating away from an in-progress session exits it first.
   const goTo = (tab: Tab) => () => {
@@ -201,7 +220,7 @@ export default function App() {
                     <div key={`${session.mode}-${session.currentIndex}`}>
                       <ExerciseCard
                         word={session.words[session.currentIndex]}
-                        mode={resolveRenderMode(session.mode, session.currentIndex)}
+                        mode={resolveRenderMode(session, session.currentIndex)}
                         settings={settings}
                         comboStreak={session.streak}
                         timeLeft={session.mode === 'supervivencia' ? session.timeLeft : undefined}
@@ -332,6 +351,17 @@ export default function App() {
                     <p className="text-[var(--color-fg-soft)] text-[13px] max-w-[440px] mt-5 leading-[1.7]">
                       Sesiones de 2 a 10 minutos para saber, sin dudar, cuándo una palabra lleva tilde.
                     </p>
+
+                    {/* CTA primario: sesión adaptativa (el formato se ajusta al dominio
+                        de cada palabra). Es la única puerta de entrada destacada. */}
+                    <button
+                      onClick={() => startPractice('adaptativo')}
+                      className="group mt-8 w-full sm:w-auto inline-flex items-center justify-between gap-10 bg-[var(--color-fg)] text-black px-8 py-4 cursor-pointer hover:bg-[var(--color-paper-dim)] transition-colors"
+                      id="cta-entrenar"
+                    >
+                      <span className="display-heavy text-lg tracking-[0.05em]">ENTRENAR</span>
+                      <span className="text-[10px] tracking-[0.15em] uppercase opacity-70">Sesión adaptativa →</span>
+                    </button>
                   </div>
 
                   {/* Desafío diario — entrada destacada */}

@@ -51,6 +51,7 @@ export type GameMode =
   | 'la-regla'         // Mode: ¿Por qué? (elegir la regla)
   | 'contexto'         // Mode: El contexto manda (par diacrítico en una frase)
   | 'corrector'        // Mode: Cazador de erratas (marcar palabras mal escritas)
+  | 'adaptativo'       // Sesión adaptativa: pickFormat elige el formato por palabra
   | 'supervivencia'    // Mode 7: Supervivencia (Cronómetro)
   | 'infinito'         // Mode 8: Infinito
   | 'personalizado';   // Mode 9: Configuración personalizada

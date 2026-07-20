@@ -156,9 +156,10 @@ export function useGameSession() {
   const startDailyChallenge = useCallback((words: Word[]) => {
     playClickSound(progressRef.current.settings.soundEnabled);
     isDailyRef.current = true;
+    // El desafío diario también usa la escalera adaptativa (formato por palabra).
     dispatch({
       type: 'start',
-      session: createSession({ mode: 'lleva-tilde', words, initialTime: 0, now: Date.now() })
+      session: createSession({ mode: 'adaptativo', words, initialTime: 0, now: Date.now() })
     });
   }, []);
 
