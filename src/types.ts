@@ -47,6 +47,11 @@ export type GameMode =
   | 'donde-va-tilde'   // Mode 4: ¿Dónde va la tilde?
   | 'clasificacion'    // Mode 5: Clasificación
   | 'dictado'          // Mode 6: Dictado (TTS)
+  | 'silaba-tonica'    // Mode: ¿Dónde suena? (tocar la sílaba tónica)
+  | 'la-regla'         // Mode: ¿Por qué? (elegir la regla)
+  | 'contexto'         // Mode: El contexto manda (par diacrítico en una frase)
+  | 'corrector'        // Mode: Cazador de erratas (marcar palabras mal escritas)
+  | 'adaptativo'       // Sesión adaptativa: pickFormat elige el formato por palabra
   | 'supervivencia'    // Mode 7: Supervivencia (Cronómetro)
   | 'infinito'         // Mode 8: Infinito
   | 'personalizado';   // Mode 9: Configuración personalizada
@@ -88,14 +93,17 @@ export interface UserStats {
   frequentMistakes: Record<string, { wordId: string; word: string; incorrectCount: number; explanation: string }>;
   masteredWords: string[]; // List of wordIds with consecutive correct answers
   dailyHistory: Record<string, number>; // Date string "YYYY-MM-DD" -> words practiced
-  spacedRepetition?: Record<string, {
-    wordId: string;
-    box: number;
-    consecutiveCorrect: number;
-    lastSeenTimestamp: number;
-    nextReviewTimestamp: number;
-    failCount: number;
-  }>;
+  spacedRepetition?: Record<string, SRSEntry>;
+}
+
+// Leitner spaced-repetition record for a single word.
+export interface SRSEntry {
+  wordId: string;
+  box: number;                 // Leitner box (1..5)
+  consecutiveCorrect: number;
+  lastSeenTimestamp: number;
+  nextReviewTimestamp: number;
+  failCount: number;
 }
 
 export interface Achievement {
@@ -120,18 +128,11 @@ export interface GameSessionState {
   timeLeft: number; // Used in survival
   initialTime: number; // Used in survival
   startTime: number; // Timestamp of game start
+  finished?: boolean; // set by the session reducer when the session ends
   history: Array<{
     wordId: string;
-    userAnswer: any;
+    userAnswer: string | boolean | number;
     isCorrect: boolean;
     timeTakenMs: number;
   }>;
-}
-
-export interface SpacedRepetitionData {
-  wordId: string;
-  box: number; // Repetition box (1 to 5)
-  nextReviewDate: number; // Timestamp
-  easeFactor: number;
-  consecutiveCorrect: number;
 }

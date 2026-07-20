@@ -3,19 +3,31 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Alias intencional: la app usa Inter también donde el markup pide "mono"
+     (estética uniforme, sin monoespaciada real). Se conserva por eso. */
   --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Archivo", "Inter", sans-serif;
 
-  /* Monochrome palette — negro, blanco y grises. Sin acentos de color. */
+  /* Monochrome palette — negro, blanco y grises. Sin acentos de color.
+     Todos los grises usados en la UI viven acá para poder cambiar el estilo
+     global tocando un solo archivo. */
   --color-ink: #000000;        /* base background */
   --color-surface: #0d0d0d;    /* elevated surface */
   --color-surface-2: #161616;  /* cards / insets */
+  --color-line-faint: #1f1f1f; /* borde apenas visible (nav) */
   --color-line: #2a2a2a;       /* borders / dividers */
   --color-line-soft: #1a1a1a;  /* subtle dividers */
   --color-fg: #F5F5F0;         /* primary text */
   --color-fg-muted: #888888;   /* secondary text */
+  --color-fg-soft: #999999;    /* texto secundario más claro */
+  --color-fg-quiet: #777777;   /* texto terciario (nav inactiva) */
+  --color-fg-dim: #666666;     /* etiquetas y micro-texto */
   --color-fg-faint: #555555;   /* tertiary text */
+  --color-ink-4: #444444;      /* letra deshabilitada */
+  --color-ink-3: #333333;      /* barra vacía */
+  --color-grey-mid: #8a8a8a;   /* mapa de calor (nivel medio) */
   --color-paper: #ffffff;      /* inverted / primary action */
+  --color-paper-dim: #d4d4d4;  /* hover de acción primaria */
 }
 
 html,
