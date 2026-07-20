@@ -2,5 +2,5 @@
   "name": "AcentOS",
   "description": "Spanish Accent Trainer - Herramienta premium de práctica rápida e inteligente de la acentuación ortográfica española",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

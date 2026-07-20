@@ -21,6 +21,21 @@ import { playClickSound, playCorrectSound, speakWord } from './utils/audio';
 import { motion, AnimatePresence } from 'motion/react';
 import { Volume2, VolumeX } from 'lucide-react';
 
+// The 18 word categories and 6 MCER levels, seeded to zero in fresh stats so every
+// bucket exists from the start (no lazy, inconsistent creation later on).
+const CATEGORIES_LIST: WordCategory[] = [
+  'aguda', 'grave', 'esdrújula', 'sobreesdrújula', 'hiato', 'diptongo', 'triptongo',
+  'monosílabo', 'diacrítica', 'interrogativo', 'exclamativo', 'solo-solo',
+  'demostrativo', 'mayúscula', 'extranjerismo', 'latinismo', 'mente', 'pronombre'
+];
+const LEVELS_LIST: LevelMCER[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
+const seedCategoryStats = (): UserStats['categoryStats'] =>
+  Object.fromEntries(CATEGORIES_LIST.map(cat => [cat, { correct: 0, total: 0 }])) as UserStats['categoryStats'];
+
+const seedLevelStats = (): UserStats['levelStats'] =>
+  Object.fromEntries(LEVELS_LIST.map(lvl => [lvl, { correct: 0, total: 0 }])) as UserStats['levelStats'];
+
 // Default empty stats template
 const DEFAULT_STATS: UserStats = {
   wordsSeen: 0,
@@ -32,26 +47,13 @@ const DEFAULT_STATS: UserStats = {
   totalTimeSeconds: 0,
   xp: 0,
   level: 1,
-  categoryStats: {} as any,
-  levelStats: {} as any,
+  categoryStats: seedCategoryStats(),
+  levelStats: seedLevelStats(),
   frequentMistakes: {},
   masteredWords: [],
   dailyHistory: {},
   spacedRepetition: {}
 };
-
-// Seed initial category stats
-const CATEGORIES_LIST: WordCategory[] = [
-  'aguda', 'grave', 'esdrújula', 'sobreesdrújula', 'hiato', 'diptongo', 'triptongo', 'monosílabo', 'diacrítica', 'interrogativo'
-];
-CATEGORIES_LIST.forEach(cat => {
-  DEFAULT_STATS.categoryStats[cat] = { correct: 0, total: 0 };
-});
-
-const LEVELS_LIST: LevelMCER[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-LEVELS_LIST.forEach(lvl => {
-  DEFAULT_STATS.levelStats[lvl] = { correct: 0, total: 0 };
-});
 
 // Number of words per regular practice session
 const SESSION_SIZE = 10;

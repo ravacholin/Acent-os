@@ -88,14 +88,17 @@ export interface UserStats {
   frequentMistakes: Record<string, { wordId: string; word: string; incorrectCount: number; explanation: string }>;
   masteredWords: string[]; // List of wordIds with consecutive correct answers
   dailyHistory: Record<string, number>; // Date string "YYYY-MM-DD" -> words practiced
-  spacedRepetition?: Record<string, {
-    wordId: string;
-    box: number;
-    consecutiveCorrect: number;
-    lastSeenTimestamp: number;
-    nextReviewTimestamp: number;
-    failCount: number;
-  }>;
+  spacedRepetition?: Record<string, SRSEntry>;
+}
+
+// Leitner spaced-repetition record for a single word.
+export interface SRSEntry {
+  wordId: string;
+  box: number;                 // Leitner box (1..5)
+  consecutiveCorrect: number;
+  lastSeenTimestamp: number;
+  nextReviewTimestamp: number;
+  failCount: number;
 }
 
 export interface Achievement {
@@ -122,16 +125,8 @@ export interface GameSessionState {
   startTime: number; // Timestamp of game start
   history: Array<{
     wordId: string;
-    userAnswer: any;
+    userAnswer: string | boolean | number;
     isCorrect: boolean;
     timeTakenMs: number;
   }>;
-}
-
-export interface SpacedRepetitionData {
-  wordId: string;
-  box: number; // Repetition box (1 to 5)
-  nextReviewDate: number; // Timestamp
-  easeFactor: number;
-  consecutiveCorrect: number;
 }
