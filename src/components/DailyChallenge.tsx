@@ -1,14 +1,16 @@
 import React from 'react';
 import { Word, UserStats } from '../types';
 import { WORDS_DATABASE } from '../data/words';
+import { DailyResult } from '../storage';
 import { motion } from 'motion/react';
 
 interface DailyChallengeProps {
   stats: UserStats;
+  dailyChallenges: Record<string, DailyResult>;
   onStartChallenge: (words: Word[]) => void;
 }
 
-export default function DailyChallenge({ stats, onStartChallenge }: DailyChallengeProps) {
+export default function DailyChallenge({ stats, dailyChallenges, onStartChallenge }: DailyChallengeProps) {
   const todayStr = new Date().toISOString().split('T')[0];
 
   // Deterministic daily word selector based on the date
@@ -30,11 +32,9 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
 
   const dailyWords = getDailyWords();
 
-  // Check if completed today from localStorage
-  const dailyKey = `daily-challenge-${todayStr}`;
-  const savedResult = localStorage.getItem(dailyKey);
-  const isCompleted = !!savedResult;
-  const resultData = isCompleted ? JSON.parse(savedResult) : null;
+  // Check if completed today desde el objeto versionado
+  const resultData = dailyChallenges[todayStr] || null;
+  const isCompleted = !!resultData;
 
   // Gather historic daily challenge records
   const getHistoricRecords = () => {
@@ -45,12 +45,12 @@ export default function DailyChallenge({ stats, onStartChallenge }: DailyChallen
       const date = new Date(today);
       date.setDate(today.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
-      const res = localStorage.getItem(`daily-challenge-${dateStr}`);
+      const res = dailyChallenges[dateStr];
       records.push({
         dateStr,
         label: dayLetters[date.getDay()],
         completed: !!res,
-        score: res ? JSON.parse(res).correctCount : 0
+        score: res ? res.correctCount : 0
       });
     }
     return records;

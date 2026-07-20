@@ -9,12 +9,28 @@ interface StatsDashboardProps {
   achievements: Achievement[];
   onResetStats?: () => void;
   onStartFocusSession?: (categories: WordCategory[]) => void;
+  onExportProgress?: () => void;
+  onImportProgress?: (file: File) => void;
 }
 
-export default function StatsDashboard({ stats, achievements, onResetStats, onStartFocusSession }: StatsDashboardProps) {
+export default function StatsDashboard({
+  stats,
+  achievements,
+  onResetStats,
+  onStartFocusSession,
+  onExportProgress,
+  onImportProgress
+}: StatsDashboardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'profiles' | 'logros'>('overview');
   // Confirmación de reinicio por doble-tap en el propio botón (sin modal).
   const [confirmReset, setConfirmReset] = useState(false);
+  const importInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onImportProgress) onImportProgress(file);
+    e.target.value = ''; // permite reimportar el mismo archivo
+  };
 
   // Helper to format average time
   const formatAverageTime = () => {
@@ -281,6 +297,38 @@ export default function StatsDashboard({ stats, achievements, onResetStats, onSt
 
       {activeTab === 'logros' && (
         <AchievementsPanel stats={stats} achievements={achievements} embedded />
+      )}
+
+      {/* Progreso portable — exportar / importar (sin cuentas ni backend) */}
+      {(onExportProgress || onImportProgress) && (
+        <div className="flex items-center gap-5 pt-8 border-t border-[var(--color-line-soft)] mt-8">
+          {onExportProgress && (
+            <span
+              onClick={onExportProgress}
+              className="text-[10px] tracking-[0.05em] text-[var(--color-fg-quiet)] hover:text-[var(--color-fg)] cursor-pointer transition-colors underline underline-offset-2"
+            >
+              Exportar progreso
+            </span>
+          )}
+          {onImportProgress && (
+            <>
+              <span
+                onClick={() => importInputRef.current?.click()}
+                className="text-[10px] tracking-[0.05em] text-[var(--color-fg-quiet)] hover:text-[var(--color-fg)] cursor-pointer transition-colors underline underline-offset-2"
+              >
+                Importar progreso
+              </span>
+              <input
+                ref={importInputRef}
+                type="file"
+                accept="application/json,.json"
+                onChange={handleImportFile}
+                className="hidden"
+              />
+            </>
+          )}
+          <span className="text-[10px] text-[var(--color-fg-faint)]">Guardá o migrá tu progreso como archivo JSON</span>
+        </div>
       )}
 
       {onResetStats && (

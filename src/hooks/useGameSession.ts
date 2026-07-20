@@ -15,7 +15,8 @@ import {
   saveState,
   PersistedState,
   CURRENT_VERSION,
-  isValidPersistedState
+  isValidPersistedState,
+  coerceState
 } from '../storage';
 import { createDefaultStats, recordAnswer } from '../engine/stats';
 import { INITIAL_ACHIEVEMENTS, checkUnlockAchievements } from '../engine/achievements';
@@ -62,7 +63,8 @@ function defaultProgress(): PersistedState {
     stats: createDefaultStats(),
     settings: DEFAULT_SETTINGS,
     achievements: INITIAL_ACHIEVEMENTS,
-    recentWords: []
+    recentWords: [],
+    dailyChallenges: {}
   };
 }
 
@@ -218,7 +220,8 @@ export function useGameSession() {
     if (session) startPractice(session.mode);
   }, [session, startPractice]);
 
-  // Wrap-up: runs once when a session finishes. Daily challenge awards its XP.
+  // Wrap-up: runs once when a session finishes. Daily challenge awards its XP y
+  // guarda el resultado del día en el objeto versionado (ya no en claves sueltas).
   const handleWrapUp = useCallback((finalSession: GameSessionState) => {
     if (!isDailyRef.current) return;
     const todayStr = new Date().toISOString().split('T')[0];
@@ -228,19 +231,14 @@ export function useGameSession() {
       timeTakenSeconds: (Date.now() - finalSession.startTime) / 1000,
       xpEarned
     };
-    try {
-      localStorage.setItem(`daily-challenge-${todayStr}`, JSON.stringify(result));
-    } catch {
-      /* ignore */
-    }
 
     const prevStats = progressRef.current.stats;
-    const xp = prevStats.xp + xpEarned;
-    const newLevel = levelForXp(xp);
+    const newLevel = levelForXp(prevStats.xp + xpEarned);
     const leveled = newLevel > (prevStats.level || 1);
     persist(p => ({
       ...p,
-      stats: { ...p.stats, xp: p.stats.xp + xpEarned, level: leveled ? newLevel : p.stats.level }
+      stats: { ...p.stats, xp: p.stats.xp + xpEarned, level: leveled ? newLevel : p.stats.level },
+      dailyChallenges: { ...p.dailyChallenges, [todayStr]: result }
     }));
     if (leveled) showLevelUp(newLevel);
   }, [persist, showLevelUp]);
@@ -272,12 +270,6 @@ export function useGameSession() {
   }, [persist]);
 
   const resetProgress = useCallback(() => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    try {
-      localStorage.removeItem(`daily-challenge-${todayStr}`);
-    } catch {
-      /* ignore */
-    }
     const fresh = defaultProgress();
     saveState(fresh);
     setProgress(fresh);
@@ -291,6 +283,34 @@ export function useGameSession() {
       timeLimit: 120
     });
   }, [startPractice]);
+
+  // --- Exportar / Importar progreso ----------------------------------------
+  const exportProgress = useCallback((): string => {
+    return JSON.stringify(progressRef.current, null, 2);
+  }, []);
+
+  const importProgress = useCallback((text: string): boolean => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      showError('El archivo no es un JSON válido.');
+      return false;
+    }
+    if (!isValidPersistedState(parsed)) {
+      showError('El archivo no es un progreso de AcentOS válido.');
+      return false;
+    }
+    const next = coerceState(parsed, {
+      stats: createDefaultStats(),
+      settings: DEFAULT_SETTINGS,
+      achievements: INITIAL_ACHIEVEMENTS
+    });
+    saveState(next);
+    setProgress(next);
+    dispatch({ type: 'exit' });
+    return true;
+  }, [showError]);
 
   const sessionCompleted = !!session?.finished;
 
@@ -314,10 +334,10 @@ export function useGameSession() {
     toggleSound,
     resetProgress,
     startFocusSession,
-    // exposed for Phase 5
-    progress,
-    setProgress,
-    showError
+    // Phase 5
+    dailyChallenges: progress.dailyChallenges,
+    exportProgress,
+    importProgress
   };
 }
 

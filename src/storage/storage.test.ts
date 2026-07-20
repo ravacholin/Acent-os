@@ -76,7 +76,8 @@ describe('storage', () => {
       stats: fresh,
       settings: DEFAULT_SETTINGS,
       achievements: INITIAL_ACHIEVEMENTS,
-      recentWords: ['x']
+      recentWords: ['x'],
+      dailyChallenges: {}
     });
     // También hay claves legacy con otro valor: deben ignorarse.
     localStorage.setItem(LEGACY_KEYS.stats, JSON.stringify(createDefaultStats()));
@@ -86,16 +87,40 @@ describe('storage', () => {
     expect(state.recentWords).toEqual(['x']);
   });
 
-  it('valida objetos importados', () => {
+  it('valida objetos importados (acepta v2 y v3, rechaza el resto)', () => {
     expect(isValidPersistedState(null)).toBe(false);
     expect(isValidPersistedState({ version: 1 })).toBe(false);
-    expect(
-      isValidPersistedState({
-        version: CURRENT_VERSION,
-        stats: {},
-        settings: {},
-        achievements: []
-      })
-    ).toBe(true);
+    expect(isValidPersistedState({ version: CURRENT_VERSION, stats: {}, settings: {}, achievements: [] })).toBe(true);
+    // v2 (versión vieja) también se acepta para importar/migrar
+    expect(isValidPersistedState({ version: 2, stats: {}, settings: {}, achievements: [] })).toBe(true);
+  });
+
+  it('barre las claves daily-challenge-* al migrar desde legacy', () => {
+    localStorage.setItem(LEGACY_KEYS.stats, JSON.stringify(createDefaultStats()));
+    localStorage.setItem('daily-challenge-2026-07-19', JSON.stringify({ correctCount: 18, timeTakenSeconds: 90, xpEarned: 190 }));
+
+    const state = loadState(defaults());
+    expect(state.dailyChallenges['2026-07-19']).toEqual({ correctCount: 18, timeTakenSeconds: 90, xpEarned: 190 });
+    expect(localStorage.getItem('daily-challenge-2026-07-19')).toBeNull();
+  });
+
+  it('actualiza un estado v2 existente a v3 incorporando las daily keys', () => {
+    // Estado guardado con el esquema viejo (v2, sin dailyChallenges)
+    localStorage.setItem(STATE_KEY, JSON.stringify({
+      version: 2,
+      stats: createDefaultStats(),
+      settings: DEFAULT_SETTINGS,
+      achievements: INITIAL_ACHIEVEMENTS,
+      recentWords: ['w1']
+    }));
+    localStorage.setItem('daily-challenge-2026-07-18', JSON.stringify({ correctCount: 10, timeTakenSeconds: 60, xpEarned: 150 }));
+
+    const state = loadState(defaults());
+    expect(state.version).toBe(CURRENT_VERSION);
+    expect(state.recentWords).toEqual(['w1']);
+    expect(state.dailyChallenges['2026-07-18']).toBeTruthy();
+    // Se persiste ya en v3 y la daily key suelta desaparece
+    expect(JSON.parse(localStorage.getItem(STATE_KEY)!).version).toBe(CURRENT_VERSION);
+    expect(localStorage.getItem('daily-challenge-2026-07-18')).toBeNull();
   });
 });

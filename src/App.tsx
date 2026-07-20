@@ -42,11 +42,34 @@ export default function App() {
     restartSameMode,
     toggleSound,
     resetProgress,
-    startFocusSession
+    startFocusSession,
+    dailyChallenges,
+    exportProgress,
+    importProgress
   } = useGameSession();
 
   const [activeTab, setActiveTab] = useState<Tab>('entrenar');
   const [selectedResultWord, setSelectedResultWord] = useState<Word | null>(null);
+
+  // Descarga el progreso versionado como acentos-progreso.json.
+  const handleExportProgress = () => {
+    const data = exportProgress();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'acentos-progreso.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportProgress = (file: File) => {
+    file.text().then(text => {
+      if (importProgress(text)) setActiveTab('progreso');
+    });
+  };
 
   // Cache de formato por índice de palabra dentro de la sesión activa. El
   // formato se decide UNA vez (estable entre renders para no cambiar a mitad de
@@ -352,6 +375,14 @@ export default function App() {
                       Sesiones de 2 a 10 minutos para saber, sin dudar, cuándo una palabra lleva tilde.
                     </p>
 
+                    {/* Racha visible (solo si hay racha en curso; sin nags ni notificaciones) */}
+                    {stats.currentStreak > 0 && (
+                      <div className="mt-6 inline-flex items-center gap-2 text-[10px] tracking-[0.15em] uppercase text-[var(--color-fg-quiet)]" id="hero-streak">
+                        <span className="w-1.5 h-1.5 bg-[var(--color-fg)] rounded-full" />
+                        Racha de {stats.currentStreak} {stats.currentStreak === 1 ? 'acierto' : 'aciertos'}
+                      </div>
+                    )}
+
                     {/* CTA primario: sesión adaptativa (el formato se ajusta al dominio
                         de cada palabra). Es la única puerta de entrada destacada. */}
                     <button
@@ -401,7 +432,7 @@ export default function App() {
                   >
                     ← volver a entrenar
                   </span>
-                  <DailyChallenge stats={stats} onStartChallenge={startDailyChallenge} />
+                  <DailyChallenge stats={stats} dailyChallenges={dailyChallenges} onStartChallenge={startDailyChallenge} />
                 </motion.div>
               )}
 
@@ -419,6 +450,8 @@ export default function App() {
                     achievements={achievements}
                     onResetStats={resetProgress}
                     onStartFocusSession={startFocusSession}
+                    onExportProgress={handleExportProgress}
+                    onImportProgress={handleImportProgress}
                   />
                 </motion.div>
               )}
