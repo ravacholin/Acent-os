@@ -189,7 +189,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
         <div className="flex justify-end border-t border-[var(--color-line-soft)] pt-[26px]">
           <button
             onClick={handleStartCustomMode}
-            className="px-8 py-3.5 bg-[var(--color-fg)] text-black text-xs tracking-[0.1em] cursor-pointer hover:bg-[var(--color-paper-dim)] transition-colors"
+            className="brutal-btn px-8 py-3.5 text-black text-xs tracking-[0.1em] cursor-pointer"
           >
             Comenzar entrenamiento
           </button>
@@ -205,7 +205,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
         <p className="text-[var(--color-fg-muted)] text-[11px] mt-2">Elegí un formato o modo concreto para enfocar tu práctica</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-[var(--color-line-soft)]" id="modes-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-[var(--color-line-soft)] shadow-brutal-sm" id="modes-grid">
         {modesList.map((mode, idx) => (
           <motion.div
             key={mode.id}

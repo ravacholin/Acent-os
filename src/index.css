@@ -17,7 +17,7 @@
   --color-line-faint: #1f1f1f; /* borde apenas visible (nav) */
   --color-line: #2a2a2a;       /* borders / dividers */
   --color-line-soft: #1a1a1a;  /* subtle dividers */
-  --color-fg: #F5F5F0;         /* primary text */
+  --color-fg: #FAFAFA;         /* primary text (off-white frío, alineado al bundle) */
   --color-fg-muted: #888888;   /* secondary text */
   --color-fg-soft: #999999;    /* texto secundario más claro */
   --color-fg-quiet: #777777;   /* texto terciario (nav inactiva) */
@@ -28,6 +28,17 @@
   --color-grey-mid: #8a8a8a;   /* mapa de calor (nivel medio) */
   --color-paper: #ffffff;      /* inverted / primary action */
   --color-paper-dim: #d4d4d4;  /* hover de acción primaria */
+
+  /* Acento sutil desaturado (tipo verb-os). RESERVADO a feedback de
+     acierto/error — es el único color de la app. El resto es monocromo. */
+  --color-accent-ok: #7fb89a;  /* acierto (verde apagado) */
+  --color-accent-err: #c97b7b; /* error (rojo apagado) */
+
+  /* Sombras duras desplazadas, sin blur — la firma neo-brutalista del bundle
+     (gener-os). Offset sólido: da relieve sin suavizar las esquinas rectas. */
+  --shadow-brutal: 6px 6px 0 0 var(--color-fg);        /* elevación fuerte (CTA) */
+  --shadow-brutal-sm: 4px 4px 0 0 var(--color-line);   /* cards / paneles */
+  --shadow-brutal-line: 3px 3px 0 0 var(--color-line); /* sutil (ghost) */
 }
 
 html,
@@ -91,32 +102,56 @@ body {
     border-radius: 0;
   }
 
-  /* Primary action: blanco sólido invertido */
+  /* Utilidades de sombra dura, para aplicar el relieve puntualmente desde JSX. */
+  .shadow-brutal {
+    box-shadow: var(--shadow-brutal);
+  }
+  .shadow-brutal-sm {
+    box-shadow: var(--shadow-brutal-sm);
+  }
+
+  /* Primary action: blanco sólido invertido, con sombra dura y "presión". */
   .brutal-btn {
     background-color: var(--color-paper);
     color: var(--color-ink);
     border: 1px solid var(--color-paper);
     border-radius: 0;
-    transition: opacity 0.15s ease, background-color 0.15s ease;
+    box-shadow: var(--shadow-brutal-sm);
+    transition: transform 0.14s ease, box-shadow 0.14s ease, background-color 0.15s ease;
   }
   .brutal-btn:hover {
     background-color: #d4d4d4;
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--color-line);
+  }
+  .brutal-btn:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
   }
   .brutal-btn:disabled {
     opacity: 0.4;
+    transform: none;
+    box-shadow: var(--shadow-brutal-sm);
   }
 
-  /* Secondary action: hueco con borde */
+  /* Secondary action: hueco con borde, misma "presión" con sombra más leve. */
   .brutal-btn-ghost {
     background-color: var(--color-ink);
     color: var(--color-fg);
     border: 1px solid var(--color-line);
     border-radius: 0;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    box-shadow: var(--shadow-brutal-line);
+    transition: transform 0.14s ease, box-shadow 0.14s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
   .brutal-btn-ghost:hover {
     background-color: var(--color-paper);
     color: var(--color-ink);
     border-color: var(--color-paper);
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0 0 var(--color-line);
+  }
+  .brutal-btn-ghost:active {
+    transform: translate(3px, 3px);
+    box-shadow: none;
   }
 }

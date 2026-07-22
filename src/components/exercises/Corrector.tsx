@@ -94,7 +94,7 @@ export default function Corrector({ word, answered, onResult }: ExerciseProps) {
       <div className="flex justify-center mt-8">
         <button
           onClick={submit}
-          className="px-8 py-3.5 bg-[var(--color-fg)] text-black text-xs tracking-[0.1em] hover:bg-[var(--color-paper-dim)] cursor-pointer transition-colors"
+          className="brutal-btn px-8 py-3.5 text-black text-xs tracking-[0.1em] cursor-pointer"
           id="btn-corrector-submit"
         >
           Corregir <span className="opacity-60">({selected.size} marcada{selected.size === 1 ? '' : 's'})</span>

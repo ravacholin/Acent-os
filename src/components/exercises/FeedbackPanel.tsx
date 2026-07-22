@@ -19,13 +19,16 @@ export default function FeedbackPanel({ word, isCorrect, settings, onNext }: Fee
         className="inline-flex items-center justify-center w-12 h-12 rounded-full text-lg"
         style={
           isCorrect
-            ? { background: 'var(--color-fg)', color: 'var(--color-ink)', border: '2px solid var(--color-fg)' }
-            : { background: 'transparent', color: 'var(--color-fg)', border: '2px solid var(--color-fg)' }
+            ? { background: 'var(--color-accent-ok)', color: 'var(--color-ink)', border: '2px solid var(--color-accent-ok)' }
+            : { background: 'transparent', color: 'var(--color-accent-err)', border: '2px solid var(--color-accent-err)' }
         }
       >
         {isCorrect ? '✓' : '✗'}
       </div>
-      <div className="text-[11px] tracking-[0.15em] text-[var(--color-fg-soft)] uppercase mt-4">
+      <div
+        className="text-[11px] tracking-[0.15em] uppercase mt-4"
+        style={{ color: isCorrect ? 'var(--color-accent-ok)' : 'var(--color-accent-err)' }}
+      >
         {isCorrect ? '¡Respuesta correcta!' : 'Respuesta incorrecta'}
       </div>
 
@@ -60,7 +63,7 @@ export default function FeedbackPanel({ word, isCorrect, settings, onNext }: Fee
 
       <button
         onClick={onNext}
-        className="inline-block mt-7 px-8 py-3.5 bg-[var(--color-fg)] text-black text-xs tracking-[0.08em] hover:bg-[var(--color-paper-dim)] cursor-pointer transition-colors"
+        className="inline-block brutal-btn mt-7 px-8 py-3.5 text-black text-xs tracking-[0.08em] cursor-pointer"
         id="btn-next-exercise"
       >
         Siguiente palabra →

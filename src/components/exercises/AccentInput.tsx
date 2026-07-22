@@ -62,7 +62,7 @@ export default function AccentInput({
       <button
         type="submit"
         disabled={!value.trim()}
-        className="mt-5 w-full py-3.5 bg-[var(--color-fg)] text-black text-xs disabled:opacity-40 hover:bg-[var(--color-paper-dim)] cursor-pointer transition-colors"
+        className="brutal-btn mt-5 w-full py-3.5 text-black text-xs cursor-pointer"
       >
         Validar <span className="opacity-60">(Enter)</span>
       </button>

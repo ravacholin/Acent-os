@@ -122,7 +122,7 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.12 }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[var(--color-fg)] text-black px-6 py-3.5 border border-black font-mono"
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[var(--color-fg)] text-black px-6 py-3.5 border border-black font-mono shadow-brutal-sm"
             id="toast-level-up"
           >
             <div className="text-[9px] tracking-[0.2em] uppercase opacity-60">¡Subida de nivel!</div>
@@ -137,7 +137,7 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.12 }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-black text-[var(--color-fg)] px-6 py-3.5 border border-[var(--color-line)] font-mono max-w-md text-center"
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-black text-[var(--color-fg)] px-6 py-3.5 border border-[var(--color-line)] font-mono max-w-md text-center shadow-brutal-sm"
             id="toast-error"
           >
             <div className="text-[9px] tracking-[0.2em] uppercase text-[var(--color-fg-dim)] mb-1.5">Aviso</div>
@@ -151,7 +151,7 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.12 }}
-            className="fixed bottom-6 right-6 z-50 bg-black text-[var(--color-fg)] p-5 border border-[var(--color-line)] max-w-sm font-mono"
+            className="fixed bottom-6 right-6 z-50 bg-black text-[var(--color-fg)] p-5 border border-[var(--color-line)] max-w-sm font-mono shadow-brutal-sm"
             id="toast-achievement"
           >
             <div className="text-[9px] tracking-[0.2em] uppercase text-[var(--color-fg-dim)] mb-1.5">Logro desbloqueado</div>
@@ -312,7 +312,10 @@ export default function App() {
                               <span className="display-heavy text-lg">{w.word}</span>
                               <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-mono text-[var(--color-fg-dim)] uppercase">{w.classification}</span>
-                                <span className={`text-sm ${isWordCorrect ? 'text-[var(--color-fg)]' : 'text-[var(--color-fg-quiet)]'}`}>
+                                <span
+                                  className="text-sm"
+                                  style={{ color: isWordCorrect ? 'var(--color-accent-ok)' : 'var(--color-accent-err)' }}
+                                >
                                   {isWordCorrect ? '✓' : '✗'}
                                 </span>
                               </div>
@@ -341,13 +344,13 @@ export default function App() {
                   <div className="max-w-xl mx-auto flex flex-col sm:flex-row gap-3 pt-9">
                     <button
                       onClick={restartSameMode}
-                      className="flex-1 py-3 bg-[var(--color-fg)] text-black text-xs tracking-[0.1em] cursor-pointer hover:bg-[var(--color-paper-dim)] transition-colors"
+                      className="flex-1 brutal-btn py-3 text-black text-xs tracking-[0.1em] cursor-pointer"
                     >
                       Practicar de nuevo
                     </button>
                     <button
                       onClick={exitSession}
-                      className="flex-1 py-3 border border-[var(--color-line)] text-[var(--color-fg-soft)] text-xs tracking-[0.1em] cursor-pointer hover:border-[var(--color-fg)] hover:text-[var(--color-fg)] transition-colors"
+                      className="flex-1 brutal-btn-ghost py-3 text-xs tracking-[0.1em] cursor-pointer"
                     >
                       Volver a modos
                     </button>
@@ -387,7 +390,7 @@ export default function App() {
                         de cada palabra). Es la única puerta de entrada destacada. */}
                     <button
                       onClick={() => startPractice('adaptativo')}
-                      className="group mt-8 w-full sm:w-auto inline-flex items-center justify-between gap-10 bg-[var(--color-fg)] text-black px-8 py-4 cursor-pointer hover:bg-[var(--color-paper-dim)] transition-colors"
+                      className="group brutal-btn mt-8 w-full sm:w-auto inline-flex items-center justify-between gap-10 text-black px-8 py-4 cursor-pointer"
                       id="cta-entrenar"
                     >
                       <span className="display-heavy text-lg tracking-[0.05em]">ENTRENAR</span>

@@ -80,7 +80,7 @@ export default function DailyChallenge({ stats, dailyChallenges, onStartChalleng
           </div>
           <button
             onClick={handleLaunch}
-            className="px-8 py-4 border border-[var(--color-fg)] text-xs tracking-[0.1em] cursor-pointer whitespace-nowrap hover:bg-[var(--color-fg)] hover:text-black transition-colors"
+            className="brutal-btn-ghost px-8 py-4 text-xs tracking-[0.1em] cursor-pointer whitespace-nowrap"
           >
             Empezar desafío
           </button>
