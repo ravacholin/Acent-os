@@ -114,7 +114,7 @@ export default function StatsDashboard({
 
       {activeTab === 'overview' && (
         <div>
-          <div className="grid grid-cols-2 md:grid-cols-4 border-t border-l border-[var(--color-line-soft)] mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 border-t border-l border-[var(--color-line-soft)] shadow-brutal-sm mb-8">
             <div className="border-r border-b border-[var(--color-line-soft)] p-[24px_22px]">
               <div className="text-[9px] tracking-[0.15em] text-[var(--color-fg-dim)] uppercase">Racha actual</div>
               <div className="display-heavy text-[38px] mt-3">{stats.currentStreak}</div>
@@ -259,7 +259,7 @@ export default function StatsDashboard({
                   {onStartFocusSession && (
                     <button
                       onClick={() => onStartFocusSession(p.categories)}
-                      className="self-center px-5 py-3 border border-[var(--color-fg)] text-[11px] tracking-[0.08em] cursor-pointer whitespace-nowrap h-fit hover:bg-[var(--color-fg)] hover:text-black transition-colors"
+                      className="brutal-btn-ghost self-center px-5 py-3 text-[11px] tracking-[0.08em] cursor-pointer whitespace-nowrap h-fit"
                     >
                       Entrenar perfil
                     </button>
