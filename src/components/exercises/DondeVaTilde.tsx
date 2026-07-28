@@ -24,7 +24,7 @@ export default function DondeVaTilde({ word, answered, onResult }: ExerciseProps
   return (
     <ExerciseShell word={word}>
       <div>
-        <p className="text-center text-[11px] text-[var(--color-fg-muted)] mb-[30px]">Hacé clic sobre la vocal que lleva la tilde</p>
+        <p className="text-center text-[13px] text-[var(--color-fg-muted)] mb-[30px]">Hacé clic sobre la vocal que lleva la tilde</p>
         <div className="flex justify-center gap-2">
           {word.wordClean.split('').map((char, letterIdx) => {
             const isVowel = 'aeiou'.includes(char.toLowerCase());
@@ -34,8 +34,8 @@ export default function DondeVaTilde({ word, answered, onResult }: ExerciseProps
                 onClick={() => handleLetterClick(letterIdx, char)}
                 className={
                   isVowel
-                    ? 'w-11 h-[52px] flex items-center justify-center text-xl border border-[var(--color-line)] text-[var(--color-fg)] hover:bg-[var(--color-fg)] hover:text-black cursor-pointer transition-colors'
-                    : 'w-11 h-[52px] flex items-center justify-center text-xl border border-[var(--color-surface-2)] bg-[var(--color-surface-2)] text-[var(--color-ink-4)] cursor-not-allowed'
+                    ? 'btn-ghost w-11 h-[52px] flex items-center justify-center text-xl cursor-pointer'
+                    : 'w-11 h-[52px] flex items-center justify-center text-xl border border-transparent bg-[var(--color-surface-2)] text-[var(--color-fg-faint)] cursor-not-allowed'
                 }
               >
                 {char}

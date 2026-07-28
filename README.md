@@ -11,6 +11,7 @@ guarda **todo el progreso en el navegador** — no hay backend, cuentas ni clave
 
 - **React 19** + **Vite 6**
 - **Tailwind CSS 4** (tokens de diseño en `src/index.css`)
+- Tipografía **Space Grotesk** + **JetBrains Mono**, auto-hospedada en `public/fonts/`
 - **motion** para animaciones
 - **vite-plugin-pwa** (instalable / offline)
 - **Vitest** para los tests del motor de juego
@@ -41,7 +42,7 @@ src/
   App.tsx              Shell de la app: navegación, sesión activa, resultados
   main.tsx             Punto de entrada + ErrorBoundary
   types.ts             Tipos compartidos (Word, GameMode, UserStats…)
-  index.css            Tokens de diseño y clases .brutal-*
+  index.css            @font-face, tokens de diseño y clases semánticas
   data/
     words.ts           Banco de palabras y helpers lingüísticos
   engine/              Lógica de juego pura (sin React, testeable)

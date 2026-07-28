@@ -41,7 +41,7 @@ export default function AccentInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-5 w-full bg-transparent border border-[var(--color-line)] focus:border-[var(--color-fg)] text-[var(--color-fg)] text-center text-lg py-3.5 px-4 outline-none transition-colors"
+        className="field mt-6 w-full text-center text-lg py-3.5 px-4"
         autoComplete="off"
         autoCapitalize="off"
         autoCorrect="off"
@@ -53,7 +53,7 @@ export default function AccentInput({
             key={vowel}
             type="button"
             onClick={() => insertAccent(vowel)}
-            className="w-[30px] h-[30px] flex items-center justify-center border border-[var(--color-line)] text-xs text-[var(--color-fg-soft)] hover:bg-[var(--color-fg)] hover:text-black cursor-pointer transition-colors"
+            className="btn-ghost w-8 h-8 flex items-center justify-center text-[13px] cursor-pointer"
           >
             {vowel}
           </button>
@@ -62,9 +62,9 @@ export default function AccentInput({
       <button
         type="submit"
         disabled={!value.trim()}
-        className="brutal-btn mt-5 w-full py-3.5 text-black text-xs cursor-pointer"
+        className="btn-primary hud mt-6 w-full py-3.5 text-[var(--color-canvas)] cursor-pointer"
       >
-        Validar <span className="opacity-60">(Enter)</span>
+        Validar <span className="opacity-55">(Enter)</span>
       </button>
     </form>
   );

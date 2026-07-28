@@ -51,19 +51,19 @@ export default function LaRegla({ word, answered, onResult }: ExerciseProps) {
     <ExerciseShell word={word}>
       <div>
         <div className="text-center">
-          <div className="text-[9px] tracking-[0.3em] text-[var(--color-fg-dim)] uppercase mb-[26px]">¿Por qué?</div>
-          <div className="display-heavy text-6xl">{word.word}</div>
-          <p className="text-[11px] text-[var(--color-fg-muted)] mt-4">¿Qué regla explica su acentuación?</p>
+          <div className="hud tracking-[0.3em] mb-[26px]">¿Por qué?</div>
+          <div className="display-lg">{word.word}</div>
+          <p className="text-[13px] text-[var(--color-fg-muted)] mt-4">¿Qué regla explica su acentuación?</p>
         </div>
         <div className="flex flex-col gap-2.5 mt-8 max-w-[520px] mx-auto">
           {options.map((rule, idx) => (
             <button
               key={idx}
               onClick={() => respond(rule)}
-              className="text-left px-5 py-4 border border-[var(--color-line)] hover:bg-[var(--color-fg)] hover:text-black cursor-pointer transition-colors flex items-baseline gap-3"
+              className="text-left px-5 py-4 btn-ghost cursor-pointer flex items-baseline gap-3"
               id={`btn-rule-${idx}`}
             >
-              <span className="text-[9px] text-[var(--color-fg-dim)] shrink-0">[ {idx + 1} ]</span>
+              <span className="hud text-current opacity-55 shrink-0">[ {idx + 1} ]</span>
               <span className="text-sm leading-snug">{rule}</span>
             </button>
           ))}

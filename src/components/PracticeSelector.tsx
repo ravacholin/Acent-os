@@ -113,9 +113,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
   };
 
   const chipClass = (active: boolean) =>
-    `px-4 py-2 text-[11px] border cursor-pointer transition-colors ${
-      active ? 'border-[var(--color-fg)] text-[var(--color-fg)]' : 'border-[var(--color-line)] text-[var(--color-fg-muted)] hover:border-[var(--color-fg-faint)]'
-    }`;
+    `chip px-4 py-2 text-[11px] ${active ? 'chip-on' : ''}`;
 
   const categoryOptions: { id: WordCategory; label: string }[] = [
     { id: 'aguda', label: 'Agudas' },
@@ -141,12 +139,12 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
       <div id="custom-setup-panel">
         <div className="flex justify-between items-baseline border-b border-[var(--color-line-soft)] pb-[22px] mb-8 gap-4 flex-wrap">
           <div>
-            <div className="display-brutal text-[30px] sm:text-[36px]">Personalizado</div>
-            <p className="text-[var(--color-fg-muted)] text-[11px] mt-2">Elegí niveles, categorías y duración</p>
+            <div className="display-lg">Personalizado</div>
+            <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5">Elegí niveles, categorías y duración</p>
           </div>
           <span
             onClick={() => setSelectedMode(null)}
-            className="text-[10px] tracking-[0.15em] text-[var(--color-fg-soft)] border border-[var(--color-line)] px-4 py-2 cursor-pointer uppercase hover:border-[var(--color-fg)] hover:text-[var(--color-fg)] transition-colors"
+            className="chip hud px-4 py-2"
           >
             Volver
           </span>
@@ -154,7 +152,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8">
           <div>
-            <div className="text-[9px] tracking-[0.2em] text-[var(--color-fg-quiet)] uppercase mb-3.5">Nivel MCER</div>
+            <div className="hud mb-3.5">Nivel MCER</div>
             <div className="flex flex-wrap gap-2">
               {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as LevelMCER[]).map((lvl) => (
                 <span key={lvl} onClick={() => handleToggleLevel(lvl)} className={chipClass(customLevels.includes(lvl))}>
@@ -164,7 +162,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
             </div>
           </div>
           <div>
-            <div className="text-[9px] tracking-[0.2em] text-[var(--color-fg-quiet)] uppercase mb-3.5">Duración</div>
+            <div className="hud mb-3.5">Duración</div>
             <div className="flex flex-wrap gap-2">
               {[30, 60, 120, 180].map((t) => (
                 <span key={t} onClick={() => setCustomTime(t)} className={chipClass(customTime === t)}>
@@ -176,7 +174,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
         </div>
 
         <div className="mb-9">
-          <div className="text-[9px] tracking-[0.2em] text-[var(--color-fg-quiet)] uppercase mb-3.5">Reglas y categorías</div>
+          <div className="hud mb-3.5">Reglas y categorías</div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {categoryOptions.map((cat) => (
               <span key={cat.id} onClick={() => handleToggleCategory(cat.id)} className={chipClass(customCategories.includes(cat.id))}>
@@ -189,7 +187,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
         <div className="flex justify-end border-t border-[var(--color-line-soft)] pt-[26px]">
           <button
             onClick={handleStartCustomMode}
-            className="brutal-btn px-8 py-3.5 text-black text-xs tracking-[0.1em] cursor-pointer"
+            className="btn-primary hud text-[var(--color-canvas)] px-8 py-3.5 cursor-pointer"
           >
             Comenzar entrenamiento
           </button>
@@ -201,11 +199,11 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
   return (
     <div id="practice-selector">
       <div className="border-b border-[var(--color-line-soft)] pb-[18px] mb-8">
-        <div className="text-[9px] tracking-[0.25em] text-[var(--color-fg-dim)] uppercase">Práctica dirigida</div>
-        <p className="text-[var(--color-fg-muted)] text-[11px] mt-2">Elegí un formato o modo concreto para enfocar tu práctica</p>
+        <div className="hud tracking-[0.25em]">Práctica dirigida</div>
+        <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5">Elegí un formato o modo concreto para enfocar tu práctica</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-[var(--color-line-soft)] shadow-brutal-sm" id="modes-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-[var(--color-line-soft)]" id="modes-grid">
         {modesList.map((mode, idx) => (
           <motion.div
             key={mode.id}
@@ -219,17 +217,17 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
                 onSelectMode(mode.id);
               }
             }}
-            className="group border-r border-b border-[var(--color-line-soft)] p-6 cursor-pointer min-h-[190px] flex flex-col justify-between hover:bg-[var(--color-fg)] hover:text-black transition-colors duration-150"
+            className="cell cell-interactive group p-6 cursor-pointer min-h-[190px] flex flex-col justify-between"
             id={`mode-card-${mode.id}`}
           >
             <div>
               <div className="flex justify-end items-baseline">
-                <span className="text-[9px] text-[var(--color-fg-faint)] group-hover:text-black/40 transition-colors">{String(idx + 1).padStart(2, '0')}</span>
+                <span className="hud num text-[var(--color-fg-faint)] group-hover:text-[var(--color-fg-soft)] transition-colors">{String(idx + 1).padStart(2, '0')}</span>
               </div>
-              <div className="display-heavy text-2xl mt-3">{mode.title}</div>
-              <p className="text-[var(--color-fg-muted)] group-hover:text-black/70 text-[11px] mt-2.5 leading-relaxed transition-colors">{mode.description}</p>
+              <div className="display-sm mt-3">{mode.title}</div>
+              <p className="text-[var(--color-fg-muted)] text-[13px] mt-3 leading-relaxed">{mode.description}</p>
             </div>
-            <div className="text-[10px] text-[var(--color-fg-dim)] group-hover:text-black/60 mt-4 transition-colors">{mode.difficulty}</div>
+            <div className="hud mt-5">{mode.difficulty}</div>
           </motion.div>
         ))}
       </div>

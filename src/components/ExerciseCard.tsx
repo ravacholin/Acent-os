@@ -86,9 +86,9 @@ export default function ExerciseCard({
     <div id={`exercise-${word.id}`}>
       {/* Combo / timer strip — only when relevant (survival / streak) */}
       {(timeLeft !== undefined || comboStreak > 1) && (
-        <div className="flex justify-end gap-6 text-[10px] text-[var(--color-fg-dim)] uppercase tracking-[0.12em] mb-6">
-          {timeLeft !== undefined && <span className="text-[var(--color-fg)]">{timeLeft}s</span>}
-          {comboStreak > 1 && <span className="text-[var(--color-fg)]">{comboStreak}x combo</span>}
+        <div className="hud flex justify-end gap-6 mb-6">
+          {timeLeft !== undefined && <span className="num text-[var(--color-fg)]">{timeLeft}s</span>}
+          {comboStreak > 1 && <span className="num text-[var(--color-fg)]">{comboStreak}x combo</span>}
         </div>
       )}
 

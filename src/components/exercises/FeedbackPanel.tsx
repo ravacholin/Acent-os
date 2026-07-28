@@ -15,27 +15,28 @@ interface FeedbackPanelProps {
 export default function FeedbackPanel({ word, isCorrect, settings, onNext }: FeedbackPanelProps) {
   return (
     <div className="text-center" id="feedback-canvas">
+      {/* Marca cuadrada, no circular: el radio 0 es la regla del sistema. */}
       <div
-        className="inline-flex items-center justify-center w-12 h-12 rounded-full text-lg"
+        className="inline-flex items-center justify-center w-11 h-11 text-lg"
         style={
           isCorrect
-            ? { background: 'var(--color-accent-ok)', color: 'var(--color-ink)', border: '2px solid var(--color-accent-ok)' }
-            : { background: 'transparent', color: 'var(--color-accent-err)', border: '2px solid var(--color-accent-err)' }
+            ? { background: 'var(--color-accent-ok)', color: 'var(--color-canvas)', border: '1px solid var(--color-accent-ok)' }
+            : { background: 'transparent', color: 'var(--color-accent-err)', border: '1px solid var(--color-accent-err)' }
         }
       >
         {isCorrect ? '✓' : '✗'}
       </div>
       <div
-        className="text-[11px] tracking-[0.15em] uppercase mt-4"
+        className="hud mt-4"
         style={{ color: isCorrect ? 'var(--color-accent-ok)' : 'var(--color-accent-err)' }}
       >
-        {isCorrect ? '¡Respuesta correcta!' : 'Respuesta incorrecta'}
+        {isCorrect ? 'Respuesta correcta' : 'Respuesta incorrecta'}
       </div>
 
-      <div className="display-heavy text-[58px] mt-5">{word.word}</div>
+      <div className="display-xl mt-5">{word.word}</div>
 
       {settings.showSyllables && (
-        <div className="flex justify-center gap-1.5 mt-3.5 text-xs">
+        <div className="flex justify-center gap-1.5 mt-4 text-[13px]">
           {word.syllables.map((syllable, idx) => {
             const isStressed = idx === word.stressedSyllableIdx;
             return (
@@ -51,24 +52,24 @@ export default function FeedbackPanel({ word, isCorrect, settings, onNext }: Fee
       )}
 
       {(settings.showRule || settings.showExplanationOnError) && (
-        <div className="max-w-[420px] mx-auto mt-6 border border-[var(--color-line-soft)] py-[18px] px-[22px]">
+        <div className="inset max-w-[420px] mx-auto mt-7 py-[18px] px-[22px]">
           {settings.showRule && (
-            <div className="text-[9px] tracking-[0.15em] text-[var(--color-fg-dim)] uppercase">{word.rule}</div>
+            <div className="hud">{word.rule}</div>
           )}
           {settings.showExplanationOnError && (
-            <p className="text-xs text-[var(--color-fg-soft)] mt-2.5 leading-relaxed">{word.explanation}</p>
+            <p className="text-[13px] text-[var(--color-fg-soft)] mt-3 leading-relaxed">{word.explanation}</p>
           )}
         </div>
       )}
 
       <button
         onClick={onNext}
-        className="inline-block brutal-btn mt-7 px-8 py-3.5 text-black text-xs tracking-[0.08em] cursor-pointer"
+        className="btn-primary hud inline-block mt-8 px-8 py-3.5 text-[var(--color-canvas)] cursor-pointer"
         id="btn-next-exercise"
       >
         Siguiente palabra →
       </button>
-      <div className="text-[10px] text-[var(--color-fg-dim)] mt-3">Atajo: Enter o Espacio</div>
+      <div className="hud mt-4 normal-case tracking-normal">Atajo: Enter o Espacio</div>
     </div>
   );
 }

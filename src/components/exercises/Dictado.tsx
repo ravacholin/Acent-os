@@ -30,12 +30,12 @@ export default function Dictado({ word, settings, answered, onResult }: Exercise
         <button
           type="button"
           onClick={() => speakWord(word.word, settings.soundEnabled)}
-          className="w-16 h-16 rounded-full border border-[var(--color-line)] flex items-center justify-center mx-auto text-xl hover:bg-[var(--color-fg)] hover:text-black cursor-pointer transition-colors"
+          className="btn-ghost w-16 h-16 flex items-center justify-center mx-auto text-xl cursor-pointer"
           title="Escuchar palabra"
         >
           ♪
         </button>
-        <p className="text-[11px] text-[var(--color-fg-muted)] mt-[18px]">Escuchá y escribí correctamente la palabra</p>
+        <p className="text-[13px] text-[var(--color-fg-muted)] mt-[18px]">Escuchá y escribí correctamente la palabra</p>
         <div className="max-w-[320px] mx-auto">
           <AccentInput
             value={userVal}

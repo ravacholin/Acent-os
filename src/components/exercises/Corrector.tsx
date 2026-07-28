@@ -69,10 +69,10 @@ export default function Corrector({ word, answered, onResult }: ExerciseProps) {
   return (
     <div>
       <div className="text-center">
-        <div className="text-[9px] tracking-[0.3em] text-[var(--color-fg-dim)] uppercase mb-[26px]">Cazador de erratas</div>
-        <p className="text-[11px] text-[var(--color-fg-muted)] mb-7">Tocá las palabras mal escritas ({errorIndexes.length})</p>
+        <div className="hud tracking-[0.3em] mb-[26px]">Cazador de erratas</div>
+        <p className="text-[13px] text-[var(--color-fg-muted)] mb-7">Tocá las palabras mal escritas ({errorIndexes.length})</p>
       </div>
-      <div className="max-w-xl mx-auto border border-[var(--color-line-soft)] px-6 py-7 leading-[2.1] text-lg text-center">
+      <div className="max-w-xl mx-auto inset px-6 py-7 leading-[2.1] text-lg text-center">
         {tokens.map((token, idx) => {
           if (!token.isWord) return <span key={idx}>{token.text}</span>;
           const isSel = selected.has(idx);
@@ -82,7 +82,7 @@ export default function Corrector({ word, answered, onResult }: ExerciseProps) {
               onClick={() => toggle(idx)}
               className={`cursor-pointer transition-colors ${
                 isSel
-                  ? 'bg-[var(--color-fg)] text-black px-0.5'
+                  ? 'bg-[var(--color-fg)] text-[var(--color-canvas)] px-0.5'
                   : 'hover:text-[var(--color-fg)] text-[var(--color-fg-soft)] underline decoration-dotted decoration-[var(--color-fg-faint)] underline-offset-4'
               }`}
             >
@@ -94,10 +94,10 @@ export default function Corrector({ word, answered, onResult }: ExerciseProps) {
       <div className="flex justify-center mt-8">
         <button
           onClick={submit}
-          className="brutal-btn px-8 py-3.5 text-black text-xs tracking-[0.1em] cursor-pointer"
+          className="btn-primary hud px-8 py-3.5 text-[var(--color-canvas)] cursor-pointer"
           id="btn-corrector-submit"
         >
-          Corregir <span className="opacity-60">({selected.size} marcada{selected.size === 1 ? '' : 's'})</span>
+          Corregir <span className="opacity-55">({selected.size} marcada{selected.size === 1 ? '' : 's'})</span>
         </button>
       </div>
     </div>

@@ -30,18 +30,18 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-black text-[color:var(--color-fg)] flex items-center justify-center px-6 font-mono">
-          <div className="max-w-md text-center border border-[color:var(--color-line)] p-10">
-            <div className="text-[9px] tracking-[0.2em] uppercase text-[color:var(--color-fg-faint)]">
+        <div className="grid-bg min-h-screen text-[color:var(--color-fg)] flex items-center justify-center px-6">
+          <div className="panel max-w-md text-center p-10">
+            <div className="hud">
               Error inesperado
             </div>
-            <div className="display-heavy text-2xl mt-4">Algo salió mal</div>
-            <p className="text-[color:var(--color-fg-muted)] text-xs mt-3 leading-relaxed">
+            <div className="display-md mt-4">Algo salió mal</div>
+            <p className="text-[color:var(--color-fg-muted)] text-[13px] mt-4 leading-relaxed">
               La aplicación encontró un problema. Tu progreso guardado no se perdió.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="brutal-btn mt-6 px-8 py-3 text-xs tracking-[0.1em] cursor-pointer"
+              className="btn-primary hud mt-7 px-8 py-3 text-[color:var(--color-canvas)] cursor-pointer"
             >
               Recargar
             </button>

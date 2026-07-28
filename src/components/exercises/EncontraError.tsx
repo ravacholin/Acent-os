@@ -40,7 +40,7 @@ export default function EncontraError({ word, answered, onResult }: ExerciseProp
   return (
     <ExerciseShell word={word}>
       <div>
-        <p className="text-center text-[11px] text-[var(--color-fg-muted)] mb-7">
+        <p className="text-center text-[13px] text-[var(--color-fg-muted)] mb-7">
           {isAmbiguous ? 'Elegí la forma correcta para la frase' : 'Elegí la palabra escrita correctamente'}
         </p>
         <div className="flex justify-center gap-5 flex-wrap">
@@ -48,11 +48,11 @@ export default function EncontraError({ word, answered, onResult }: ExerciseProp
             <button
               key={oIdx}
               onClick={() => respond(opt)}
-              className="w-full max-w-[220px] p-7 border border-[var(--color-line)] text-left hover:bg-[var(--color-fg)] hover:text-black cursor-pointer transition-colors"
+              className="w-full max-w-[220px] p-7 btn-ghost text-left cursor-pointer"
               id={`btn-option-${oIdx}`}
             >
-              <div className="text-[9px] text-[var(--color-fg-dim)] tracking-[0.1em] mb-3 uppercase">Opción {oIdx + 1}</div>
-              <div className="display-heavy text-[32px] break-words">{opt}</div>
+              <div className="hud text-current opacity-55 mb-3">Opción {oIdx + 1}</div>
+              <div className="display-lg break-words">{opt}</div>
             </button>
           ))}
         </div>
