@@ -23,8 +23,8 @@ export default defineConfig(() => {
           description:
             'Práctica rápida e inteligente de la acentuación ortográfica española',
           lang: 'es',
-          theme_color: '#000000',
-          background_color: '#000000',
+          theme_color: '#050506',
+          background_color: '#050506',
           display: 'standalone',
           orientation: 'portrait',
           start_url: '/',

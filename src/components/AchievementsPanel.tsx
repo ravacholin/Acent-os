@@ -57,8 +57,8 @@ export default function AchievementsPanel({ stats, achievements, embedded }: Ach
     <div id="achievements-panel">
       {!embedded && (
         <div className="border-b border-[var(--color-line-soft)] pb-[22px] mb-8">
-          <div className="display-brutal text-[34px] sm:text-[40px]">Logros</div>
-          <p className="text-[var(--color-fg-muted)] text-[11px] mt-2">Hitos de dominio de la prosodia y ortografía</p>
+          <div className="display-lg">Logros</div>
+          <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5">Hitos de dominio de la prosodia y ortografía</p>
         </div>
       )}
 
@@ -73,20 +73,20 @@ export default function AchievementsPanel({ stats, achievements, embedded }: Ach
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15, delay: idx * 0.03 }}
-              className={`border-r border-b border-[var(--color-line-soft)] p-6 ${isUnlocked ? '' : 'opacity-55'}`}
+              className={`cell p-6 ${isUnlocked ? '' : 'opacity-55'}`}
             >
               <div className="flex justify-between items-baseline gap-3">
-                <span className="display-heavy text-[19px]">{ach.title}</span>
+                <span className="display-sm">{ach.title}</span>
                 <span
-                  className={`text-[9px] tracking-[0.1em] px-2 py-0.5 border ${
-                    isUnlocked ? 'border-[var(--color-fg)] text-[var(--color-fg)]' : 'border-[var(--color-line)] text-[var(--color-fg-dim)]'
+                  className={`hud num px-2 py-1 border ${
+                    isUnlocked ? 'border-[var(--color-fg)] text-[var(--color-fg)]' : 'border-[var(--color-line)]'
                   }`}
                 >
                   {ach.unlockedAt ? 'DESBLOQUEADO' : `${progress}%`}
                 </span>
               </div>
-              <p className="text-[var(--color-fg-muted)] text-[11px] mt-2 leading-relaxed">{ach.description}</p>
-              <div className="mt-3.5 h-[2px] bg-[var(--color-surface-2)]">
+              <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5 leading-relaxed">{ach.description}</p>
+              <div className="mt-4 h-[2px] bg-[var(--color-line)]">
                 <div className="h-full bg-[var(--color-fg)]" style={{ width: `${progress}%` }} />
               </div>
             </motion.div>

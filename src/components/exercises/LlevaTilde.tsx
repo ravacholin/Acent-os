@@ -56,9 +56,9 @@ export default function LlevaTilde({ word, answered, onResult }: ExerciseProps) 
             transition: swipeOffset === 0 ? 'transform 0.25s ease' : 'none'
           }}
         >
-          <div className="text-[9px] tracking-[0.3em] text-[var(--color-fg-dim)] uppercase mb-[26px]">¿Lleva tilde?</div>
-          <div className="display-heavy text-[64px] sm:text-[120px] leading-none lowercase">{word.wordClean}</div>
-          <div className="h-4 mt-3 text-[10px] tracking-[0.2em] uppercase">
+          <div className="hud tracking-[0.3em] mb-[26px]">¿Lleva tilde?</div>
+          <div className="display-xl text-[64px] sm:text-[112px] lowercase">{word.wordClean}</div>
+          <div className="h-4 mt-3 hud text-[var(--color-fg)]">
             {swipeOffset > SWIPE_THRESHOLD && <span className="text-[var(--color-fg)]">Sí →</span>}
             {swipeOffset < -SWIPE_THRESHOLD && <span className="text-[var(--color-fg)]">← No</span>}
           </div>
@@ -66,19 +66,19 @@ export default function LlevaTilde({ word, answered, onResult }: ExerciseProps) 
         <div className="flex justify-center gap-4">
           <button
             onClick={() => respond(false)}
-            className="w-[180px] text-center py-5 border border-[var(--color-line)] text-[var(--color-fg-soft)] hover:bg-[var(--color-fg)] hover:text-black hover:border-[var(--color-fg)] cursor-pointer transition-colors"
+            className="w-[180px] text-center py-5 btn-ghost cursor-pointer"
             id="btn-lleva-no"
           >
-            <div className="display-heavy text-xl">No</div>
-            <div className="text-[9px] text-[var(--color-fg-dim)] mt-1.5">[ N ] · ← swipe</div>
+            <div className="display-md">No</div>
+            <div className="hud text-current opacity-55 mt-2">[ N ] · ← swipe</div>
           </button>
           <button
             onClick={() => respond(true)}
-            className="w-[180px] text-center py-5 border border-[var(--color-fg)] hover:bg-[var(--color-fg)] hover:text-black cursor-pointer transition-colors"
+            className="w-[180px] text-center py-5 btn-ghost border-[var(--color-fg)] cursor-pointer"
             id="btn-lleva-si"
           >
-            <div className="display-heavy text-xl">Sí</div>
-            <div className="text-[9px] text-[var(--color-fg-dim)] mt-1.5">[ S ] · swipe →</div>
+            <div className="display-md">Sí</div>
+            <div className="hud text-current opacity-55 mt-2">[ S ] · swipe →</div>
           </button>
         </div>
         <div className="text-center text-[10px] text-[var(--color-fg-dim)] mt-4 sm:hidden">

@@ -32,19 +32,21 @@ export default function Clasificacion({ word, answered, onResult }: ExerciseProp
     <ExerciseShell word={word}>
       <div>
         <div className="text-center">
-          <div className="display-heavy text-6xl">{word.word}</div>
-          <p className="text-[11px] text-[var(--color-fg-muted)] mt-4">¿Cómo se clasifica esta palabra según su sílaba tónica?</p>
+          <div className="display-lg">{word.word}</div>
+          <p className="text-[13px] text-[var(--color-fg-muted)] mt-4">¿Cómo se clasifica esta palabra según su sílaba tónica?</p>
         </div>
         <div className="flex justify-center gap-2.5 mt-[26px] flex-wrap">
           {OPTIONS.map((item) => (
             <button
               key={item.id}
               onClick={() => respond(item.id)}
-              className="w-[140px] text-center py-4 border border-[var(--color-line)] hover:bg-[var(--color-fg)] hover:text-black cursor-pointer transition-colors"
+              className="w-[176px] text-center px-3 py-4 btn-ghost cursor-pointer"
               id={`btn-classification-${item.id}`}
             >
-              <div className="display-heavy text-base break-words leading-tight">{item.label}</div>
-              <div className="text-[9px] text-[var(--color-fg-dim)] mt-1.5">[ {item.key} ]</div>
+              {/* "Sobreesdrújula" es la etiqueta más larga (~130px a 16px): el
+                  ancho y el cuerpo están calibrados para que entre en una línea. */}
+              <div className="display-sm text-[16px]">{item.label}</div>
+              <div className="hud text-current opacity-55 mt-2">[ {item.key} ]</div>
             </button>
           ))}
         </div>

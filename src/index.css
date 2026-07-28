@@ -1,56 +1,198 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* Fuentes auto-hospedadas (subsets latin + latin-ext de Google Fonts).
+   Van en el repo en vez de un @import remoto por dos razones: la app es una
+   PWA offline-first y workbox solo precachea woff2 locales, y un @import a
+   fonts.googleapis.com bloquea el render con una petición a un tercero. */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-500-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-500-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-400-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-400-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-500-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-500-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-700-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/space-grotesk-700-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  /* Alias intencional: la app usa Inter también donde el markup pide "mono"
-     (estética uniforme, sin monoespaciada real). Se conserva por eso. */
-  --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Archivo", "Inter", sans-serif;
+  /* ── Tipografía ────────────────────────────────────────────────────────────
+     Space Grotesk para todo lo que se lee (display y cuerpo). JetBrains Mono
+     es monoespaciada de verdad y está RESERVADA a etiquetas HUD y cifras: se
+     aplica vía .hud / .num, nunca sobre contenedores grandes. */
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Monochrome palette — negro, blanco y grises. Sin acentos de color.
-     Todos los grises usados en la UI viven acá para poder cambiar el estilo
-     global tocando un solo archivo. */
-  --color-ink: #000000;        /* base background */
-  --color-surface: #0d0d0d;    /* elevated surface */
-  --color-surface-2: #161616;  /* cards / insets */
-  --color-line-faint: #1f1f1f; /* borde apenas visible (nav) */
-  --color-line: #2a2a2a;       /* borders / dividers */
-  --color-line-soft: #1a1a1a;  /* subtle dividers */
-  --color-fg: #FAFAFA;         /* primary text (off-white frío, alineado al bundle) */
-  --color-fg-muted: #888888;   /* secondary text */
-  --color-fg-soft: #999999;    /* texto secundario más claro */
-  --color-fg-quiet: #777777;   /* texto terciario (nav inactiva) */
-  --color-fg-dim: #666666;     /* etiquetas y micro-texto */
-  --color-fg-faint: #555555;   /* tertiary text */
-  --color-ink-4: #444444;      /* letra deshabilitada */
-  --color-ink-3: #333333;      /* barra vacía */
-  --color-grey-mid: #8a8a8a;   /* mapa de calor (nivel medio) */
-  --color-paper: #ffffff;      /* inverted / primary action */
-  --color-paper-dim: #d4d4d4;  /* hover de acción primaria */
+  /* Escala tipográfica. Antes cada tamaño era un valor arbitrario suelto
+     (text-[9px], text-[11px], text-[13px]…); ahora hay cuatro peldaños. */
+  --text-hud: 10px;
+  --text-micro: 11px;
+  --text-body: 13px;
+  --text-lead: 15px;
 
-  /* Acento sutil desaturado (tipo verb-os). RESERVADO a feedback de
-     acierto/error — es el único color de la app. El resto es monocromo. */
-  --color-accent-ok: #7fb89a;  /* acierto (verde apagado) */
-  --color-accent-err: #c97b7b; /* error (rojo apagado) */
+  --display-sm: 20px;
+  --display-md: 26px;
+  --display-lg: 40px;
+  --display-xl: 68px;
 
-  /* Sombras duras desplazadas, sin blur — la firma neo-brutalista del bundle
-     (gener-os). Offset sólido: da relieve sin suavizar las esquinas rectas. */
-  --shadow-brutal: 6px 6px 0 0 var(--color-fg);        /* elevación fuerte (CTA) */
-  --shadow-brutal-sm: 4px 4px 0 0 var(--color-line);   /* cards / paneles */
-  --shadow-brutal-line: 3px 3px 0 0 var(--color-line); /* sutil (ghost) */
+  --tracking-hud: 0.18em;
+  --tracking-tight: -0.03em;
+  --tracking-tighter: -0.05em;
+
+  /* Ritmo de espaciado del marco. */
+  --pad-frame: 52px;
+  --pad-cell: 24px;
+  --gap-section: 36px;
+
+  /* ── Color ─────────────────────────────────────────────────────────────────
+     Canvas casi negro con tinte frío, no negro puro: da profundidad sin lavar
+     el contraste. El blanco primario es cálido (#f2f2f0), lo que evita el
+     zumbido azulado del blanco puro sobre fondo oscuro. */
+  --color-canvas: #050506;     /* fondo base */
+  --color-surface: #0f0f12;    /* superficie elevada */
+  --color-surface-2: #131317;  /* insets / celdas */
+
+  /* Texto: rampa de alfa sobre el canvas, no grises sólidos. */
+  --color-fg: #f2f2f0;                       /* primario */
+  --color-fg-soft: rgba(255, 255, 255, 0.7); /* secundario */
+  --color-fg-muted: rgba(255, 255, 255, 0.55);
+  --color-fg-dim: rgba(255, 255, 255, 0.52); /* micro-etiquetas (HUD a 10px) */
+  --color-fg-quiet: rgba(255, 255, 255, 0.34);
+  --color-fg-faint: rgba(255, 255, 255, 0.24);
+
+  /* Bordes: hairlines de blanco con alfa. Un gris sólido sobre un fondo con
+     textura se ve como una línea pegada encima; la alfa se integra. */
+  --color-line-faint: rgba(255, 255, 255, 0.035);
+  --color-line-soft: rgba(255, 255, 255, 0.06);
+  --color-line: rgba(255, 255, 255, 0.09);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+
+  /* Único color de la app: feedback de acierto/error. Retonados al canvas frío. */
+  --color-accent-ok: #8fd6ae;
+  --color-accent-err: #e08a8a;
+
+  /* Presión del botón primario. Es la única sombra que queda: las sombras
+     duras desplazadas (6px 6px 0) se retiraron — la elevación ahora viene del
+     hairline y la superficie, que es lo que hace que lea elegante y no naif. */
+  --shadow-press: 0 1px 0 0 rgba(255, 255, 255, 0.14);
 }
 
 html,
 body {
-  background-color: var(--color-ink);
+  background-color: var(--color-canvas);
   color: var(--color-fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* Custom minimal scrollbars & styling */
+::selection {
+  background-color: var(--color-fg);
+  color: var(--color-canvas);
+}
+
+/* Scrollbar fina, del color del texto primario. */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-fg-faint);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fg-quiet);
+}
+
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
@@ -59,99 +201,207 @@ body {
   scrollbar-width: none;
 }
 
-::selection {
-  background-color: #ffffff;
-  color: #000000;
+/* ── Atmósfera ───────────────────────────────────────────────────────────────
+   Tres capas de textura, todas decorativas y sin coste de interacción. */
+
+/* Grano de película fijo a pantalla completa. Rompe el banding del fondo plano
+   y le da materia a los negros. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Reusable monochrome, refined-minimalist component patterns.
-   Esquinas rectas, bordes limpios de 1px, sin sombras. */
+/* Grilla brutalista de 40px + dos glows radiales muy tenues. `fixed` hace que
+   la grilla quede anclada al viewport y el contenido se deslice sobre ella. */
+.grid-bg {
+  background-image:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.05), transparent 55%),
+    radial-gradient(circle at 85% 80%, rgba(255, 255, 255, 0.035), transparent 50%);
+  background-size: 40px 40px, 40px 40px, cover, cover;
+  background-attachment: fixed;
+}
+
+/* Trama de puntos para tiras y celdas de HUD. */
+.hud-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ── Vocabulario de componentes ──────────────────────────────────────────────
+   Esquinas rectas, hairlines de 1px, sin radios y sin sombras desplazadas. */
 @layer components {
-  /* Brutalist display headline: Archivo pesada y ancha, apretada y en mayúsculas.
-     Sustituye a la antigua serif itálica en todos los titulares grandes. */
-  .display-brutal {
+  /* Titulares. Space Grotesk 700 con tracking negativo: apretado y moderno.
+     El uppercase ya no viene forzado — lo decide cada uso. */
+  .display-xl {
     font-family: var(--font-display);
-    font-weight: 900;
-    font-stretch: 125%;
+    font-weight: 700;
+    font-size: clamp(44px, 11vw, var(--display-xl));
+    letter-spacing: var(--tracking-tighter);
+    line-height: 0.92;
+    overflow-wrap: break-word;
+  }
+
+  .display-lg {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--display-lg);
+    letter-spacing: var(--tracking-tight);
+    line-height: 0.98;
+    overflow-wrap: break-word;
+  }
+
+  .display-md {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--display-md);
+    letter-spacing: var(--tracking-tight);
+    line-height: 1.05;
+    overflow-wrap: break-word;
+  }
+
+  .display-sm {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--display-sm);
+    letter-spacing: var(--tracking-tight);
+    line-height: 1.1;
+    overflow-wrap: break-word;
+  }
+
+  /* Micro-etiqueta HUD: el patrón más repetido de la app. */
+  .hud {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--text-hud);
+    letter-spacing: var(--tracking-hud);
     text-transform: uppercase;
-    letter-spacing: -0.02em;
-    line-height: 0.95;
-    overflow-wrap: break-word;
+    color: var(--color-fg-dim);
   }
 
-  /* Titular secundario: pesado pero sin expandir, para subencabezados de panel. */
-  .display-heavy {
-    font-family: var(--font-display);
-    font-weight: 800;
-    letter-spacing: -0.015em;
-    line-height: 1;
-    overflow-wrap: break-word;
-    word-break: break-word;
+  /* Cifras. `tabular-nums` evita que el timer y los contadores cambien de
+     ancho al pasar de 9 a 10. */
+  .num {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
   }
 
-  .brutal-card {
-    background-color: var(--color-surface-2);
-    border: 1px solid var(--color-line);
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .brutal-inset {
-    background-color: var(--color-ink);
+  .panel {
+    background-color: var(--color-surface);
     border: 1px solid var(--color-line);
     border-radius: 0;
   }
 
-  /* Utilidades de sombra dura, para aplicar el relieve puntualmente desde JSX. */
-  .shadow-brutal {
-    box-shadow: var(--shadow-brutal);
-  }
-  .shadow-brutal-sm {
-    box-shadow: var(--shadow-brutal-sm);
+  .inset {
+    background-color: var(--color-canvas);
+    border: 1px solid var(--color-line-soft);
+    border-radius: 0;
   }
 
-  /* Primary action: blanco sólido invertido, con sombra dura y "presión". */
-  .brutal-btn {
-    background-color: var(--color-paper);
-    color: var(--color-ink);
-    border: 1px solid var(--color-paper);
+  /* Celda de grilla modular: los bordes se comparten entre celdas vecinas
+     (el contenedor pone border-t/border-l y cada celda border-r/border-b). */
+  .cell {
+    border-right: 1px solid var(--color-line-soft);
+    border-bottom: 1px solid var(--color-line-soft);
+    background-color: transparent;
+    transition: background-color 0.16s ease, border-color 0.16s ease;
+  }
+
+  .cell-interactive:hover {
+    background-color: var(--color-surface);
+    border-color: var(--color-line-strong);
+  }
+
+  .btn-primary {
+    background-color: var(--color-fg);
+    color: var(--color-canvas);
+    border: 1px solid var(--color-fg);
     border-radius: 0;
-    box-shadow: var(--shadow-brutal-sm);
-    transition: transform 0.14s ease, box-shadow 0.14s ease, background-color 0.15s ease;
+    font-weight: 500;
+    transition: background-color 0.16s ease, transform 0.1s ease, opacity 0.16s ease;
   }
-  .brutal-btn:hover {
-    background-color: #d4d4d4;
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 0 var(--color-line);
+  .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--color-fg) 88%, var(--color-canvas));
   }
-  .brutal-btn:active {
-    transform: translate(4px, 4px);
-    box-shadow: none;
+  .btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: var(--shadow-press);
   }
-  .brutal-btn:disabled {
-    opacity: 0.4;
+  .btn-primary:disabled {
+    opacity: 0.35;
     transform: none;
-    box-shadow: var(--shadow-brutal-sm);
+    cursor: not-allowed;
   }
 
-  /* Secondary action: hueco con borde, misma "presión" con sombra más leve. */
-  .brutal-btn-ghost {
-    background-color: var(--color-ink);
+  .btn-ghost {
+    background-color: transparent;
     color: var(--color-fg);
     border: 1px solid var(--color-line);
     border-radius: 0;
-    box-shadow: var(--shadow-brutal-line);
-    transition: transform 0.14s ease, box-shadow 0.14s ease, background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease, transform 0.1s ease;
   }
-  .brutal-btn-ghost:hover {
-    background-color: var(--color-paper);
-    color: var(--color-ink);
-    border-color: var(--color-paper);
-    transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0 0 var(--color-line);
+  .btn-ghost:hover {
+    background-color: var(--color-fg);
+    color: var(--color-canvas);
+    border-color: var(--color-fg);
   }
-  .brutal-btn-ghost:active {
-    transform: translate(3px, 3px);
-    box-shadow: none;
+  .btn-ghost:active {
+    transform: translateY(1px);
+  }
+  .btn-ghost:disabled {
+    opacity: 0.35;
+    transform: none;
+    cursor: not-allowed;
+  }
+
+  /* Chip de filtro / tecla de vocal acentuada. */
+  .chip {
+    background-color: transparent;
+    border: 1px solid var(--color-line);
+    border-radius: 0;
+    color: var(--color-fg-muted);
+    cursor: pointer;
+    transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  }
+  .chip:hover {
+    border-color: var(--color-line-strong);
+    color: var(--color-fg-soft);
+  }
+  .chip-on {
+    border-color: var(--color-fg);
+    color: var(--color-fg);
+  }
+
+  .field {
+    background-color: transparent;
+    border: 1px solid var(--color-line);
+    border-radius: 0;
+    color: var(--color-fg);
+    outline: none;
+    transition: border-color 0.16s ease;
+  }
+  .field::placeholder {
+    color: var(--color-fg-quiet);
+  }
+  .field:focus {
+    border-color: var(--color-line-strong);
   }
 }

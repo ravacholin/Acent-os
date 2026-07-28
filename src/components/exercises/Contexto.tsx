@@ -35,10 +35,10 @@ export default function Contexto({ word, answered, onResult }: ExerciseProps) {
   return (
     <div>
       <div className="text-center">
-        <div className="text-[9px] tracking-[0.3em] text-[var(--color-fg-dim)] uppercase mb-[26px]">El contexto manda</div>
-        <p className="text-[11px] text-[var(--color-fg-muted)] mb-7">¿Qué forma completa correctamente la frase?</p>
-        <div className="max-w-md mx-auto border border-[var(--color-line-soft)] px-5 py-6 mb-8">
-          <p className="display-heavy text-2xl leading-snug">{sentence}</p>
+        <div className="hud tracking-[0.3em] mb-[26px]">El contexto manda</div>
+        <p className="text-[13px] text-[var(--color-fg-muted)] mb-7">¿Qué forma completa correctamente la frase?</p>
+        <div className="max-w-md mx-auto inset px-5 py-6 mb-8">
+          <p className="display-md">{sentence}</p>
         </div>
       </div>
       <div className="flex justify-center gap-5 flex-wrap">
@@ -46,11 +46,11 @@ export default function Contexto({ word, answered, onResult }: ExerciseProps) {
           <button
             key={oIdx}
             onClick={() => respond(opt)}
-            className="w-full max-w-[200px] p-6 border border-[var(--color-line)] text-center hover:bg-[var(--color-fg)] hover:text-black cursor-pointer transition-colors"
+            className="w-full max-w-[200px] p-6 btn-ghost text-center cursor-pointer"
             id={`btn-contexto-${oIdx}`}
           >
-            <div className="text-[9px] text-[var(--color-fg-dim)] tracking-[0.1em] mb-3 uppercase">[ {oIdx + 1} ]</div>
-            <div className="display-heavy text-[32px] break-words">{opt}</div>
+            <div className="hud text-current opacity-55 mb-3">[ {oIdx + 1} ]</div>
+            <div className="display-lg break-words">{opt}</div>
           </button>
         ))}
       </div>

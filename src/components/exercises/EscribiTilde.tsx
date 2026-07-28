@@ -22,8 +22,8 @@ export default function EscribiTilde({ word, settings, answered, onResult }: Exe
   return (
     <ExerciseShell word={word}>
       <div className="text-center max-w-[360px] mx-auto">
-        <div className="display-heavy text-[var(--color-fg-soft)] text-5xl">{word.wordClean}</div>
-        <p className="text-[11px] text-[var(--color-fg-muted)] mt-3.5">Escribí la palabra correctamente acentuada</p>
+        <div className="display-lg text-[var(--color-fg-soft)]">{word.wordClean}</div>
+        <p className="text-[13px] text-[var(--color-fg-muted)] mt-3.5">Escribí la palabra correctamente acentuada</p>
         <AccentInput
           value={userVal}
           onChange={setUserVal}
