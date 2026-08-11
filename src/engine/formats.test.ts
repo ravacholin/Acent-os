@@ -22,6 +22,10 @@ describe('isFormatEligible', () => {
     expect(isFormatEligible('silaba-tonica', word({ syllables: ['ca', 'sa'] }))).toBe(true);
     expect(isFormatEligible('silaba-tonica', word({ syllables: ['sol'] }))).toBe(false);
   });
+  it('clasificacion requiere 2+ sílabas (un monosílabo no se clasifica)', () => {
+    expect(isFormatEligible('clasificacion', word({ syllables: ['ca', 'sa'] }))).toBe(true);
+    expect(isFormatEligible('clasificacion', word({ syllables: ['sol'] }))).toBe(false);
+  });
   it('donde-va-tilde requiere que lleve tilde', () => {
     expect(isFormatEligible('donde-va-tilde', word({ hasTilde: true }))).toBe(true);
     expect(isFormatEligible('donde-va-tilde', word({ hasTilde: false }))).toBe(false);
@@ -78,6 +82,16 @@ describe('pickFormat — elegibilidad y fallback', () => {
     for (let s = 0; s < 30; s++) {
       const f = pickFormat(noTilde, srs(2), { rng: seededRng('n' + s) });
       expect(f).not.toBe('donde-va-tilde');
+    }
+  });
+  it('nunca elige clasificacion ni silaba-tonica para un monosílabo', () => {
+    const mono = word({ syllables: ['sol'], word: 'sol', hasTilde: false, category: 'monosílabo' });
+    for (const box of [1, 2, 3]) {
+      for (let s = 0; s < 30; s++) {
+        const f = pickFormat(mono, srs(box), { rng: seededRng(`m${box}-${s}`) });
+        expect(f).not.toBe('clasificacion');
+        expect(f).not.toBe('silaba-tonica');
+      }
     }
   });
   it('evita repetir el formato anterior cuando hay alternativa', () => {

@@ -63,6 +63,11 @@ export function selectSessionWords(
   if (mode === 'donde-va-tilde') {
     filtered = filtered.filter(w => w.hasTilde);
   }
+  if (mode === 'clasificacion' || mode === 'silaba-tonica') {
+    // Los monosílabos no se clasifican por sílaba tónica (aguda/grave/…) ni
+    // tienen una sílaba tónica que discriminar: fuera de estos ejercicios.
+    filtered = filtered.filter(w => w.syllables.length >= 2);
+  }
   if (mode === 'dictado') {
     // Los homófonos (el/él, tu/tú…) no se distinguen por audio: fuera del dictado.
     filtered = filtered.filter(w => !isAmbiguousWord(w));
