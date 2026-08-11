@@ -113,6 +113,21 @@ describe('selectSessionWords', () => {
     expect(out).toHaveLength(1);
   });
 
+  it('excluye monosílabos en clasificacion y silaba-tonica', () => {
+    const mixed = [
+      word('sol'), // 1 sílaba (default del helper)
+      word('tú', { syllables: ['tú'], hasTilde: true }), // 1 sílaba, diacrítica
+      word('mesa', { syllables: ['me', 'sa'] }),
+      word('camión', { syllables: ['ca', 'mión'], hasTilde: true })
+    ];
+    const stats = createDefaultStats();
+    for (const mode of ['clasificacion', 'silaba-tonica'] as const) {
+      const out = selectSessionWords(mode, baseCtx(stats), undefined, 10, mixed);
+      expect(out.every(w => w.syllables.length >= 2)).toBe(true);
+      expect(out.map(w => w.id).sort()).toEqual(['camión', 'mesa']);
+    }
+  });
+
   it('devuelve vacío si el filtro personalizado no matchea nada', () => {
     const stats = createDefaultStats();
     const out = selectSessionWords(

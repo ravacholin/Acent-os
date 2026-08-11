@@ -35,6 +35,9 @@ const FALLBACK: GameMode = 'lleva-tilde';
 export function isFormatEligible(format: GameMode, word: Word): boolean {
   switch (format) {
     case 'silaba-tonica':
+    case 'clasificacion':
+      // Un monosílabo no tiene sílaba tónica que discriminar ni clasificación
+      // aguda/grave/esdrújula: pedir cualquiera de las dos cosas es absurdo.
       return word.syllables.length >= 2;
     case 'donde-va-tilde':
       return word.hasTilde;
