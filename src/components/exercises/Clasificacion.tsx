@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ExerciseProps } from './types';
 import ExerciseShell from './ExerciseShell';
+import { useNumericKeys } from '../../hooks/useNumericKeys';
 import { WordClassification } from '../../types';
 
 const OPTIONS: { id: WordClassification; label: string; key: string }[] = [
@@ -17,21 +18,13 @@ export default function Clasificacion({ word, answered, onResult }: ExerciseProp
     onResult(selected === word.classification);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (answered) return;
-      if (['1', '2', '3', '4'].includes(e.key)) {
-        respond(OPTIONS[parseInt(e.key, 10) - 1].id);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [answered, word]);
+  useNumericKeys(OPTIONS.length, (i) => respond(OPTIONS[i].id), !answered);
 
   return (
     <ExerciseShell word={word}>
       <div>
         <div className="text-center">
+          <div className="hud tracking-[0.3em] mb-[26px]">Clasificación</div>
           <div className="display-lg">{word.word}</div>
           <p className="text-[13px] text-[var(--color-fg-muted)] mt-4">¿Cómo se clasifica esta palabra según su sílaba tónica?</p>
         </div>

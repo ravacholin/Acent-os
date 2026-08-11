@@ -38,6 +38,13 @@ const EXERCISES: Partial<Record<GameMode, React.ComponentType<ExerciseProps>>> =
   'corrector': Corrector
 };
 
+// Formatos que muestran su propio feedback en vez de delegar en `FeedbackPanel`.
+// El «Cazador de erratas» necesita revisar el texto completo (qué palabras eran
+// erratas, cuáles se marcaron mal), imposible de representar con el panel de una
+// sola palabra. Estos formatos siguen montados al responder y reciben
+// `isCorrect` + `onNext`.
+const SELF_FEEDBACK_MODES = new Set<GameMode>(['corrector']);
+
 export default function ExerciseCard({
   word,
   mode,
@@ -81,6 +88,7 @@ export default function ExerciseCard({
   };
 
   const Format = EXERCISES[mode];
+  const selfFeedback = SELF_FEEDBACK_MODES.has(mode);
 
   return (
     <div id={`exercise-${word.id}`}>
@@ -92,9 +100,16 @@ export default function ExerciseCard({
         </div>
       )}
 
-      {!answered ? (
+      {!answered || selfFeedback ? (
         Format ? (
-          <Format word={word} settings={settings} answered={answered} onResult={handleResult} />
+          <Format
+            word={word}
+            settings={settings}
+            answered={answered}
+            onResult={handleResult}
+            isCorrect={isCorrect}
+            onNext={onNext}
+          />
         ) : null
       ) : (
         <FeedbackPanel word={word} isCorrect={isCorrect} settings={settings} onNext={onNext} />
