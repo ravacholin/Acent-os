@@ -20,6 +20,7 @@ export interface CorrectorToken {
   text: string;      // texto exacto tal como se muestra
   isWord: boolean;   // token de palabra (clickeable) vs. espacio/puntuación
   sabotaged: boolean;// true solo en las erratas insertadas
+  correct?: string;  // grafía correcta; presente solo en los tokens saboteados
 }
 
 export interface CorrectorResult {
@@ -84,7 +85,12 @@ export function buildCorrectorText(words: Word[], rng: RNG = Math.random): Corre
 
     tokens.push(...tokenizeText(before));
     const tokenIdx = tokens.length;
-    tokens.push({ text: form, isWord: true, sabotaged: doSabotage });
+    tokens.push({
+      text: form,
+      isWord: true,
+      sabotaged: doSabotage,
+      ...(doSabotage ? { correct: word.word } : {})
+    });
     if (doSabotage) errorIndexes.push(tokenIdx);
     tokens.push(...tokenizeText(after));
 

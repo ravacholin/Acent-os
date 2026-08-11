@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ExerciseProps } from './types';
 import ExerciseShell from './ExerciseShell';
 import AccentInput from './AccentInput';
+import ListenButton from './ListenButton';
 import { speakWord } from '../../utils/audio';
 
 /** Modo 6: Dictado — escuchar la palabra (TTS) y escribirla acentuada. */
@@ -27,14 +28,8 @@ export default function Dictado({ word, settings, answered, onResult }: Exercise
   return (
     <ExerciseShell word={word}>
       <div className="text-center">
-        <button
-          type="button"
-          onClick={() => speakWord(word.word, settings.soundEnabled)}
-          className="btn-ghost w-16 h-16 flex items-center justify-center mx-auto text-xl cursor-pointer"
-          title="Escuchar palabra"
-        >
-          ♪
-        </button>
+        <div className="hud tracking-[0.3em] mb-[26px]">Dictado</div>
+        <ListenButton word={word.word} soundEnabled={settings.soundEnabled} variant="block" />
         <p className="text-[13px] text-[var(--color-fg-muted)] mt-[18px]">Escuchá y escribí correctamente la palabra</p>
         <div className="max-w-[320px] mx-auto">
           <AccentInput

@@ -1,6 +1,10 @@
 import { GameMode, Word, SRSEntry } from '../types';
 import { isAmbiguousWord } from '../data/words';
 
+// `seededRng` vive ahora en un util compartido; se re-exporta para no romper a
+// los consumidores que ya lo importaban desde este módulo (App, tests).
+export { seededRng } from '../utils/rng';
+
 /**
  * Escalera adaptativa de formatos: la caja Leitner de una palabra decide qué
  * formato le toca, en una progresión reconocimiento → discriminación →
@@ -62,16 +66,4 @@ export function pickFormat(word: Word, srs: SRSEntry | undefined, opts: PickForm
 
   const rng = opts.rng ?? Math.random;
   return pool[Math.floor(rng() * pool.length)];
-}
-
-/** RNG determinista sembrado con un string (para formatos estables/reproducibles). */
-export function seededRng(seed: string): () => number {
-  let a = 0;
-  for (let i = 0; i < seed.length; i++) a = (a * 31 + seed.charCodeAt(i)) >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }

@@ -53,7 +53,8 @@ export default function AccentInput({
             key={vowel}
             type="button"
             onClick={() => insertAccent(vowel)}
-            className="btn-ghost w-8 h-8 flex items-center justify-center text-[13px] cursor-pointer"
+            aria-label={`Insertar ${vowel}`}
+            className="btn-ghost min-w-11 min-h-11 flex items-center justify-center text-sm cursor-pointer"
           >
             {vowel}
           </button>

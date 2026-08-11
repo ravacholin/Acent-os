@@ -1,20 +1,9 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { ExerciseProps } from './types';
 import ExerciseShell from './ExerciseShell';
 import { getRuleDistractors } from '../../data/words';
-
-// RNG determinista sembrado con el id de la palabra: el orden de las opciones es
-// estable entre renders pero varía entre palabras.
-function seededRng(seed: string): () => number {
-  let a = 0;
-  for (let i = 0; i < seed.length; i++) a = (a * 31 + seed.charCodeAt(i)) >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+import { seededRng } from '../../utils/rng';
+import { useNumericKeys } from '../../hooks/useNumericKeys';
 
 /**
  * «¿Por qué?» — se muestra la palabra correcta y 3 reglas candidatas (la real +
@@ -37,15 +26,7 @@ export default function LaRegla({ word, answered, onResult }: ExerciseProps) {
     onResult(rule === word.rule);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (answered) return;
-      const n = parseInt(e.key, 10);
-      if (!Number.isNaN(n) && n >= 1 && n <= options.length) respond(options[n - 1]);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [answered, options, word]);
+  useNumericKeys(options.length, (i) => respond(options[i]), !answered);
 
   return (
     <ExerciseShell word={word}>

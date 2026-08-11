@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ExerciseProps } from './types';
 import ExerciseShell from './ExerciseShell';
+import { useNumericKeys } from '../../hooks/useNumericKeys';
 import { isAmbiguousWord, getHomophonePartner, getMisaccentedForm } from '../../data/words';
 
 /** Modo 3: Encontrá el error — elegir la grafía correcta entre dos. */
@@ -27,19 +28,12 @@ export default function EncontraError({ word, answered, onResult }: ExerciseProp
     onResult(selected === word.word);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (answered) return;
-      if (e.key === '1') respond(options[0]);
-      else if (e.key === '2') respond(options[1]);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [answered, options, word]);
+  useNumericKeys(options.length, (i) => respond(options[i]), !answered);
 
   return (
     <ExerciseShell word={word}>
       <div>
+        <div className="hud tracking-[0.3em] mb-[26px] text-center">Encontrá el error</div>
         <p className="text-center text-[13px] text-[var(--color-fg-muted)] mb-7">
           {isAmbiguous ? 'Elegí la forma correcta para la frase' : 'Elegí la palabra escrita correctamente'}
         </p>

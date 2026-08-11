@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { ExerciseProps } from './types';
+import { useNumericKeys } from '../../hooks/useNumericKeys';
 import { getHomophonePartner } from '../../data/words';
 
 /**
@@ -20,15 +21,7 @@ export default function Contexto({ word, answered, onResult }: ExerciseProps) {
     onResult(selected === word.word);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (answered) return;
-      if (e.key === '1') respond(options[0]);
-      else if (e.key === '2') respond(options[1]);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [answered, options, word]);
+  useNumericKeys(options.length, (i) => respond(options[i]), !answered);
 
   const sentence = (word.example || '___').replace(/___/g, '______');
 

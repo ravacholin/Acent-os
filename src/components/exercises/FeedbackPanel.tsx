@@ -15,22 +15,24 @@ interface FeedbackPanelProps {
 export default function FeedbackPanel({ word, isCorrect, settings, onNext }: FeedbackPanelProps) {
   return (
     <div className="text-center" id="feedback-canvas">
-      {/* Marca cuadrada, no circular: el radio 0 es la regla del sistema. */}
-      <div
-        className="inline-flex items-center justify-center w-11 h-11 text-lg"
-        style={
-          isCorrect
-            ? { background: 'var(--color-accent-ok)', color: 'var(--color-canvas)', border: '1px solid var(--color-accent-ok)' }
-            : { background: 'transparent', color: 'var(--color-accent-err)', border: '1px solid var(--color-accent-err)' }
-        }
-      >
-        {isCorrect ? '✓' : '✗'}
-      </div>
-      <div
-        className="hud mt-4"
-        style={{ color: isCorrect ? 'var(--color-accent-ok)' : 'var(--color-accent-err)' }}
-      >
-        {isCorrect ? 'Respuesta correcta' : 'Respuesta incorrecta'}
+      <div role="status" aria-live="polite">
+        {/* Marca cuadrada, no circular: el radio 0 es la regla del sistema. */}
+        <div
+          className="inline-flex items-center justify-center w-11 h-11 text-lg"
+          style={
+            isCorrect
+              ? { background: 'var(--color-accent-ok)', color: 'var(--color-canvas)', border: '1px solid var(--color-accent-ok)' }
+              : { background: 'transparent', color: 'var(--color-accent-err)', border: '1px solid var(--color-accent-err)' }
+          }
+        >
+          {isCorrect ? '✓' : '✗'}
+        </div>
+        <div
+          className="hud mt-4"
+          style={{ color: isCorrect ? 'var(--color-accent-ok)' : 'var(--color-accent-err)' }}
+        >
+          {isCorrect ? 'Respuesta correcta' : 'Respuesta incorrecta'}
+        </div>
       </div>
 
       <div className="display-xl mt-5">{word.word}</div>

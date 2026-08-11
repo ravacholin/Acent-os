@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ExerciseProps } from './types';
 import ExerciseShell from './ExerciseShell';
-import { speakWord } from '../../utils/audio';
+import ListenButton from './ListenButton';
+import { useNumericKeys } from '../../hooks/useNumericKeys';
 
 /**
  * «¿Dónde suena?» — se muestran las sílabas como botones y el usuario toca la
@@ -13,15 +14,7 @@ export default function SilabaTonica({ word, settings, answered, onResult }: Exe
     onResult(idx === word.stressedSyllableIdx);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (answered) return;
-      const n = parseInt(e.key, 10);
-      if (!Number.isNaN(n) && n >= 1 && n <= word.syllables.length) respond(n - 1);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [answered, word]);
+  useNumericKeys(word.syllables.length, respond, !answered);
 
   return (
     <ExerciseShell word={word}>
@@ -41,14 +34,7 @@ export default function SilabaTonica({ word, settings, answered, onResult }: Exe
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={() => speakWord(word.word, settings.soundEnabled)}
-          className="mt-8 inline-flex items-center gap-2 hud text-[var(--color-fg-quiet)] hover:text-[var(--color-fg)] cursor-pointer transition-colors"
-          title="Escuchar la palabra"
-        >
-          ♪ Escuchar
-        </button>
+        <ListenButton word={word.word} soundEnabled={settings.soundEnabled} variant="pill" />
       </div>
     </ExerciseShell>
   );
