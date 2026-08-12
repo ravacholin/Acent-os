@@ -98,15 +98,14 @@ export default function StatsDashboard({
     <div id="stats-dashboard">
       <div className="flex justify-between items-baseline border-b border-[var(--color-line-soft)] pb-[22px] mb-8 flex-wrap gap-4">
         <div className="display-lg">Progreso</div>
-        <div className="flex gap-[22px]">
-          {subTabs.map(st => (
+        <div className="flex gap-2.5">
+          {subTabs.map((st, i) => (
             <span
               key={st.id}
               onClick={() => setActiveTab(st.id)}
-              className={`hud cursor-pointer pb-1 border-b transition-colors ${
-                activeTab === st.id ? 'text-[var(--color-fg)] border-[var(--color-fg)]' : 'border-transparent hover:text-[var(--color-fg)]'
-              }`}
+              className={`nav-tab hud px-3.5 py-2 ${activeTab === st.id ? 'nav-tab-on' : ''}`}
             >
+              <span className="nav-tab-num num">{String(i + 1).padStart(2, '0')}</span>
               {st.label}
             </span>
           ))}
@@ -246,7 +245,7 @@ export default function StatsDashboard({
                   <div className="flex-1 min-w-[280px]">
                     <div className="flex items-baseline gap-3 flex-wrap">
                       <span className="display-sm">{p.name}</span>
-                      <span className="hud border border-[var(--color-line)] px-2.5 py-1">{statusLabel}</span>
+                      <span className="tag">{statusLabel}</span>
                     </div>
                     <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5 max-w-[460px] leading-relaxed">{p.description}</p>
                     <div className="mt-3.5 h-[2px] bg-[var(--color-line)] max-w-[320px]">
@@ -279,7 +278,7 @@ export default function StatsDashboard({
                   <div key={m.wordId} className="border-b border-[var(--color-line-soft)] py-5">
                     <div className="flex items-baseline gap-3">
                       <span className="display-sm">{m.word}</span>
-                      <span className="hud border border-[var(--color-line)] px-2 py-1 normal-case tracking-normal">fallada {m.incorrectCount} veces</span>
+                      <span className="tag normal-case tracking-normal">fallada {m.incorrectCount} veces</span>
                     </div>
                     <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5 leading-relaxed">{m.explanation}</p>
                   </div>

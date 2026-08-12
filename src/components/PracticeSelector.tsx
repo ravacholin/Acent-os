@@ -144,15 +144,15 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
           </div>
           <span
             onClick={() => setSelectedMode(null)}
-            className="chip hud px-4 py-2"
+            className="nav-tab hud px-4 py-2"
           >
-            Volver
+            ← Volver
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8">
           <div>
-            <div className="hud mb-3.5">Nivel MCER</div>
+            <div className="hud mb-3.5"><span className="num text-[var(--color-fg-soft)] mr-2">01</span>Nivel MCER</div>
             <div className="flex flex-wrap gap-2">
               {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as LevelMCER[]).map((lvl) => (
                 <span key={lvl} onClick={() => handleToggleLevel(lvl)} className={chipClass(customLevels.includes(lvl))}>
@@ -162,7 +162,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
             </div>
           </div>
           <div>
-            <div className="hud mb-3.5">Duración</div>
+            <div className="hud mb-3.5"><span className="num text-[var(--color-fg-soft)] mr-2">02</span>Duración</div>
             <div className="flex flex-wrap gap-2">
               {[30, 60, 120, 180].map((t) => (
                 <span key={t} onClick={() => setCustomTime(t)} className={chipClass(customTime === t)}>
@@ -174,7 +174,7 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
         </div>
 
         <div className="mb-9">
-          <div className="hud mb-3.5">Reglas y categorías</div>
+          <div className="hud mb-3.5"><span className="num text-[var(--color-fg-soft)] mr-2">03</span>Reglas y categorías</div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {categoryOptions.map((cat) => (
               <span key={cat.id} onClick={() => handleToggleCategory(cat.id)} className={chipClass(customCategories.includes(cat.id))}>
@@ -217,17 +217,19 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
                 onSelectMode(mode.id);
               }
             }}
-            className="cell cell-interactive group p-6 cursor-pointer min-h-[190px] flex flex-col justify-between"
+            className="cell cell-invert group relative p-6 cursor-pointer min-h-[200px] flex flex-col justify-between overflow-hidden"
             id={`mode-card-${mode.id}`}
           >
-            <div>
-              <div className="flex justify-end items-baseline">
-                <span className="hud num text-[var(--color-fg-faint)] group-hover:text-[var(--color-fg-soft)] transition-colors">{String(idx + 1).padStart(2, '0')}</span>
-              </div>
-              <div className="display-sm mt-3">{mode.title}</div>
-              <p className="text-[var(--color-fg-muted)] text-[13px] mt-3 leading-relaxed">{mode.description}</p>
+            {/* Índice como marca de agua gigante en la esquina */}
+            <span className="num-ghost absolute top-3.5 right-5 select-none pointer-events-none" aria-hidden="true">
+              {String(idx + 1).padStart(2, '0')}
+            </span>
+            <div className="relative">
+              <span className="tag">{mode.badge}</span>
+              <div className="display-sm mt-4">{mode.title}</div>
+              <p className="cell-body text-[13px] mt-3 leading-relaxed max-w-[92%]">{mode.description}</p>
             </div>
-            <div className="hud mt-5">{mode.difficulty}</div>
+            <div className="hud mt-5 relative">{mode.difficulty}</div>
           </motion.div>
         ))}
       </div>
