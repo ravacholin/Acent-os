@@ -176,27 +176,41 @@ export default function App() {
 
           {/* TOPBAR */}
           <div className="px-6 sm:px-[52px] pt-6 sm:pt-[34px]">
-            <div className="hud flex justify-between items-center gap-3 flex-wrap">
-              <span onClick={goTo('entrenar')} className="cursor-pointer text-[var(--color-fg-soft)] hover:text-[var(--color-fg)] transition-colors" id="brand-logo">
+            <div className="flex justify-between items-center gap-3 flex-wrap">
+              <span onClick={goTo('entrenar')} className="hud cursor-pointer text-[var(--color-fg-soft)] hover:text-[var(--color-fg)] transition-colors" id="brand-logo">
                 AcentOS — ES
               </span>
-              <span className="num">Nivel {stats.level} · {stats.accuracy}% · racha {stats.currentStreak}</span>
+              {/* HUD de estado repartido en módulos con divisor de hairline. */}
+              <div className="flex items-stretch" id="topbar-stats">
+                {[
+                  { label: 'Nivel', value: stats.level },
+                  { label: 'Precisión', value: `${stats.accuracy}%` },
+                  { label: 'Racha', value: stats.currentStreak }
+                ].map((m, i) => (
+                  <div
+                    key={m.label}
+                    className={`flex flex-col items-end gap-1.5 px-3.5 first:pl-0 last:pr-0 ${i > 0 ? 'border-l border-[var(--color-line)]' : ''}`}
+                  >
+                    <span className="hud leading-none">{m.label}</span>
+                    <span className="num text-[13px] leading-none text-[var(--color-fg)]">{m.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* NAV — dos destinos de texto + icono de sonido */}
+            {/* NAV — dos destinos como cajas numeradas + toggle de sonido */}
             <div className="flex justify-between items-center gap-6 mt-5 pt-5 border-t border-[var(--color-line-soft)]" id="main-navigation">
-              <div className="flex gap-6 sm:gap-[30px]">
-                {NAV_ITEMS.map(item => {
+              <div className="flex gap-2.5">
+                {NAV_ITEMS.map((item, i) => {
                   const active = !session && (activeTab === item.id || (item.id === 'entrenar' && activeTab === 'desafio'));
                   return (
                     <span
                       key={item.id}
                       onClick={goTo(item.id)}
-                      className={`hud cursor-pointer pb-1.5 border-b transition-colors ${
-                        active ? 'border-[var(--color-fg)] text-[var(--color-fg)]' : 'border-transparent text-[var(--color-fg-quiet)] hover:text-[var(--color-fg)]'
-                      }`}
+                      className={`nav-tab hud px-3.5 py-2 ${active ? 'nav-tab-on' : ''}`}
                       id={`nav-tab-${item.id}`}
                     >
+                      <span className="nav-tab-num num">{String(i + 1).padStart(2, '0')}</span>
                       {item.label}
                     </span>
                   );
@@ -207,7 +221,7 @@ export default function App() {
                 aria-label={settings.soundEnabled ? 'Silenciar sonido' : 'Activar sonido'}
                 title={settings.soundEnabled ? 'Silenciar sonido' : 'Activar sonido'}
                 aria-pressed={settings.soundEnabled}
-                className="shrink-0 pb-1.5 text-[var(--color-fg-quiet)] hover:text-[var(--color-fg)] transition-colors"
+                className="nav-tab shrink-0 px-3 py-2"
                 id="nav-toggle-sound"
               >
                 {settings.soundEnabled
@@ -270,9 +284,7 @@ export default function App() {
                   id="session-completed-panel"
                 >
                   <div className="max-w-xl mx-auto text-center pb-9 border-b border-[var(--color-line-soft)]">
-                    <span className="hud border border-[var(--color-line)] px-3 py-1.5 inline-block">
-                      Sesión completada
-                    </span>
+                    <span className="tag">Sesión completada</span>
                     <div className="display-lg mt-5">Resumen</div>
                     <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5">Análisis de rendimiento sobre el set de acentuación</p>
                   </div>

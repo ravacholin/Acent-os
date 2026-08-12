@@ -385,9 +385,12 @@ body {
     border-color: var(--color-line-strong);
     color: var(--color-fg-soft);
   }
+  /* Seleccionado = bloque blanco pleno (brutalista), no solo borde: la
+     selección se lee de lejos y flipea la relación figura/fondo. */
   .chip-on {
+    background-color: var(--color-fg);
     border-color: var(--color-fg);
-    color: var(--color-fg);
+    color: var(--color-canvas);
   }
 
   .field {
@@ -403,5 +406,100 @@ body {
   }
   .field:focus {
     border-color: var(--color-line-strong);
+  }
+
+  /* ── Navegación ──────────────────────────────────────────────────────────────
+     Tab como caja bordeada, no subrayado suelto. Mismo idioma que .chip/.btn:
+     inactiva invierte en hover, activa queda rellena. Se usa sobre .hud, que
+     aporta la tipografía; .nav-tab (definida después) gana el color. */
+  .nav-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--color-line);
+    border-radius: 0;
+    background-color: transparent;
+    color: var(--color-fg-quiet);
+    cursor: pointer;
+    transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  }
+  .nav-tab:hover {
+    background-color: var(--color-fg);
+    border-color: var(--color-fg);
+    color: var(--color-canvas);
+  }
+  .nav-tab-on {
+    background-color: var(--color-fg);
+    border-color: var(--color-fg);
+    color: var(--color-canvas);
+  }
+  .nav-tab-on:hover {
+    background-color: var(--color-fg);
+    color: var(--color-canvas);
+  }
+  /* Índice de dos dígitos que precede a la etiqueta. */
+  .nav-tab-num {
+    opacity: 0.4;
+  }
+
+  /* Numeral gigante fantasma: marca de agua de índice en las tarjetas de modo.
+     Queda tenue en reposo y sobrevive como gris claro cuando la celda se invierte. */
+  .num-ghost {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-size: var(--display-lg);
+    line-height: 1;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-fg-faint);
+  }
+
+  /* Cuerpo de texto dentro de una celda invertible: color normal en reposo,
+     hereda al canvas cuando la celda flipea (regla en .cell-invert:hover). */
+  .cell-body {
+    color: var(--color-fg-muted);
+  }
+
+  /* Celda que invierte a blanco pleno en hover. Reemplaza a .cell-interactive
+     en la grilla de modos. Los hijos heredan el color del canvas al invertirse. */
+  .cell-invert {
+    transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+  }
+  .cell-invert:hover {
+    background-color: var(--color-fg);
+    border-color: var(--color-fg);
+    color: var(--color-canvas);
+  }
+  .cell-invert:hover .hud {
+    color: inherit;
+    opacity: 0.6;
+  }
+  .cell-invert:hover .cell-body {
+    color: inherit;
+    opacity: 0.72;
+  }
+  .cell-invert:hover .num-ghost {
+    color: inherit;
+    opacity: 0.16;
+  }
+  .cell-invert:hover .tag {
+    color: inherit;
+    border-color: color-mix(in srgb, var(--color-canvas) 28%, transparent);
+  }
+
+  /* Etiqueta bordeada compacta (badge de modo, estado de perfil, contadores). */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--text-hud);
+    letter-spacing: var(--tracking-hud);
+    text-transform: uppercase;
+    color: var(--color-fg-dim);
+    border: 1px solid var(--color-line);
+    border-radius: 0;
+    padding: 0.25rem 0.5rem;
   }
 }
