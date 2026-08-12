@@ -1,5 +1,5 @@
 import { GameMode, Word, SRSEntry } from '../types';
-import { isAmbiguousWord } from '../data/words';
+import { isAmbiguousWord, hasMultipleVowels } from '../data/words';
 
 // `seededRng` vive ahora en un util compartido; se re-exporta para no romper a
 // los consumidores que ya lo importaban desde este módulo (App, tests).
@@ -40,7 +40,8 @@ export function isFormatEligible(format: GameMode, word: Word): boolean {
       // aguda/grave/esdrújula: pedir cualquiera de las dos cosas es absurdo.
       return word.syllables.length >= 2;
     case 'donde-va-tilde':
-      return word.hasTilde;
+      // Con una sola vocal hay una única opción posible: sin desafío, fuera.
+      return word.hasTilde && hasMultipleVowels(word);
     case 'contexto':
       return isAmbiguousWord(word) && !!word.example && word.example.includes('___');
     case 'dictado':

@@ -105,12 +105,15 @@ describe('selectSessionWords', () => {
     expect(out.every(w => fresh.includes(w.id))).toBe(true);
   });
 
-  it('filtra por tilde en donde-va-tilde', () => {
-    const withTilde = [word('camión', { hasTilde: true }), word('mesa', { hasTilde: false })];
+  it('filtra por tilde y excluye monovocálicas en donde-va-tilde', () => {
+    const words = [
+      word('camión', { hasTilde: true }),                      // 3 vocales: entra
+      word('mesa', { hasTilde: false }),                       // sin tilde: fuera
+      word('más', { wordClean: 'mas', hasTilde: true }),       // 1 vocal: sin desafío, fuera
+    ];
     const stats = createDefaultStats();
-    const out = selectSessionWords('donde-va-tilde', baseCtx(stats), undefined, 10, withTilde);
-    expect(out.every(w => w.hasTilde)).toBe(true);
-    expect(out).toHaveLength(1);
+    const out = selectSessionWords('donde-va-tilde', baseCtx(stats), undefined, 10, words);
+    expect(out.map(w => w.id)).toEqual(['camión']);
   });
 
   it('excluye monosílabos en clasificacion y silaba-tonica', () => {
