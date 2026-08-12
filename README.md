@@ -44,7 +44,7 @@ src/
   types.ts             Tipos compartidos (Word, GameMode, UserStats…)
   index.css            @font-face, tokens de diseño y clases semánticas
   data/
-    words.ts           Banco de palabras y helpers lingüísticos
+    words.ts           Banco de palabras (~390) y helpers lingüísticos
   engine/              Lógica de juego pura (sin React, testeable)
     srs.ts             Repetición espaciada (cajas Leitner)
     selection.ts       Selección de palabras por sesión

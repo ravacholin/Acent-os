@@ -404,7 +404,190 @@ export const WORDS_DATABASE: Word[] = [
   makeWord('quítate', ['quí', 'ta', 'te'], 0, 'esdrújula', 'pronombre', 'A2', 'media', R.esd, 'Imperativo con enclítico; esdrújula resultante, se acentúa.'),
   makeWord('cómetelo', ['có', 'me', 'te', 'lo'], 0, 'sobreesdrújula', 'pronombre', 'B1', 'media', R.sob, 'Verbo con dos enclíticos ("come"+"te"+"lo"); sobreesdrújula, lleva tilde.'),
   makeWord('pídeselo', ['pí', 'de', 'se', 'lo'], 0, 'sobreesdrújula', 'pronombre', 'B1', 'baja', R.sob, 'Imperativo con dos enclíticos; sobreesdrújula, se acentúa siempre.'),
-  makeWord('entrégamelo', ['en', 'tré', 'ga', 'me', 'lo'], 1, 'sobreesdrújula', 'pronombre', 'B2', 'baja', R.sob, 'Imperativo con dos enclíticos; sobreesdrújula, lleva tilde.')
+  makeWord('entrégamelo', ['en', 'tré', 'ga', 'me', 'lo'], 1, 'sobreesdrújula', 'pronombre', 'B2', 'baja', R.sob, 'Imperativo con dos enclíticos; sobreesdrújula, lleva tilde.'),
+
+  // ############################################################
+  //  AMPLIACIÓN DEL BANCO — más ejemplos por categoría y nivel
+  // ############################################################
+
+  // ---- AGUDAS con tilde (vocal, N o S) ----
+  makeWord('canapé', ['ca', 'na', 'pé'], 2, 'aguda', 'aguda', 'B1', 'baja', R.agV, 'Aguda terminada en vocal; la tónica "pé" lleva tilde.'),
+  makeWord('quizá', ['qui', 'zá'], 1, 'aguda', 'aguda', 'A2', 'alta', R.agV, 'Aguda terminada en vocal; se acentúa la última sílaba "zá".'),
+  makeWord('ojalá', ['o', 'ja', 'lá'], 2, 'aguda', 'aguda', 'A2', 'media', R.agV, 'Aguda terminada en vocal; la tónica "lá" se acentúa.'),
+  makeWord('champú', ['cham', 'pú'], 1, 'aguda', 'aguda', 'A2', 'media', R.agV, 'Aguda terminada en vocal; la "ú" tónica lleva tilde.'),
+  makeWord('iglú', ['i', 'glú'], 1, 'aguda', 'aguda', 'B1', 'baja', R.agV, 'Aguda terminada en vocal; se acentúa "glú".'),
+  makeWord('autobús', ['au', 'to', 'bús'], 2, 'aguda', 'aguda', 'A1', 'alta', R.agS, 'Aguda terminada en S; la tónica "bús" lleva tilde (el diptongo "au" no cambia la regla).'),
+  makeWord('estrés', ['es', 'trés'], 1, 'aguda', 'aguda', 'B1', 'media', R.agS, 'Aguda terminada en S; se acentúa la tónica "trés".'),
+  makeWord('según', ['se', 'gún'], 1, 'aguda', 'aguda', 'A2', 'alta', R.agN, 'Aguda terminada en N; la tónica "gún" se acentúa.'),
+  makeWord('común', ['co', 'mún'], 1, 'aguda', 'aguda', 'A2', 'alta', R.agN, 'Aguda terminada en N; lleva tilde en "mún".'),
+  makeWord('algún', ['al', 'gún'], 1, 'aguda', 'aguda', 'A2', 'alta', R.agN, 'Aguda terminada en N; se acentúa la última sílaba "gún".'),
+  makeWord('melón', ['me', 'lón'], 1, 'aguda', 'aguda', 'A1', 'media', R.agN, 'Aguda terminada en N; la tónica "lón" lleva tilde.'),
+  makeWord('botón', ['bo', 'tón'], 1, 'aguda', 'aguda', 'A1', 'media', R.agN, 'Aguda terminada en N; se acentúa "tón".'),
+  makeWord('jardín', ['jar', 'dín'], 1, 'aguda', 'aguda', 'A1', 'media', R.agN, 'Aguda terminada en N; la tónica "dín" se acentúa.'),
+  makeWord('razón', ['ra', 'zón'], 1, 'aguda', 'aguda', 'A2', 'alta', R.agN, 'Aguda terminada en N; lleva tilde en "zón".'),
+
+  // ---- AGUDAS sin tilde (consonante distinta de N/S) ----
+  makeWord('animal', ['a', 'ni', 'mal'], 2, 'aguda', 'aguda', 'A1', 'alta', R.agNo, 'Aguda terminada en L; no lleva tilde.'),
+  makeWord('hospital', ['hos', 'pi', 'tal'], 2, 'aguda', 'aguda', 'A1', 'alta', R.agNo, 'Aguda terminada en L; sin tilde.'),
+  makeWord('español', ['es', 'pa', 'ñol'], 2, 'aguda', 'aguda', 'A1', 'alta', R.agNo, 'Aguda terminada en L; no se acentúa (la ñ no altera la regla).'),
+  makeWord('control', ['con', 'trol'], 1, 'aguda', 'aguda', 'A2', 'alta', R.agNo, 'Aguda terminada en L; sin tilde.'),
+  makeWord('profesor', ['pro', 'fe', 'sor'], 2, 'aguda', 'aguda', 'A1', 'alta', R.agNo, 'Aguda terminada en R; no lleva tilde.'),
+  makeWord('comer', ['co', 'mer'], 1, 'aguda', 'aguda', 'A1', 'alta', R.agNo, 'Infinitivo agudo terminado en R; sin tilde.'),
+  makeWord('escribir', ['es', 'cri', 'bir'], 2, 'aguda', 'aguda', 'A1', 'alta', R.agNo, 'Infinitivo agudo terminado en R; no se acentúa.'),
+  makeWord('universidad', ['u', 'ni', 'ver', 'si', 'dad'], 4, 'aguda', 'aguda', 'A2', 'media', R.agNo, 'Aguda terminada en D; sin tilde.'),
+
+  // ---- GRAVES con tilde (consonante distinta de N/S) ----
+  makeWord('ángel', ['án', 'gel'], 0, 'grave', 'grave', 'A2', 'media', R.grT, 'Grave terminada en L; la tónica "án" lleva tilde.'),
+  makeWord('huésped', ['hués', 'ped'], 0, 'grave', 'grave', 'B1', 'media', R.grT, 'Grave terminada en D; se acentúa "hués" (diptongo "ué").'),
+  makeWord('dólar', ['dó', 'lar'], 0, 'grave', 'grave', 'A2', 'alta', R.grT, 'Grave terminada en R; lleva tilde en "dó".'),
+  makeWord('cóndor', ['cón', 'dor'], 0, 'grave', 'grave', 'B1', 'baja', R.grT, 'Grave terminada en R; se acentúa "cón".'),
+  makeWord('hábil', ['há', 'bil'], 0, 'grave', 'grave', 'B1', 'media', R.grT, 'Grave terminada en L; la tónica "há" lleva tilde.'),
+  makeWord('fértil', ['fér', 'til'], 0, 'grave', 'grave', 'B1', 'baja', R.grT, 'Grave terminada en L; se acentúa "fér".'),
+  makeWord('píxel', ['pí', 'xel'], 0, 'grave', 'grave', 'B1', 'media', R.grT, 'Grave terminada en L; lleva tilde en "pí".'),
+  makeWord('módem', ['mó', 'dem'], 0, 'grave', 'grave', 'B2', 'baja', R.grT, 'Grave terminada en M; la tónica "mó" se acentúa.'),
+
+  // ---- GRAVES sin tilde (N, S o vocal) ----
+  makeWord('comida', ['co', 'mi', 'da'], 1, 'grave', 'grave', 'A1', 'alta', R.grNo, 'Grave terminada en vocal; no lleva tilde.'),
+  makeWord('escuela', ['es', 'cue', 'la'], 1, 'grave', 'grave', 'A1', 'alta', R.grNo, 'Grave terminada en vocal; sin tilde (diptongo "ue").'),
+  makeWord('amigo', ['a', 'mi', 'go'], 1, 'grave', 'grave', 'A1', 'alta', R.grNo, 'Grave terminada en vocal; no se acentúa.'),
+  makeWord('trabajo', ['tra', 'ba', 'jo'], 1, 'grave', 'grave', 'A1', 'alta', R.grNo, 'Grave terminada en vocal; sin tilde.'),
+  makeWord('persona', ['per', 'so', 'na'], 1, 'grave', 'grave', 'A1', 'alta', R.grNo, 'Grave terminada en vocal; no lleva tilde.'),
+  makeWord('semana', ['se', 'ma', 'na'], 1, 'grave', 'grave', 'A1', 'alta', R.grNo, 'Grave terminada en vocal; no se acentúa.'),
+  makeWord('problema', ['pro', 'ble', 'ma'], 1, 'grave', 'grave', 'A2', 'alta', R.grNo, 'Grave terminada en vocal; sin tilde.'),
+  makeWord('naranja', ['na', 'ran', 'ja'], 1, 'grave', 'grave', 'A1', 'alta', R.grNo, 'Grave terminada en vocal; no lleva tilde.'),
+
+  // ---- ESDRÚJULAS (siempre con tilde) ----
+  makeWord('océano', ['o', 'cé', 'a', 'no'], 1, 'esdrújula', 'esdrújula', 'B1', 'media', R.esd, 'Esdrújula con tónica "cé"; siempre lleva tilde (hiato "é-a").'),
+  makeWord('ángulo', ['án', 'gu', 'lo'], 0, 'esdrújula', 'esdrújula', 'B1', 'media', R.esd, 'Esdrújula con tónica "án"; se acentúa siempre.'),
+  makeWord('época', ['é', 'po', 'ca'], 0, 'esdrújula', 'esdrújula', 'A2', 'media', R.esd, 'Esdrújula con tónica "é"; lleva tilde.'),
+  makeWord('máscara', ['más', 'ca', 'ra'], 0, 'esdrújula', 'esdrújula', 'B1', 'media', R.esd, 'Esdrújula con tónica "más"; siempre se acentúa.'),
+  makeWord('pirámide', ['pi', 'rá', 'mi', 'de'], 1, 'esdrújula', 'esdrújula', 'B1', 'media', R.esd, 'Esdrújula con tónica "rá"; lleva tilde.'),
+  makeWord('helicóptero', ['he', 'li', 'cóp', 'te', 'ro'], 2, 'esdrújula', 'esdrújula', 'B1', 'baja', R.esd, 'Esdrújula con tónica "cóp"; se acentúa siempre.'),
+  makeWord('político', ['po', 'lí', 'ti', 'co'], 1, 'esdrújula', 'esdrújula', 'B1', 'media', R.esd, 'Esdrújula con tónica "lí"; lleva tilde.'),
+  makeWord('espíritu', ['es', 'pí', 'ri', 'tu'], 1, 'esdrújula', 'esdrújula', 'B1', 'media', R.esd, 'Esdrújula con tónica "pí"; siempre se acentúa.'),
+  makeWord('oxígeno', ['o', 'xí', 'ge', 'no'], 1, 'esdrújula', 'esdrújula', 'B2', 'baja', R.esd, 'Esdrújula con tónica "xí"; lleva tilde.'),
+  makeWord('simpático', ['sim', 'pá', 'ti', 'co'], 1, 'esdrújula', 'esdrújula', 'A2', 'media', R.esd, 'Esdrújula con tónica "pá"; se acentúa siempre.'),
+  makeWord('miércoles', ['miér', 'co', 'les'], 0, 'esdrújula', 'esdrújula', 'A1', 'alta', R.esd, 'Esdrújula con tónica "miér"; lleva tilde (diptongo "ié").'),
+  makeWord('plátano', ['plá', 'ta', 'no'], 0, 'esdrújula', 'esdrújula', 'A1', 'alta', R.esd, 'Esdrújula con tónica "plá"; siempre se acentúa.'),
+  makeWord('capítulo', ['ca', 'pí', 'tu', 'lo'], 1, 'esdrújula', 'esdrújula', 'A2', 'media', R.esd, 'Esdrújula con tónica "pí"; lleva tilde.'),
+  makeWord('artículo', ['ar', 'tí', 'cu', 'lo'], 1, 'esdrújula', 'esdrújula', 'B1', 'media', R.esd, 'Esdrújula con tónica "tí"; se acentúa siempre.'),
+  makeWord('fórmula', ['fór', 'mu', 'la'], 0, 'esdrújula', 'esdrújula', 'B1', 'media', R.esd, 'Esdrújula con tónica "fór"; lleva tilde.'),
+  makeWord('bolígrafo', ['bo', 'lí', 'gra', 'fo'], 1, 'esdrújula', 'esdrújula', 'A2', 'media', R.esd, 'Esdrújula con tónica "lí"; siempre se acentúa.'),
+
+  // ---- SOBREESDRÚJULAS (siempre con tilde) ----
+  makeWord('llévatelo', ['llé', 'va', 'te', 'lo'], 0, 'sobreesdrújula', 'sobreesdrújula', 'B1', 'media', R.sob, 'Sobreesdrújula con tónica "llé" antes de la antepenúltima; lleva tilde.'),
+  makeWord('cuéntanoslo', ['cuén', 'ta', 'nos', 'lo'], 0, 'sobreesdrújula', 'sobreesdrújula', 'B2', 'baja', R.sob, 'Sobreesdrújula con tónica "cuén"; siempre se acentúa.'),
+  makeWord('prométemelo', ['pro', 'mé', 'te', 'me', 'lo'], 1, 'sobreesdrújula', 'sobreesdrújula', 'B2', 'baja', R.sob, 'Sobreesdrújula con tónica "mé"; lleva tilde obligatoria.'),
+  makeWord('guárdamelo', ['guár', 'da', 'me', 'lo'], 0, 'sobreesdrújula', 'sobreesdrújula', 'B1', 'media', R.sob, 'Sobreesdrújula con tónica "guár"; se acentúa siempre.'),
+  makeWord('recuérdaselo', ['re', 'cuér', 'da', 'se', 'lo'], 1, 'sobreesdrújula', 'sobreesdrújula', 'B2', 'baja', R.sob, 'Sobreesdrújula con tónica "cuér"; lleva tilde.'),
+  makeWord('devuélveselo', ['de', 'vuél', 've', 'se', 'lo'], 1, 'sobreesdrújula', 'sobreesdrújula', 'C1', 'baja', R.sob, 'Sobreesdrújula con tónica "vuél"; siempre se acentúa.'),
+
+  // ---- HIATOS (vocal cerrada tónica rompe el diptongo) ----
+  makeWord('sonríe', ['son', 'rí', 'e'], 1, 'grave', 'hiato', 'B1', 'media', R.hiato, 'La "í" tónica junto a "e" forma hiato y lleva tilde.'),
+  makeWord('leído', ['le', 'í', 'do'], 1, 'grave', 'hiato', 'B1', 'media', R.hiato, 'La "í" tónica entre "e" y "o" forma hiato; se acentúa.'),
+  makeWord('cafeína', ['ca', 'fe', 'í', 'na'], 2, 'grave', 'hiato', 'B2', 'baja', R.hiato, 'La "í" tónica junto a "e" rompe el diptongo; lleva tilde.'),
+  makeWord('egoísta', ['e', 'go', 'ís', 'ta'], 2, 'grave', 'hiato', 'B2', 'baja', R.hiato, 'La "í" tónica junto a "o" forma hiato y se acentúa.'),
+  makeWord('garantía', ['ga', 'ran', 'tí', 'a'], 2, 'grave', 'hiato', 'B1', 'media', R.hiato, 'La "í" tónica junto a "a" forma hiato; lleva tilde.'),
+  makeWord('fotografía', ['fo', 'to', 'gra', 'fí', 'a'], 3, 'grave', 'hiato', 'B1', 'media', R.hiato, 'La "í" tónica junto a "a" forma hiato y se acentúa.'),
+  makeWord('categoría', ['ca', 'te', 'go', 'rí', 'a'], 3, 'grave', 'hiato', 'B1', 'media', R.hiato, 'La "í" tónica rompe el diptongo con "a"; lleva tilde.'),
+  makeWord('alegría', ['a', 'le', 'grí', 'a'], 2, 'grave', 'hiato', 'A2', 'alta', R.hiato, 'La "í" tónica junto a "a" forma hiato y se acentúa.'),
+  makeWord('sandía', ['san', 'dí', 'a'], 1, 'grave', 'hiato', 'A2', 'media', R.hiato, 'La "í" tónica junto a "a" forma hiato; lleva tilde.'),
+  makeWord('economía', ['e', 'co', 'no', 'mí', 'a'], 3, 'grave', 'hiato', 'B1', 'media', R.hiato, 'La "í" tónica junto a "a" forma hiato y se acentúa.'),
+  makeWord('sonreír', ['son', 're', 'ír'], 2, 'aguda', 'hiato', 'B1', 'media', R.hiato, 'La "í" tónica junto a "e" forma hiato; lleva tilde aunque termine en R.'),
+  makeWord('transeúnte', ['tran', 'se', 'ún', 'te'], 2, 'grave', 'hiato', 'C1', 'baja', R.hiato, 'La "ú" tónica junto a "e" forma hiato y se acentúa.'),
+
+  // ---- DIPTONGOS (se acentúan según reglas generales) ----
+  makeWord('viaje', ['via', 'je'], 0, 'grave', 'diptongo', 'A1', 'alta', R.dip, 'Diptongo "ia"; grave terminada en vocal, sin tilde.'),
+  makeWord('novia', ['no', 'via'], 0, 'grave', 'diptongo', 'A1', 'alta', R.dip, 'Diptongo "ia"; grave terminada en vocal, no lleva tilde.'),
+  makeWord('familia', ['fa', 'mi', 'lia'], 1, 'grave', 'diptongo', 'A1', 'alta', R.dip, 'Diptongo "ia"; grave terminada en vocal, sin tilde.'),
+  makeWord('historia', ['his', 'to', 'ria'], 1, 'grave', 'diptongo', 'A1', 'alta', R.dip, 'Diptongo "ia"; grave terminada en vocal, no se acentúa.'),
+  makeWord('serio', ['se', 'rio'], 0, 'grave', 'diptongo', 'A2', 'alta', R.dip, 'Diptongo "io"; grave terminada en vocal, sin tilde.'),
+  makeWord('cuota', ['cuo', 'ta'], 0, 'grave', 'diptongo', 'B1', 'baja', R.dip, 'Diptongo "uo"; grave terminada en vocal, no lleva tilde.'),
+  makeWord('individuo', ['in', 'di', 'vi', 'duo'], 2, 'grave', 'diptongo', 'B1', 'media', R.dip, 'Diptongo "uo"; grave terminada en vocal, sin tilde.'),
+  makeWord('deuda', ['deu', 'da'], 0, 'grave', 'diptongo', 'B1', 'media', R.dip, 'Diptongo "eu"; grave terminada en vocal, no se acentúa.'),
+  makeWord('veinte', ['vein', 'te'], 0, 'grave', 'diptongo', 'A1', 'alta', R.dip, 'Diptongo "ei"; grave terminada en vocal, sin tilde.'),
+  makeWord('traiga', ['trai', 'ga'], 0, 'grave', 'diptongo', 'A2', 'media', R.dip, 'Diptongo "ai"; grave terminada en vocal, no lleva tilde.'),
+  makeWord('jaula', ['jau', 'la'], 0, 'grave', 'diptongo', 'A2', 'media', R.dip, 'Diptongo "au"; grave terminada en vocal, sin tilde.'),
+  makeWord('bailar', ['bai', 'lar'], 1, 'aguda', 'diptongo', 'A1', 'alta', R.dip, 'Diptongo "ai"; aguda terminada en R, no lleva tilde.'),
+  makeWord('bueno', ['bue', 'no'], 0, 'grave', 'diptongo', 'A1', 'alta', R.dip, 'Diptongo "ue"; grave terminada en vocal, sin tilde.'),
+  makeWord('cuidado', ['cui', 'da', 'do'], 1, 'grave', 'diptongo', 'A1', 'alta', R.dip, 'Diptongo "ui"; grave terminada en vocal, no se acentúa.'),
+
+  // ---- TRIPTONGOS (tres vocales en una sílaba) ----
+  makeWord('copiáis', ['co', 'piáis'], 1, 'aguda', 'triptongo', 'B2', 'baja', R.trip, 'Triptongo "iái"; aguda terminada en S, tilde en la "a" central.'),
+  makeWord('cambiáis', ['cam', 'biáis'], 1, 'aguda', 'triptongo', 'B2', 'baja', R.trip, 'Triptongo "iái"; aguda terminada en S, lleva tilde.'),
+  makeWord('anunciáis', ['a', 'nun', 'ciáis'], 2, 'aguda', 'triptongo', 'C1', 'baja', R.trip, 'Triptongo "iái"; aguda terminada en S, tilde en la vocal abierta.'),
+  makeWord('actuáis', ['ac', 'tuáis'], 1, 'aguda', 'triptongo', 'B2', 'baja', R.trip, 'Triptongo "uái"; aguda terminada en S, tilde en la "a" central.'),
+
+  // ---- MONOSÍLABOS (sin tilde salvo diacrítica) ----
+  makeWord('dios', ['dios'], 0, 'aguda', 'monosílabo', 'A1', 'alta', R.mono, 'Monosílabo con diptongo "io"; no se acentúa.'),
+  makeWord('bien', ['bien'], 0, 'aguda', 'monosílabo', 'A1', 'alta', R.mono, 'Monosílabo con diptongo "ie"; no lleva tilde.'),
+  makeWord('buen', ['buen'], 0, 'aguda', 'monosílabo', 'A1', 'alta', R.mono, 'Monosílabo con diptongo "ue"; sin tilde.'),
+  makeWord('seis', ['seis'], 0, 'aguda', 'monosílabo', 'A1', 'alta', R.mono, 'Monosílabo con diptongo "ei"; no se acentúa.'),
+  makeWord('diez', ['diez'], 0, 'aguda', 'monosílabo', 'A1', 'alta', R.mono, 'Monosílabo con diptongo "ie"; sin tilde.'),
+  makeWord('cruz', ['cruz'], 0, 'aguda', 'monosílabo', 'A1', 'alta', R.mono, 'Monosílabo; no lleva tilde.'),
+  makeWord('rey', ['rey'], 0, 'aguda', 'monosílabo', 'A1', 'alta', R.mono, 'Monosílabo terminado en Y; no se acentúa.'),
+  makeWord('hoy', ['hoy'], 0, 'aguda', 'monosílabo', 'A1', 'alta', R.mono, 'Monosílabo terminado en Y; sin tilde.'),
+
+  // ---- TILDE DIACRÍTICA (completa el par aún/aun) ----
+  makeWord('aun', ['aun'], 0, 'aguda', 'diacrítica', 'B1', 'baja', R.diac, '"aun" (= incluso, hasta) no lleva tilde; "aún" (= todavía) sí la lleva.', 'adverbio (= incluso)', '___ trabajando gratis, lo haría'),
+
+  // ---- INTERROGATIVOS / EXCLAMATIVOS ----
+  makeWord('cuánta', ['cuán', 'ta'], 0, 'grave', 'interrogativo', 'A2', 'media', R.interr, '"cuánta" interrogativo/exclamativo (¿Cuánta?) frente a "cuanta".', 'interrogativo/exclamativo', '¿___ agua queda?'),
+  makeWord('cuántos', ['cuán', 'tos'], 0, 'grave', 'interrogativo', 'A2', 'media', R.interr, '"cuántos" interrogativo/exclamativo (¿Cuántos?) frente a "cuantos".', 'interrogativo/exclamativo', '¿___ años tenés?'),
+  makeWord('cuán', ['cuán'], 0, 'aguda', 'exclamativo', 'B2', 'baja', R.interr, '"cuán" exclamativo (¡Cuán bello!) frente a "cuan"; con valor ponderativo lleva tilde.', 'exclamativo', '¡___ hermoso es el paisaje!'),
+
+  // ---- MAYÚSCULAS (se acentúan igual que las minúsculas) ----
+  makeWord('Perú', ['Pe', 'rú'], 1, 'aguda', 'mayúscula', 'A2', 'media', R.may, 'Aguda terminada en vocal; la mayúscula también se acentúa.'),
+  makeWord('México', ['Mé', 'xi', 'co'], 0, 'esdrújula', 'mayúscula', 'A2', 'media', R.may, 'Esdrújula; la mayúscula lleva tilde igual que la minúscula.'),
+  makeWord('Bogotá', ['Bo', 'go', 'tá'], 2, 'aguda', 'mayúscula', 'A2', 'baja', R.may, 'Aguda terminada en vocal; la mayúscula se acentúa.'),
+  makeWord('Málaga', ['Má', 'la', 'ga'], 0, 'esdrújula', 'mayúscula', 'B1', 'baja', R.may, 'Esdrújula; la mayúscula inicial lleva tilde.'),
+  makeWord('Córdoba', ['Cór', 'do', 'ba'], 0, 'esdrújula', 'mayúscula', 'B1', 'baja', R.may, 'Esdrújula; la mayúscula se acentúa igual.'),
+  makeWord('Panamá', ['Pa', 'na', 'má'], 2, 'aguda', 'mayúscula', 'A2', 'baja', R.may, 'Aguda terminada en vocal; la mayúscula lleva tilde.'),
+  makeWord('Cádiz', ['Cá', 'diz'], 0, 'grave', 'mayúscula', 'B1', 'baja', R.may, 'Grave terminada en Z; la mayúscula se acentúa.'),
+  makeWord('Aragón', ['A', 'ra', 'gón'], 2, 'aguda', 'mayúscula', 'B1', 'baja', R.may, 'Aguda terminada en N; la mayúscula lleva tilde.'),
+  makeWord('Ártico', ['Ár', 'ti', 'co'], 0, 'esdrújula', 'mayúscula', 'B2', 'baja', R.may, 'Esdrújula; la mayúscula inicial se acentúa.'),
+
+  // ---- EXTRANJERISMOS ADAPTADOS ----
+  makeWord('sándwich', ['sánd', 'wich'], 0, 'grave', 'extranjerismo', 'B1', 'media', R.extr, 'Anglicismo adaptado; grave terminada en consonante, lleva tilde.'),
+  makeWord('cómic', ['có', 'mic'], 0, 'grave', 'extranjerismo', 'B1', 'media', R.extr, 'Anglicismo adaptado; grave terminada en C, se acentúa.'),
+  makeWord('hámster', ['háms', 'ter'], 0, 'grave', 'extranjerismo', 'B2', 'baja', R.extr, 'Extranjerismo adaptado; grave terminada en R, lleva tilde.'),
+  makeWord('clímax', ['clí', 'max'], 0, 'grave', 'extranjerismo', 'B2', 'baja', R.extr, 'Cultismo adaptado; grave terminada en X, se acentúa.'),
+  makeWord('suéter', ['sué', 'ter'], 0, 'grave', 'extranjerismo', 'B1', 'media', R.extr, 'Anglicismo adaptado; grave terminada en R, lleva tilde (diptongo "ué").'),
+  makeWord('tráiler', ['trái', 'ler'], 0, 'grave', 'extranjerismo', 'B1', 'media', R.extr, 'Anglicismo adaptado; grave terminada en R, se acentúa (diptongo "ái").'),
+  makeWord('pénalti', ['pé', 'nal', 'ti'], 0, 'esdrújula', 'extranjerismo', 'B2', 'baja', R.extr, 'Anglicismo adaptado; esdrújula, siempre lleva tilde.'),
+  makeWord('gánster', ['gáns', 'ter'], 0, 'grave', 'extranjerismo', 'B2', 'baja', R.extr, 'Anglicismo adaptado; grave terminada en R, se acentúa.'),
+  makeWord('estándar', ['es', 'tán', 'dar'], 1, 'grave', 'extranjerismo', 'B1', 'media', R.extr, 'Anglicismo adaptado; grave terminada en R, lleva tilde.'),
+  makeWord('cárter', ['cár', 'ter'], 0, 'grave', 'extranjerismo', 'C1', 'baja', R.extr, 'Anglicismo adaptado; grave terminada en R, se acentúa.'),
+
+  // ---- LATINISMOS ADAPTADOS ----
+  makeWord('bíceps', ['bí', 'ceps'], 0, 'grave', 'latinismo', 'B2', 'baja', R.lat, 'Latinismo adaptado; grave terminada en grupo consonántico, lleva tilde.'),
+  makeWord('tríceps', ['trí', 'ceps'], 0, 'grave', 'latinismo', 'C1', 'baja', R.lat, 'Latinismo adaptado; grave terminada en grupo consonántico, se acentúa.'),
+  makeWord('ítem', ['í', 'tem'], 0, 'grave', 'latinismo', 'B2', 'baja', R.lat, 'Latinismo adaptado; grave terminada en M, lleva tilde.'),
+  makeWord('quórum', ['quó', 'rum'], 0, 'grave', 'latinismo', 'C1', 'baja', R.lat, 'Latinismo adaptado; grave terminada en M, se acentúa.'),
+  makeWord('réquiem', ['ré', 'quiem'], 0, 'grave', 'latinismo', 'C1', 'baja', R.lat, 'Latinismo adaptado; grave terminada en M, lleva tilde (diptongo "ie").'),
+  makeWord('accésit', ['ac', 'cé', 'sit'], 1, 'grave', 'latinismo', 'C2', 'baja', R.lat, 'Latinismo adaptado; grave terminada en T, se acentúa.'),
+
+  // ---- ADVERBIOS EN -MENTE (conservan la tilde del adjetivo base) ----
+  makeWord('tranquilamente', ['tran', 'qui', 'la', 'men', 'te'], 3, 'grave', 'mente', 'B1', 'media', R.mente, 'El adjetivo base "tranquilo" no lleva tilde, así que "tranquilamente" tampoco.'),
+  makeWord('perfectamente', ['per', 'fec', 'ta', 'men', 'te'], 3, 'grave', 'mente', 'A2', 'media', R.mente, 'El adjetivo base "perfecto" no lleva tilde; el adverbio tampoco.'),
+  makeWord('públicamente', ['pú', 'bli', 'ca', 'men', 'te'], 0, 'esdrújula', 'mente', 'B2', 'baja', R.mente, 'El adjetivo base "público" lleva tilde; "públicamente" la conserva.'),
+  makeWord('prácticamente', ['prác', 'ti', 'ca', 'men', 'te'], 0, 'esdrújula', 'mente', 'B1', 'media', R.mente, 'El adjetivo base "práctico" lleva tilde; el adverbio la mantiene.'),
+  makeWord('económicamente', ['e', 'co', 'nó', 'mi', 'ca', 'men', 'te'], 2, 'esdrújula', 'mente', 'B2', 'baja', R.mente, 'El adjetivo base "económico" lleva tilde; "económicamente" la conserva.'),
+  makeWord('solamente', ['so', 'la', 'men', 'te'], 2, 'grave', 'mente', 'A2', 'media', R.mente, 'El adjetivo base "solo" no lleva tilde, así que "solamente" tampoco.'),
+  makeWord('normalmente', ['nor', 'mal', 'men', 'te'], 2, 'grave', 'mente', 'A2', 'alta', R.mente, 'El adjetivo base "normal" no lleva tilde; el adverbio tampoco.'),
+  makeWord('finalmente', ['fi', 'nal', 'men', 'te'], 2, 'grave', 'mente', 'A2', 'alta', R.mente, 'El adjetivo base "final" no lleva tilde, así que "finalmente" tampoco.'),
+
+  // ---- VERBOS CON PRONOMBRES ENCLÍTICOS ----
+  makeWord('cuéntame', ['cuén', 'ta', 'me'], 0, 'esdrújula', 'pronombre', 'A2', 'media', R.esd, 'Verbo con enclítico ("cuenta"+"me"); esdrújula resultante, lleva tilde.'),
+  makeWord('escríbelo', ['es', 'crí', 'be', 'lo'], 1, 'esdrújula', 'pronombre', 'B1', 'media', R.esd, 'Verbo con enclítico ("escribe"+"lo"); esdrújula, se acentúa.'),
+  makeWord('acuérdate', ['a', 'cuér', 'da', 'te'], 1, 'esdrújula', 'pronombre', 'B1', 'media', R.esd, 'Verbo con enclítico ("acuerda"+"te"); esdrújula, lleva tilde.'),
+  makeWord('prepárate', ['pre', 'pá', 'ra', 'te'], 1, 'esdrújula', 'pronombre', 'B1', 'media', R.esd, 'Verbo con enclítico ("prepara"+"te"); esdrújula, se acentúa.'),
+  makeWord('despídete', ['des', 'pí', 'de', 'te'], 1, 'esdrújula', 'pronombre', 'B1', 'baja', R.esd, 'Verbo con enclítico ("despide"+"te"); esdrújula, lleva tilde.'),
+  makeWord('quédate', ['qué', 'da', 'te'], 0, 'esdrújula', 'pronombre', 'A2', 'media', R.esd, 'Verbo con enclítico ("queda"+"te"); esdrújula, se acentúa.'),
+  makeWord('llámame', ['llá', 'ma', 'me'], 0, 'esdrújula', 'pronombre', 'A2', 'alta', R.esd, 'Verbo con enclítico ("llama"+"me"); esdrújula, lleva tilde.'),
+  makeWord('cuídate', ['cuí', 'da', 'te'], 0, 'esdrújula', 'pronombre', 'A2', 'media', R.esd, 'Verbo con enclítico ("cuida"+"te"); esdrújula, se acentúa.'),
+  makeWord('explícate', ['ex', 'plí', 'ca', 'te'], 1, 'esdrújula', 'pronombre', 'B2', 'baja', R.esd, 'Verbo con enclítico ("explica"+"te"); esdrújula, lleva tilde.'),
+  makeWord('cómpralo', ['cóm', 'pra', 'lo'], 0, 'esdrújula', 'pronombre', 'A2', 'media', R.esd, 'Verbo con enclítico ("compra"+"lo"); esdrújula, se acentúa.')
 ];
 
 /**
