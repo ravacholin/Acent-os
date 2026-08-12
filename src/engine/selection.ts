@@ -1,5 +1,5 @@
 import { GameMode, LevelMCER, Word, WordCategory, UserStats } from '../types';
-import { WORDS_DATABASE, isAmbiguousWord } from '../data/words';
+import { WORDS_DATABASE, isAmbiguousWord, hasMultipleVowels } from '../data/words';
 import { getWeakCategories } from '../utils/errorAnalysis';
 
 /**
@@ -61,7 +61,9 @@ export function selectSessionWords(
 
   // Filtros por modo (mismos que en la versión original).
   if (mode === 'donde-va-tilde') {
-    filtered = filtered.filter(w => w.hasTilde);
+    // Solo palabras con tilde y al menos dos vocales: con una única vocal la
+    // respuesta es forzosa (una sola opción) y el ejercicio no plantea desafío.
+    filtered = filtered.filter(w => w.hasTilde && hasMultipleVowels(w));
   }
   if (mode === 'clasificacion' || mode === 'silaba-tonica') {
     // Los monosílabos no se clasifican por sílaba tónica (aguda/grave/…) ni

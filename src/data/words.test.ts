@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   WORDS_DATABASE,
   stripAccents,
+  countVowels,
   getMisaccentedForm,
   getHomophonePartner,
   isAmbiguousWord
@@ -15,6 +16,17 @@ describe('stripAccents', () => {
     expect(stripAccents('pingüino')).toBe('pinguino');
     expect(stripAccents('español')).toBe('español'); // la ñ se conserva
     expect(stripAccents('ÁRBOL')).toBe('ARBOL');
+  });
+});
+
+describe('countVowels', () => {
+  it('cuenta vocales ignorando tildes, diéresis y mayúsculas', () => {
+    expect(countVowels('más')).toBe(1);
+    expect(countVowels('sol')).toBe(1);
+    expect(countVowels('camión')).toBe(3);
+    expect(countVowels('pingüino')).toBe(4); // la ü cuenta como vocal
+    expect(countVowels('ÁRBOL')).toBe(2);
+    expect(countVowels('ritmo')).toBe(2);
   });
 });
 

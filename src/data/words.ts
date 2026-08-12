@@ -24,6 +24,17 @@ export const stripAccents = (s: string): string =>
 
 const TILDE_RE = /[áéíóú]/i;
 
+/**
+ * Cuenta las vocales de una palabra (ignorando tildes/diéresis y mayúsculas).
+ * Útil para el modo "¿Dónde va la tilde?", donde cada vocal es una opción
+ * respondible: con una sola vocal no hay elección que hacer.
+ */
+export const countVowels = (s: string): number =>
+  (stripAccents(s).toLowerCase().match(/[aeiou]/g) || []).length;
+
+/** true si la palabra tiene al menos dos vocales (dos opciones para la tilde). */
+export const hasMultipleVowels = (word: Word): boolean => countVowels(word.wordClean) >= 2;
+
 function makeWord(
   word: string,
   syllables: string[],

@@ -26,9 +26,13 @@ describe('isFormatEligible', () => {
     expect(isFormatEligible('clasificacion', word({ syllables: ['ca', 'sa'] }))).toBe(true);
     expect(isFormatEligible('clasificacion', word({ syllables: ['sol'] }))).toBe(false);
   });
-  it('donde-va-tilde requiere que lleve tilde', () => {
+  it('donde-va-tilde requiere tilde y 2+ vocales', () => {
     expect(isFormatEligible('donde-va-tilde', word({ hasTilde: true }))).toBe(true);
     expect(isFormatEligible('donde-va-tilde', word({ hasTilde: false }))).toBe(false);
+    // Una sola vocal ⇒ una sola opción posible: no plantea desafío.
+    expect(
+      isFormatEligible('donde-va-tilde', word({ word: 'más', wordClean: 'mas', hasTilde: true }))
+    ).toBe(false);
   });
   it('contexto requiere palabra ambigua con ejemplo', () => {
     expect(isFormatEligible('contexto', word({ category: 'diacrítica', example: '___ coche' }))).toBe(true);
