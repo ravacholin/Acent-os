@@ -51,9 +51,11 @@ describe('getHomophonePartner', () => {
   });
 });
 
+const TILDE_GLOBAL_RE = /[áéíóú]/gi;
+
 describe('consistencia del banco de palabras', () => {
-  it('tiene 249 palabras con ids únicos', () => {
-    expect(WORDS_DATABASE.length).toBe(249);
+  it('tiene 394 palabras con ids únicos', () => {
+    expect(WORDS_DATABASE.length).toBe(394);
     expect(new Set(WORDS_DATABASE.map(w => w.id)).size).toBe(WORDS_DATABASE.length);
   });
 
@@ -68,6 +70,38 @@ describe('consistencia del banco de palabras', () => {
       expect(w.hasTilde).toBe(TILDE_RE.test(w.word));
       // wordClean está libre de tildes
       expect(w.wordClean).toBe(stripAccents(w.word));
+    }
+  });
+
+  it('ninguna palabra española lleva más de una tilde', () => {
+    for (const w of WORDS_DATABASE) {
+      const count = (w.word.match(TILDE_GLOBAL_RE) || []).length;
+      expect(count).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('en las palabras con tilde, la sílaba tónica es la que lleva la vocal acentuada', () => {
+    for (const w of WORDS_DATABASE.filter(w => w.hasTilde)) {
+      const stressed = w.syllables[w.stressedSyllableIdx];
+      // La tilde ortográfica cae dentro de la sílaba marcada como tónica…
+      expect(TILDE_RE.test(stressed)).toBe(true);
+      // …y en ninguna otra sílaba.
+      const otherHasTilde = w.syllables.some((s, i) => i !== w.stressedSyllableIdx && TILDE_RE.test(s));
+      expect(otherHasTilde).toBe(false);
+    }
+  });
+
+  it('la clasificación coincide con la posición de la sílaba tónica', () => {
+    const posFromEnd = (w: (typeof WORDS_DATABASE)[number]) => w.syllables.length - w.stressedSyllableIdx;
+    for (const w of WORDS_DATABASE) {
+      if (w.syllables.length < 2) continue; // los monosílabos no se clasifican
+      // Los adverbios en -mente tienen doble acento: la clasificación refleja el
+      // adjetivo base (la tilde), no la posición tónica de la palabra completa.
+      if (w.category === 'mente') continue;
+      const pos = posFromEnd(w); // 1 = última, 2 = penúltima, 3 = antepenúltima…
+      const expected =
+        pos === 1 ? 'aguda' : pos === 2 ? 'grave' : pos === 3 ? 'esdrújula' : 'sobreesdrújula';
+      expect(w.classification).toBe(expected);
     }
   });
 });
