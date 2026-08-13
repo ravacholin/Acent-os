@@ -98,16 +98,17 @@ export default function StatsDashboard({
     <div id="stats-dashboard">
       <div className="flex justify-between items-baseline border-b border-[var(--color-line-soft)] pb-[22px] mb-8 flex-wrap gap-4">
         <div className="display-lg">Progreso</div>
-        <div className="flex gap-2.5">
+        <div className="flex items-center gap-7">
           {subTabs.map((st, i) => (
-            <span
+            <button
               key={st.id}
+              type="button"
               onClick={() => setActiveTab(st.id)}
-              className={`nav-tab hud px-3.5 py-2 ${activeTab === st.id ? 'nav-tab-on' : ''}`}
+              className={`index-nav ${activeTab === st.id ? 'index-nav-on' : ''}`}
             >
-              <span className="nav-tab-num num">{String(i + 1).padStart(2, '0')}</span>
+              <span className="index-nav-num">{String(i).padStart(2, '0')}</span>
               {st.label}
-            </span>
+            </button>
           ))}
         </div>
       </div>

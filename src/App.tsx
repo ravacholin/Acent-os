@@ -165,54 +165,44 @@ export default function App() {
           capturar eventos. */}
       <div className="grain" aria-hidden="true" />
 
-      <div className="grid-bg min-h-screen flex justify-center px-4 sm:px-6 py-8 sm:py-12 box-border" id="app-root">
-        <div className="relative w-[1040px] max-w-full border border-[var(--color-line-strong)] bg-[var(--color-canvas)] text-[var(--color-fg)]">
+      <div className="grid-bg min-h-screen" id="app-root">
+        <div className="relative w-full max-w-[1440px] mx-auto min-h-screen bg-[var(--color-canvas)] text-[var(--color-fg)] border-x border-[var(--color-line-faint)]">
 
-          {/* Corner registration marks */}
-          <div className="absolute -top-px -left-px w-3.5 h-3.5 border-t border-l border-[var(--color-fg-faint)]" />
-          <div className="absolute -top-px -right-px w-3.5 h-3.5 border-t border-r border-[var(--color-fg-faint)]" />
-          <div className="absolute -bottom-px -left-px w-3.5 h-3.5 border-b border-l border-[var(--color-fg-faint)]" />
-          <div className="absolute -bottom-px -right-px w-3.5 h-3.5 border-b border-r border-[var(--color-fg-faint)]" />
-
-          {/* TOPBAR */}
-          <div className="px-6 sm:px-[52px] pt-6 sm:pt-[34px]">
-            <div className="flex justify-between items-center gap-3 flex-wrap">
-              <span onClick={goTo('entrenar')} className="hud cursor-pointer text-[var(--color-fg-soft)] hover:text-[var(--color-fg)] transition-colors" id="brand-logo">
-                AcentOS — ES
+          {/* TOPBAR — tira HUD de instrumento: wordmark + readout de estado */}
+          <header className="px-[var(--pad-x)] pt-[clamp(1.25rem,3vw,2.25rem)]">
+            <div className="flex justify-between items-center gap-x-6 gap-y-3 flex-wrap pb-4 border-b border-[var(--color-line-soft)]">
+              <span
+                onClick={goTo('entrenar')}
+                className="hud num cursor-pointer text-[var(--color-fg)] hover:opacity-70 transition-opacity tracking-[0.34em]"
+                id="brand-logo"
+              >
+                ACENTOS
               </span>
-              {/* HUD de estado repartido en módulos con divisor de hairline. */}
-              <div className="flex items-stretch" id="topbar-stats">
-                {[
-                  { label: 'Nivel', value: stats.level },
-                  { label: 'Precisión', value: `${stats.accuracy}%` },
-                  { label: 'Racha', value: stats.currentStreak }
-                ].map((m, i) => (
-                  <div
-                    key={m.label}
-                    className={`flex flex-col items-end gap-1.5 px-3.5 first:pl-0 last:pr-0 ${i > 0 ? 'border-l border-[var(--color-line)]' : ''}`}
-                  >
-                    <span className="hud leading-none">{m.label}</span>
-                    <span className="num text-[13px] leading-none text-[var(--color-fg)]">{m.value}</span>
-                  </div>
-                ))}
+              <div className="hud flex items-center gap-2.5 text-[var(--color-fg-soft)]" id="topbar-stats">
+                <span>LVL <span className="num text-[var(--color-fg)]">{String(stats.level).padStart(2, '0')}</span></span>
+                <span className="text-[var(--color-fg-faint)]" aria-hidden="true">/</span>
+                <span>ACC <span className="num text-[var(--color-fg)]">{stats.accuracy}%</span></span>
+                <span className="text-[var(--color-fg-faint)]" aria-hidden="true">/</span>
+                <span>STK <span className="num text-[var(--color-fg)]">{stats.currentStreak}</span></span>
               </div>
             </div>
 
-            {/* NAV — dos destinos como cajas numeradas + toggle de sonido */}
-            <div className="flex justify-between items-center gap-6 mt-5 pt-5 border-t border-[var(--color-line-soft)]" id="main-navigation">
-              <div className="flex gap-2.5">
+            {/* NAV — destinos como índice numerado, sin cajas */}
+            <nav className="flex justify-between items-center gap-6 mt-4" id="main-navigation">
+              <div className="flex items-center gap-7">
                 {NAV_ITEMS.map((item, i) => {
                   const active = !session && (activeTab === item.id || (item.id === 'entrenar' && activeTab === 'desafio'));
                   return (
-                    <span
+                    <button
                       key={item.id}
+                      type="button"
                       onClick={goTo(item.id)}
-                      className={`nav-tab hud px-3.5 py-2 ${active ? 'nav-tab-on' : ''}`}
+                      className={`index-nav ${active ? 'index-nav-on' : ''}`}
                       id={`nav-tab-${item.id}`}
                     >
-                      <span className="nav-tab-num num">{String(i + 1).padStart(2, '0')}</span>
+                      <span className="index-nav-num">{String(i).padStart(2, '0')}</span>
                       {item.label}
-                    </span>
+                    </button>
                   );
                 })}
               </div>
@@ -221,18 +211,18 @@ export default function App() {
                 aria-label={settings.soundEnabled ? 'Silenciar sonido' : 'Activar sonido'}
                 title={settings.soundEnabled ? 'Silenciar sonido' : 'Activar sonido'}
                 aria-pressed={settings.soundEnabled}
-                className="nav-tab shrink-0 px-3 py-2"
+                className="index-nav items-center shrink-0"
                 id="nav-toggle-sound"
               >
                 {settings.soundEnabled
-                  ? <Volume2 size={16} strokeWidth={1.5} />
-                  : <VolumeX size={16} strokeWidth={1.5} />}
+                  ? <Volume2 size={15} strokeWidth={1.5} />
+                  : <VolumeX size={15} strokeWidth={1.5} />}
               </button>
-            </div>
-          </div>
+            </nav>
+          </header>
 
           {/* CONTENT */}
-          <div className="px-6 sm:px-[52px] pt-8 sm:pt-11 pb-12 sm:pb-[60px]">
+          <div className="px-[var(--pad-x)] pt-8 sm:pt-11 pb-12 sm:pb-[60px]">
             <AnimatePresence mode="wait">
 
               {/* ACTIVE TRAINING VIEW */}
@@ -384,13 +374,13 @@ export default function App() {
                   transition={{ duration: 0.12 }}
                   id="entrenar-view"
                 >
-                  {/* Hero */}
-                  <div className="pt-4 pb-9 border-b border-[var(--color-line-soft)]">
+                  {/* Hero — wordmark descomunal */}
+                  <div className="pt-[clamp(1rem,3vw,2.5rem)] pb-[clamp(2rem,5vw,3.25rem)]">
                     <div className="hud tracking-[0.3em] mb-6">
                       Entrenador de acentuación · Español
                     </div>
-                    <h1 className="display-xl">AcentOS</h1>
-                    <p className="text-[var(--color-fg-soft)] text-[15px] max-w-[440px] mt-6 leading-[1.65]">
+                    <h1 className="display-2xl">AcentOS</h1>
+                    <p className="text-[var(--color-fg-soft)] text-[15px] max-w-[440px] mt-7 leading-[1.65]">
                       Sesiones de 2 a 10 minutos para saber, sin dudar, cuándo una palabra lleva tilde.
                     </p>
 
@@ -401,36 +391,46 @@ export default function App() {
                         Racha de {stats.currentStreak} {stats.currentStreak === 1 ? 'acierto' : 'aciertos'}
                       </div>
                     )}
+                  </div>
 
+                  {/* Filas destacadas full-bleed: CTA adaptativo (00) + Desafío diario (★) */}
+                  <div className="-mx-[var(--pad-x)] border-t border-[var(--color-line)]">
                     {/* CTA primario: sesión adaptativa (el formato se ajusta al dominio
-                        de cada palabra). Es la única puerta de entrada destacada. */}
+                        de cada palabra). Es la puerta de entrada destacada. */}
                     <button
+                      type="button"
                       onClick={() => startPractice('adaptativo')}
-                      className="btn-primary group mt-9 w-full sm:w-auto inline-flex items-center justify-between gap-5 sm:gap-10 px-6 sm:px-8 py-4 cursor-pointer"
+                      className="index-row group"
                       id="cta-entrenar"
                     >
-                      <span className="display-sm whitespace-nowrap">ENTRENAR</span>
-                      <span className="hud text-[var(--color-canvas)] opacity-60 text-right">Sesión adaptativa →</span>
+                      <span className="index-num" aria-hidden="true">00</span>
+                      <span className="flex-1 min-w-0">
+                        <span className="hud block">Sesión adaptativa</span>
+                        <span className="display-lg block mt-1.5 leading-none">Entrenar</span>
+                        <span className="index-sub block text-[13px] mt-2 leading-relaxed max-w-[52ch]">
+                          El formato de cada palabra se ajusta a tu dominio. La forma recomendada de empezar.
+                        </span>
+                      </span>
+                      <span className="index-arrow" aria-hidden="true">→</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={goTo('desafio')}
+                      className="index-row group"
+                      id="entry-daily-challenge"
+                    >
+                      <span className="index-num" aria-hidden="true">★</span>
+                      <span className="flex-1 min-w-0">
+                        <span className="hud block">Hoy · 20 palabras · +100 XP</span>
+                        <span className="display-md block mt-1.5 leading-none">Desafío diario</span>
+                      </span>
+                      <span className="index-arrow" aria-hidden="true">→</span>
                     </button>
                   </div>
 
-                  {/* Desafío diario — entrada destacada */}
-                  <button
-                    onClick={goTo('desafio')}
-                    className="group w-full flex justify-between items-center gap-6 border-b border-[var(--color-line-soft)] py-7 px-4 -mx-4 text-left cursor-pointer hover:bg-[var(--color-surface)] transition-colors"
-                    id="entry-daily-challenge"
-                  >
-                    <div>
-                      <div className="hud mb-2.5">
-                        Hoy · 20 palabras · +100 XP
-                      </div>
-                      <div className="display-md">Desafío diario</div>
-                    </div>
-                    <span className="hud shrink-0 group-hover:text-[var(--color-fg)] transition-colors">Empezar →</span>
-                  </button>
-
                   {/* Modos */}
-                  <div className="pt-9">
+                  <div className="pt-[clamp(2rem,5vw,3.25rem)]">
                     <PracticeSelector onSelectMode={startPractice} />
                   </div>
                 </motion.div>
