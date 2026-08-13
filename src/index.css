@@ -520,114 +520,6 @@ body {
     padding: 0.25rem 0.5rem;
   }
 
-  /* ── "El Índice" ─────────────────────────────────────────────────────────────
-     Un solo gesto para TODOS los menús: la fila full-bleed numerada que invierte
-     a bloque blanco en hover/activo. Reemplaza tarjetas, cajas y badges flotantes
-     por tipografía, número y hairline. */
-
-  /* Fila-índice: cada opción de menú es una banda a ancho completo. El borde
-     inferior es la única línea; el contenedor pone el borde superior de la lista. */
-  .index-row {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: clamp(1rem, 3vw, 2.5rem);
-    width: 100%;
-    text-align: left;
-    padding: clamp(1.1rem, 2.6vw, 1.9rem) var(--pad-x);
-    border-bottom: 1px solid var(--color-line-soft);
-    background-color: transparent;
-    color: var(--color-fg);
-    cursor: pointer;
-    overflow: hidden;
-    transition: background-color 0.18s ease, color 0.18s ease, padding-left 0.18s ease;
-  }
-  /* Barra de tinta que entra desde la izquierda: el slab no aparece de golpe,
-     "carga" horizontalmente. Vive detrás del contenido. */
-  .index-row::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: var(--color-fg);
-    transform: scaleX(0);
-    transform-origin: left center;
-    transition: transform 0.22s cubic-bezier(0.6, 0, 0.2, 1);
-    z-index: 0;
-  }
-  .index-row > * {
-    position: relative;
-    z-index: 1;
-  }
-  .index-row:hover,
-  .index-row:focus-visible,
-  .index-row-on {
-    color: var(--color-canvas);
-    padding-left: calc(var(--pad-x) + 0.5rem);
-    outline: none;
-  }
-  .index-row:hover::before,
-  .index-row:focus-visible::before,
-  .index-row-on::before {
-    transform: scaleX(1);
-  }
-  /* Los hijos HUD/mono heredan el canvas con la misma jerarquía de alfa que en
-     .cell-invert (mismo idioma de inversión). */
-  .index-row:hover .hud,
-  .index-row:focus-visible .hud,
-  .index-row-on .hud {
-    color: inherit;
-    opacity: 0.62;
-  }
-  .index-row:hover .index-sub,
-  .index-row:focus-visible .index-sub,
-  .index-row-on .index-sub {
-    color: inherit;
-    opacity: 0.72;
-  }
-
-  /* Número líder gigante: el elemento gráfico dominante. Tenue en reposo, sólido
-     al invertir. tabular-nums para que 01–09 no bailen de ancho. */
-  .index-num {
-    flex: none;
-    font-family: var(--font-mono);
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
-    font-size: var(--index-num);
-    line-height: 0.8;
-    letter-spacing: var(--tracking-tight);
-    color: var(--color-fg-faint);
-    transition: color 0.18s ease, opacity 0.18s ease;
-  }
-  .index-row:hover .index-num,
-  .index-row:focus-visible .index-num,
-  .index-row-on .index-num {
-    color: inherit;
-    opacity: 0.9;
-  }
-
-  /* Subtítulo/descr. de la fila (mono o soft), debajo o al lado del título. */
-  .index-sub {
-    color: var(--color-fg-muted);
-  }
-
-  /* Flecha de ejecución: oculta en reposo, entra deslizando al invertir. */
-  .index-arrow {
-    flex: none;
-    font-family: var(--font-mono);
-    font-size: clamp(20px, 3vw, 30px);
-    line-height: 1;
-    opacity: 0;
-    transform: translateX(-8px);
-    transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.6, 0, 0.2, 1);
-  }
-  .index-row:hover .index-arrow,
-  .index-row:focus-visible .index-arrow,
-  .index-row-on .index-arrow {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
   /* ── Navegación de índice ──────────────────────────────────────────────────
      Reemplaza .nav-tab (caja bordeada) en los menús: número de 2 dígitos + label
      mono, sin recuadro. Activo = tinta plena + marca; inactivo = tenue. */
@@ -667,154 +559,240 @@ body {
     margin-left: -0.15em;
   }
 
-  /* ── El Expositor ────────────────────────────────────────────────────────────
-     El selector de modos deja de ser una lista: se vuelve una vitrina. Un panel
-     monumental muestra el modo enfocado (nombre gigante + numeral fantasma detrás)
-     y un riel-índice fino a la derecha lo gobierna. Monocromo estricto — el
-     contraste, la escala y el vacío hacen el trabajo; lo activo se marca con una
-     barra de tinta, nunca con color. */
-  .expo {
-    display: grid;
-    grid-template-columns: 1fr minmax(280px, 34%);
-    gap: clamp(1.5rem, 4vw, 3.5rem);
-    align-items: stretch;
-    min-height: min(62vh, 560px);
-  }
-  .expo-focus {
-    position: relative;
-    min-width: 0;
+  /* ── El Repertorio ───────────────────────────────────────────────────────────
+     El menú de modos, pensado primero para el dedo. Nada depende del hover: un
+     par destacado —la sesión adaptativa como slab de tinta y el desafío como su
+     contrapartida en contorno— corona un índice numerado donde cada fila se
+     explica sola (nombre + spec) y muestra su flecha SIEMPRE, no solo al pasar el
+     cursor. Tocar ejecuta; no hay "preview". Mismo monocromo brutalista: el
+     activo invierte a bloque blanco con la barra de tinta que "carga" de izq. a
+     der. Idéntico en móvil y escritorio, sin scrolls muertos. */
+  .rep {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
+    gap: clamp(1.75rem, 4.5vw, 3rem);
   }
-  /* Numeral fantasma descomunal detrás del nombre. */
-  .expo-ghost {
-    position: absolute;
-    left: -0.06em;
-    top: 50%;
-    transform: translateY(-52%);
-    font-family: var(--font-mono);
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
-    font-size: min(60vh, 40vw);
-    line-height: 0.7;
-    letter-spacing: -0.04em;
-    color: rgba(255, 255, 255, 0.05);
-    pointer-events: none;
-    user-select: none;
-    z-index: 0;
+
+  /* Par destacado. En móvil apila (primario arriba); en pantallas anchas el
+     primario ocupa más y el desafío queda a su lado. */
+  .rep-feature {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(0.9rem, 2vw, 1.4rem);
   }
-  .expo-in {
+  @media (min-width: 720px) {
+    .rep-feature { grid-template-columns: 1.7fr 1fr; align-items: stretch; }
+  }
+
+  /* Bloque destacado: columna con el CTA anclado al pie (margin-top:auto), así
+     ambos igualan altura y la flecha vive siempre en la misma línea. */
+  .rep-card {
     position: relative;
-    z-index: 1;
-    max-width: 46ch;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    min-height: clamp(150px, 30vw, 210px);
+    padding: clamp(1.35rem, 3.2vw, 2rem);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.1s ease, background-color 0.18s ease, border-color 0.18s ease;
   }
-  .expo-name {
+  .rep-card:active { transform: translateY(1px); }
+
+  /* Primario = slab de tinta pleno (la jugada recomendada es lo más brillante
+     de la pantalla, arriba del pliegue en móvil). */
+  .rep-primary {
+    background-color: var(--color-fg);
+    color: var(--color-canvas);
+    border: 1px solid var(--color-fg);
+  }
+  .rep-primary:hover {
+    background-color: color-mix(in srgb, var(--color-fg) 90%, var(--color-canvas));
+  }
+  /* Acento agudo decorativo: guiño al tema de la app (las tildes). Un trazo fino
+     en la esquina, del color del canvas sobre el slab. Puramente ornamental. */
+  .rep-primary::after {
+    content: "´";
+    position: absolute;
+    top: clamp(-0.15em, 1vw, 0.05em);
+    right: 0.32em;
     font-family: var(--font-display);
     font-weight: 700;
-    letter-spacing: var(--tracking-tighter);
-    line-height: 0.9;
-    font-size: clamp(44px, 8vw, var(--display-2xl));
+    font-size: clamp(90px, 16vw, 150px);
+    line-height: 1;
+    color: var(--color-canvas);
+    opacity: 0.12;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Secundario = contorno (contrapartida del primario). */
+  .rep-secondary {
+    background-color: transparent;
+    color: var(--color-fg);
+    border: 1px solid var(--color-line);
+  }
+  .rep-secondary:hover { border-color: var(--color-line-strong); }
+
+  .rep-kick {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--text-hud);
+    letter-spacing: var(--tracking-hud);
+    text-transform: uppercase;
+  }
+  .rep-primary .rep-kick { color: var(--color-canvas); opacity: 0.62; }
+  .rep-secondary .rep-kick { color: var(--color-fg-dim); }
+
+  .rep-name {
+    position: relative;
+    z-index: 1;
+    margin-top: 0.55rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    line-height: 0.95;
     overflow-wrap: break-word;
   }
-  .expo-desc {
-    margin-top: clamp(1rem, 2.4vw, 1.7rem);
-    max-width: 42ch;
-    font-size: var(--text-lead);
-    line-height: 1.55;
-    color: var(--color-fg-soft);
+  .rep-primary .rep-name { font-size: clamp(34px, 7vw, 56px); }
+  .rep-secondary .rep-name { font-size: clamp(26px, 5vw, 36px); }
+
+  .rep-desc {
+    position: relative;
+    z-index: 1;
+    margin-top: 0.7rem;
+    max-width: 32ch;
+    font-size: var(--text-body);
+    line-height: 1.5;
   }
-  .expo-cta {
-    margin-top: clamp(1.5rem, 3.2vw, 2.4rem);
+  .rep-primary .rep-desc { color: rgba(5, 5, 6, 0.62); }
+  .rep-secondary .rep-desc { color: var(--color-fg-muted); }
+
+  .rep-go {
+    position: relative;
+    z-index: 1;
+    margin-top: auto;
+    padding-top: clamp(1rem, 2.6vw, 1.6rem);
     display: inline-flex;
     align-items: center;
-    gap: 0.9rem;
-    background: none;
-    border: none;
-    cursor: pointer;
+    gap: 0.7rem;
     font-family: var(--font-mono);
     font-weight: 500;
     font-size: 12px;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--color-fg);
-    transition: opacity 0.16s ease;
   }
-  .expo-cta .ar { font-size: 18px; transition: transform 0.22s ease; }
-  .expo-cta:hover .ar { transform: translateX(6px); }
+  .rep-go .ar { font-size: 17px; transition: transform 0.22s ease; }
+  .rep-card:hover .rep-go .ar { transform: translateX(6px); }
 
-  /* Riel-índice a la derecha */
-  .expo-rail {
-    --rail-pad: clamp(1.25rem, 2.4vw, 2rem);
-    border-left: 1px solid var(--color-line-soft);
-    padding-left: var(--rail-pad);
+  /* Encabezado de la sección de modos dirigidos. */
+  .rep-sec {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  /* Índice de modos dirigidos: una columna en todos los anchos (lectura tipo
+     índice, tap-first). Borde superior en el contenedor; cada fila cierra con su
+     hairline inferior. */
+  .rep-list {
     display: flex;
     flex-direction: column;
-    min-height: 0;
+    border-top: 1px solid var(--color-line-soft);
+    margin-top: clamp(1rem, 2.4vw, 1.5rem);
   }
-  .expo-rail-head {
-    display: flex;
-    justify-content: space-between;
-    padding-bottom: 0.9rem;
-  }
-  .expo-item {
+
+  .rep-row {
     position: relative;
     display: flex;
-    align-items: baseline;
-    gap: 0.85rem;
+    align-items: center;
+    gap: clamp(0.85rem, 2.4vw, 1.5rem);
     width: 100%;
     text-align: left;
-    background: none;
-    border: none;
+    padding: clamp(0.95rem, 2.4vw, 1.35rem) clamp(0.35rem, 1.4vw, 0.9rem);
     border-bottom: 1px solid var(--color-line-soft);
-    padding: clamp(0.55rem, 1vw, 0.75rem) 0;
+    color: var(--color-fg);
     cursor: pointer;
-    transition: padding-left 0.22s cubic-bezier(0.5, 0, 0.2, 1);
+    overflow: hidden;
+    transition: color 0.18s ease, padding-left 0.18s ease;
   }
-  .expo-item .n {
+  .rep-row::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-fg);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.24s cubic-bezier(0.6, 0, 0.2, 1);
+    z-index: 0;
+  }
+  .rep-row > * { position: relative; z-index: 1; }
+  .rep-row:hover,
+  .rep-row:focus-visible {
+    color: var(--color-canvas);
+    padding-left: clamp(0.75rem, 2vw, 1.4rem);
+    outline: none;
+  }
+  .rep-row:hover::before,
+  .rep-row:focus-visible::before { transform: scaleX(1); }
+
+  /* Número líder: signo gráfico dominante, tenue en reposo, sólido al invertir. */
+  .rep-n {
+    flex: none;
+    width: 1.7em;
     font-family: var(--font-mono);
     font-weight: 500;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
-    font-size: 11px;
+    font-size: clamp(24px, 5.5vw, 34px);
+    line-height: 0.85;
+    letter-spacing: var(--tracking-tight);
     color: var(--color-fg-faint);
-    flex: none;
-    width: 1.9em;
-    transition: color 0.18s ease;
+    transition: color 0.18s ease, opacity 0.18s ease;
   }
-  .expo-item .t {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: clamp(14px, 1.2vw, 16px);
-    letter-spacing: -0.01em;
-    color: var(--color-fg-muted);
-    transition: color 0.18s ease;
-  }
-  .expo-item.feat { border-bottom: 1px solid var(--color-line); margin-bottom: 0.3rem; padding-top: 0; }
-  .expo-item.feat .t { font-weight: 700; font-size: clamp(16px, 1.4vw, 19px); color: var(--color-fg); }
-  .expo-item:hover { padding-left: 0.5rem; }
-  .expo-item:hover .t,
-  .expo-item.expo-item-on .t { color: var(--color-fg); }
-  .expo-item:hover .n,
-  .expo-item.expo-item-on .n { color: var(--color-fg); }
-  .expo-item.expo-item-on { padding-left: 0.5rem; }
-  .expo-item.expo-item-on::before {
-    content: "";
-    position: absolute;
-    left: calc(-1 * var(--rail-pad));
-    top: -1px;
-    bottom: -1px;
-    width: 3px;
-    background: var(--color-fg);
-  }
+  .rep-row:hover .rep-n,
+  .rep-row:focus-visible .rep-n { color: inherit; opacity: 0.9; }
 
-  @media (max-width: 860px) {
-    .expo { grid-template-columns: 1fr; gap: 2rem; min-height: 0; }
-    .expo-focus { min-height: 46vh; padding: 1rem 0; }
-    .expo-ghost { font-size: 54vw; }
-    .expo-rail { border-left: none; border-top: 1px solid var(--color-line); padding-left: 0; }
-    .expo-item.expo-item-on::before { left: 0; }
+  .rep-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.32rem;
   }
+  .rep-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(17px, 4vw, 21px);
+    letter-spacing: var(--tracking-tight);
+    line-height: 1.05;
+  }
+  /* Spec siempre presente: lo que en móvil hacía falta para entender cada modo. */
+  .rep-spec {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--text-hud);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-fg-dim);
+    transition: color 0.18s ease, opacity 0.18s ease;
+  }
+  .rep-row:hover .rep-spec,
+  .rep-row:focus-visible .rep-spec { color: inherit; opacity: 0.6; }
+
+  /* Flecha SIEMPRE visible (afordancia táctil); se solidifica y desliza al invertir. */
+  .rep-arrow {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: clamp(17px, 3vw, 23px);
+    line-height: 1;
+    color: var(--color-fg-quiet);
+    transition: color 0.18s ease, transform 0.22s cubic-bezier(0.6, 0, 0.2, 1);
+  }
+  .rep-row:hover .rep-arrow,
+  .rep-row:focus-visible .rep-arrow { color: inherit; transform: translateX(4px); }
 }
