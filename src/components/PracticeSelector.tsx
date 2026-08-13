@@ -9,8 +9,6 @@ interface PracticeSelectorProps {
 
 export default function PracticeSelector({ onSelectMode, onOpenDaily }: PracticeSelectorProps) {
   const [selectedMode, setSelectedMode] = useState<GameMode | null>(null);
-  // Modo enfocado en el expositor (gobierna el panel monumental de la izquierda).
-  const [focusId, setFocusId] = useState<string>('entrenar');
 
   // Custom mode options
   const [customLevels, setCustomLevels] = useState<LevelMCER[]>(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
@@ -201,101 +199,71 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily }: Practice
     );
   }
 
-  // Entradas del riel: dos destacadas (sesión adaptativa + desafío) y los nueve
-  // modos. Cada una define su acción y el contenido del panel monumental.
-  type Entry = {
-    id: string;
-    num: string;
-    railTitle: string;
-    kick: string;
-    name: string;
-    desc: string;
-    cta: string;
-    feat?: boolean;
-    run: () => void;
-  };
-
-  const entries: Entry[] = [
-    {
-      id: 'entrenar',
-      num: '00',
-      railTitle: 'Entrenar',
-      kick: 'Sesión adaptativa · recomendado',
-      name: 'Entrenar',
-      desc: 'El formato de cada palabra se ajusta a tu dominio. La forma recomendada de empezar una sesión.',
-      cta: 'Empezar',
-      feat: true,
-      run: () => onSelectMode('adaptativo')
-    },
-    ...(onOpenDaily
-      ? [{
-          id: 'desafio',
-          num: '★',
-          railTitle: 'Desafío diario',
-          kick: 'Hoy · 20 palabras · +100 XP',
-          name: 'Desafío diario',
-          desc: 'Una prueba fija de veinte palabras, una vez al día. Combinación balanceada de reglas.',
-          cta: 'Ver desafío',
-          feat: true,
-          run: onOpenDaily
-        } as Entry]
-      : []),
-    ...modesList.map((mode, idx): Entry => ({
-      id: mode.id,
-      num: String(idx + 1).padStart(2, '0'),
-      railTitle: mode.title,
-      kick: `${mode.badge} · ${mode.difficulty}`,
-      name: mode.title,
-      desc: mode.description,
-      cta: mode.id === 'personalizado' ? 'Configurar' : 'Empezar',
-      run: mode.id === 'personalizado' ? () => setSelectedMode('personalizado') : () => onSelectMode(mode.id)
-    }))
-  ];
-
-  const focused = entries.find(e => e.id === focusId) ?? entries[0];
-
+  // Menú tap-first. Los dos destinos destacados (sesión adaptativa + desafío
+  // diario) se ejecutan al tocar; los nueve modos dirigidos viven en un índice
+  // numerado donde cada fila lleva su propia spec.
   return (
     <div id="practice-selector">
-      <div className="expo">
-        {/* Panel monumental: el modo enfocado, con su numeral fantasma detrás. */}
-        <section className="expo-focus">
-          <span className="expo-ghost" aria-hidden="true">{focused.num}</span>
-          <motion.div
-            key={focused.id}
-            className="expo-in"
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
+      <div className="rep">
+        {/* Par destacado: primario (slab) + desafío (contorno). */}
+        <div className="rep-feature">
+          <motion.button
+            type="button"
+            onClick={() => onSelectMode('adaptativo')}
+            className="rep-card rep-primary"
+            id="mode-card-entrenar"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, ease: [0.5, 0, 0.2, 1] }}
           >
-            <div className="hud mb-[clamp(0.9rem,2.4vw,1.6rem)]">{focused.kick}</div>
-            <h2 className="expo-name">{focused.name}</h2>
-            <p className="expo-desc">{focused.desc}</p>
-            <button type="button" onClick={focused.run} className="expo-cta">
-              {focused.cta} <span className="ar" aria-hidden="true">→</span>
-            </button>
-          </motion.div>
-        </section>
+            <span className="rep-kick">00 · Recomendado</span>
+            <span className="rep-name">Entrenar</span>
+            <span className="rep-desc">El formato de cada palabra se ajusta a tu dominio.</span>
+            <span className="rep-go">Empezar <span className="ar" aria-hidden="true">→</span></span>
+          </motion.button>
 
-        {/* Riel-índice: recorrer aquí gobierna el panel; el clic ejecuta. */}
-        <nav className="expo-rail" aria-label="Modos de práctica" id="modes-grid">
-          <div className="expo-rail-head">
-            <span className="hud">Práctica</span>
-            <span className="hud num text-[var(--color-fg-quiet)]">{String(entries.length).padStart(2, '0')}</span>
-          </div>
-          {entries.map((e) => (
-            <button
-              key={e.id}
+          {onOpenDaily && (
+            <motion.button
               type="button"
-              className={`expo-item ${e.feat ? 'feat' : ''} ${focusId === e.id ? 'expo-item-on' : ''}`}
-              id={`mode-card-${e.id}`}
-              onMouseEnter={() => setFocusId(e.id)}
-              onFocus={() => setFocusId(e.id)}
-              onClick={e.run}
+              onClick={onOpenDaily}
+              className="rep-card rep-secondary"
+              id="mode-card-desafio"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, delay: 0.04, ease: [0.5, 0, 0.2, 1] }}
             >
-              <span className="n" aria-hidden="true">{e.num}</span>
-              <span className="t">{e.railTitle}</span>
-            </button>
-          ))}
+              <span className="rep-kick">★ · Desafío diario</span>
+              <span className="rep-name">Hoy</span>
+              <span className="rep-desc">20 palabras · +100 XP</span>
+              <span className="rep-go">Ver <span className="ar" aria-hidden="true">→</span></span>
+            </motion.button>
+          )}
+        </div>
+
+        {/* Índice de modos dirigidos: cada fila se explica sola y ejecuta al tocar. */}
+        <nav aria-label="Modos de práctica dirigida" id="modes-grid">
+          <div className="rep-sec">
+            <span className="hud">Práctica dirigida</span>
+            <span className="hud num text-[var(--color-fg-quiet)]">{String(modesList.length).padStart(2, '0')}</span>
+          </div>
+          <div className="rep-list">
+            {modesList.map((mode, idx) => (
+              <button
+                key={mode.id}
+                type="button"
+                className="rep-row"
+                id={`mode-card-${mode.id}`}
+                onClick={mode.id === 'personalizado' ? () => setSelectedMode('personalizado') : () => onSelectMode(mode.id)}
+              >
+                <span className="rep-n" aria-hidden="true">{String(idx + 1).padStart(2, '0')}</span>
+                <span className="rep-body">
+                  <span className="rep-title">{mode.title}</span>
+                  <span className="rep-spec">{mode.badge} · {mode.difficulty}</span>
+                </span>
+                <span className="rep-arrow" aria-hidden="true">→</span>
+              </button>
+            ))}
+          </div>
         </nav>
       </div>
     </div>
