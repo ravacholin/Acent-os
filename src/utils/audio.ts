@@ -143,29 +143,138 @@ export function playIncorrectSound(enabled: boolean) {
   }
 }
 
-export function speakWord(word: string, enabled: boolean) {
-  if (!enabled || typeof window === 'undefined') return;
-  try {
+// ---------------------------------------------------------------------------
+// Text-to-Speech (dictado y botón "Escuchar")
+//
+// La Web Speech API basta para tener audio nítido y offline SIN backend ni
+// claves de API — pero solo si se elige BIEN la voz. El bug clásico es que
+// `getVoices()` devuelve [] en la primera llamada (las voces cargan async), así
+// que el navegador termina leyendo la palabra española con la voz por defecto
+// del sistema (a menudo en inglés) → "no se entiende nada". Aquí esperamos a
+// que las voces estén listas y puntuamos para quedarnos con la mejor voz
+// española disponible (neural/online/enhanced) en vez de la primera cualquiera.
+// ---------------------------------------------------------------------------
+
+let voicesReady: Promise<SpeechSynthesisVoice[]> | null = null;
+
+/** Espera (una sola vez) a que el navegador termine de cargar las voces. */
+function loadVoices(): Promise<SpeechSynthesisVoice[]> {
+  if (voicesReady) return voicesReady;
+
+  voicesReady = new Promise((resolve) => {
     const synth = window.speechSynthesis;
-    if (!synth) return;
-
-    // Cancel any ongoing speech
-    synth.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(word);
-    utterance.lang = 'es-ES';
-    utterance.rate = 0.85; // Slightly slower for training clarity
-    utterance.pitch = 1.0;
-    
-    // Find a proper Spanish voice if available
-    const voices = synth.getVoices();
-    const esVoice = voices.find(v => v.lang.startsWith('es'));
-    if (esVoice) {
-      utterance.voice = esVoice;
+    if (!synth) {
+      resolve([]);
+      return;
     }
 
-    synth.speak(utterance);
-  } catch (error) {
-    console.warn('Speech synthesis failed', error);
+    const existing = synth.getVoices();
+    if (existing.length > 0) {
+      resolve(existing);
+      return;
+    }
+
+    // Las voces aún no cargaron: escuchar `voiceschanged` con un timeout de
+    // seguridad por si el evento nunca dispara (pasa en algunos navegadores).
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      synth.removeEventListener('voiceschanged', onChange);
+      resolve(synth.getVoices());
+    };
+    const onChange = () => finish();
+    synth.addEventListener('voiceschanged', onChange);
+    setTimeout(finish, 1500);
+  });
+
+  return voicesReady;
+}
+
+/**
+ * Puntúa una voz para el español. Mayor puntaje = mejor. Prioriza voces
+ * neuronales/online/enhanced conocidas por su alta calidad y descarta las
+ * "compact"/robóticas. Las variantes latinoamericanas reciben un pequeño plus
+ * (la app usa voseo rioplatense), sin excluir el español peninsular.
+ */
+function scoreSpanishVoice(voice: SpeechSynthesisVoice): number {
+  const lang = voice.lang.toLowerCase();
+  if (!lang.startsWith('es')) return -Infinity; // nunca una voz no española
+
+  const name = voice.name.toLowerCase();
+  let score = 0;
+
+  // Señales fuertes de calidad (nombres de motores neuronales / premium).
+  if (/natural|neural|online|enhanced|premium/.test(name)) score += 60;
+  if (name.includes('google')) score += 45;
+  // Voces conocidas de buena calidad en macOS/iOS/Windows/Android.
+  if (/(mónica|monica|paulina|paloma|sabina|elvira|dalia|jorge|juan|lucía|lucia|helena|laura|catalina|marisol)/.test(name)) {
+    score += 25;
   }
+
+  // Penalizar las voces "compact"/eSpeak robóticas.
+  if (/compact|espeak|eloquence/.test(name)) score -= 40;
+
+  // Preferencia regional: latinoamérica un poco por delante, pero es-ES también alto.
+  if (/es-(mx|us|419|ar|co|cl|pe)/.test(lang)) score += 12;
+  else if (lang === 'es-es' || lang.startsWith('es-es')) score += 8;
+  else score += 4;
+
+  return score;
+}
+
+let bestVoicePromise: Promise<SpeechSynthesisVoice | null> | null = null;
+
+/** Devuelve (cacheada) la mejor voz española disponible, o null si no hay. */
+function getBestSpanishVoice(): Promise<SpeechSynthesisVoice | null> {
+  if (bestVoicePromise) return bestVoicePromise;
+  bestVoicePromise = loadVoices().then((voices) => {
+    const spanish = voices
+      .filter((v) => v.lang.toLowerCase().startsWith('es'))
+      .sort((a, b) => scoreSpanishVoice(b) - scoreSpanishVoice(a));
+    return spanish[0] ?? null;
+  });
+  return bestVoicePromise;
+}
+
+/**
+ * Precarga las voces apenas la app arranca, para que el primer dictado ya tenga
+ * la voz correcta seleccionada (evita el primer audio en voz por defecto).
+ */
+export function warmUpTts() {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  getBestSpanishVoice();
+}
+
+export function speakWord(word: string, enabled: boolean) {
+  if (!enabled || typeof window === 'undefined') return;
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+
+  getBestSpanishVoice()
+    .then((voice) => {
+      try {
+        // Cortar cualquier locución en curso (p. ej. repique del botón).
+        synth.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(word);
+        // Fijar el idioma SIEMPRE, aunque no haya una voz española concreta:
+        // fuerza al motor a usar fonética española en vez de leer en inglés.
+        utterance.lang = voice?.lang || 'es-ES';
+        utterance.rate = 0.9;  // levemente más lento para claridad en el dictado
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        if (voice) utterance.voice = voice;
+
+        // Chrome a veces ignora el primer speak() tras un cancel(): un micro
+        // retardo lo hace fiable sin ser perceptible.
+        setTimeout(() => {
+          if (synth.paused) synth.resume();
+          synth.speak(utterance);
+        }, 60);
+      } catch (error) {
+        console.warn('Speech synthesis failed', error);
+      }
+    })
+    .catch((error) => console.warn('Speech synthesis failed', error));
 }
