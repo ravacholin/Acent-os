@@ -142,12 +142,14 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
             <div className="display-lg">Personalizado</div>
             <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5">Elegí niveles, categorías y duración</p>
           </div>
-          <span
+          <button
+            type="button"
             onClick={() => setSelectedMode(null)}
-            className="nav-tab hud px-4 py-2"
+            className="index-nav shrink-0"
           >
-            ← Volver
-          </span>
+            <span className="index-nav-num">←</span>
+            Volver
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8">
@@ -198,15 +200,17 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
 
   return (
     <div id="practice-selector">
-      <div className="border-b border-[var(--color-line-soft)] pb-[18px] mb-8">
+      <div className="flex items-baseline justify-between gap-4 pb-[18px]">
         <div className="hud tracking-[0.25em]">Práctica dirigida</div>
-        <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5">Elegí un formato o modo concreto para enfocar tu práctica</p>
+        <span className="hud num text-[var(--color-fg-quiet)]">{String(modesList.length).padStart(2, '0')} modos</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-[var(--color-line-soft)]" id="modes-grid">
+      {/* Índice de modos: cada fila full-bleed, invierte a slab blanco en hover. */}
+      <div className="-mx-[var(--pad-x)] border-t border-[var(--color-line-soft)]" id="modes-grid">
         {modesList.map((mode, idx) => (
-          <motion.div
+          <motion.button
             key={mode.id}
+            type="button"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.15, delay: idx * 0.03 }}
@@ -217,20 +221,23 @@ export default function PracticeSelector({ onSelectMode }: PracticeSelectorProps
                 onSelectMode(mode.id);
               }
             }}
-            className="cell cell-invert group relative p-6 cursor-pointer min-h-[200px] flex flex-col justify-between overflow-hidden"
+            className="index-row group"
             id={`mode-card-${mode.id}`}
           >
-            {/* Índice como marca de agua gigante en la esquina */}
-            <span className="num-ghost absolute top-3.5 right-5 select-none pointer-events-none" aria-hidden="true">
-              {String(idx + 1).padStart(2, '0')}
+            <span className="index-num" aria-hidden="true">{String(idx + 1).padStart(2, '0')}</span>
+
+            <span className="flex-1 min-w-0">
+              <span className="hud block">{mode.badge}</span>
+              <span className="display-md block mt-1.5 leading-none">{mode.title}</span>
+              <span className="index-sub block text-[13px] mt-2 leading-relaxed max-w-[52ch]">{mode.description}</span>
             </span>
-            <div className="relative">
-              <span className="tag">{mode.badge}</span>
-              <div className="display-sm mt-4">{mode.title}</div>
-              <p className="cell-body text-[13px] mt-3 leading-relaxed max-w-[92%]">{mode.description}</p>
-            </div>
-            <div className="hud mt-5 relative">{mode.difficulty}</div>
-          </motion.div>
+
+            <span className="hidden md:block shrink-0 text-right">
+              <span className="hud">{mode.difficulty}</span>
+            </span>
+
+            <span className="index-arrow text-[var(--display-md)] leading-none" aria-hidden="true">→</span>
+          </motion.button>
         ))}
       </div>
     </div>

@@ -121,6 +121,10 @@
   --display-md: 26px;
   --display-lg: 40px;
   --display-xl: 68px;
+  --display-2xl: 120px; /* wordmark del hero, "El Índice" */
+
+  /* Número líder del índice: elemento gráfico dominante del rediseño. */
+  --index-num: clamp(30px, 6vw, 64px);
 
   --tracking-hud: 0.18em;
   --tracking-tight: -0.03em;
@@ -130,6 +134,10 @@
   --pad-frame: 52px;
   --pad-cell: 24px;
   --gap-section: 36px;
+
+  /* Padding horizontal de página, compartido por el chrome edge-to-edge y las
+     filas-índice para que el número alinee con el texto del hero. */
+  --pad-x: clamp(1.25rem, 4vw, 3rem);
 
   /* ── Color ─────────────────────────────────────────────────────────────────
      Canvas casi negro con tinte frío, no negro puro: da profundidad sin lavar
@@ -249,6 +257,15 @@ body {
 @layer components {
   /* Titulares. Space Grotesk 700 con tracking negativo: apretado y moderno.
      El uppercase ya no viene forzado — lo decide cada uso. */
+  .display-2xl {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(60px, 17vw, var(--display-2xl));
+    letter-spacing: var(--tracking-tighter);
+    line-height: 0.86;
+    overflow-wrap: break-word;
+  }
+
   .display-xl {
     font-family: var(--font-display);
     font-weight: 700;
@@ -501,5 +518,152 @@ body {
     border: 1px solid var(--color-line);
     border-radius: 0;
     padding: 0.25rem 0.5rem;
+  }
+
+  /* ── "El Índice" ─────────────────────────────────────────────────────────────
+     Un solo gesto para TODOS los menús: la fila full-bleed numerada que invierte
+     a bloque blanco en hover/activo. Reemplaza tarjetas, cajas y badges flotantes
+     por tipografía, número y hairline. */
+
+  /* Fila-índice: cada opción de menú es una banda a ancho completo. El borde
+     inferior es la única línea; el contenedor pone el borde superior de la lista. */
+  .index-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    width: 100%;
+    text-align: left;
+    padding: clamp(1.1rem, 2.6vw, 1.9rem) var(--pad-x);
+    border-bottom: 1px solid var(--color-line-soft);
+    background-color: transparent;
+    color: var(--color-fg);
+    cursor: pointer;
+    overflow: hidden;
+    transition: background-color 0.18s ease, color 0.18s ease, padding-left 0.18s ease;
+  }
+  /* Barra de tinta que entra desde la izquierda: el slab no aparece de golpe,
+     "carga" horizontalmente. Vive detrás del contenido. */
+  .index-row::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-fg);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.22s cubic-bezier(0.6, 0, 0.2, 1);
+    z-index: 0;
+  }
+  .index-row > * {
+    position: relative;
+    z-index: 1;
+  }
+  .index-row:hover,
+  .index-row:focus-visible,
+  .index-row-on {
+    color: var(--color-canvas);
+    padding-left: calc(var(--pad-x) + 0.5rem);
+    outline: none;
+  }
+  .index-row:hover::before,
+  .index-row:focus-visible::before,
+  .index-row-on::before {
+    transform: scaleX(1);
+  }
+  /* Los hijos HUD/mono heredan el canvas con la misma jerarquía de alfa que en
+     .cell-invert (mismo idioma de inversión). */
+  .index-row:hover .hud,
+  .index-row:focus-visible .hud,
+  .index-row-on .hud {
+    color: inherit;
+    opacity: 0.62;
+  }
+  .index-row:hover .index-sub,
+  .index-row:focus-visible .index-sub,
+  .index-row-on .index-sub {
+    color: inherit;
+    opacity: 0.72;
+  }
+
+  /* Número líder gigante: el elemento gráfico dominante. Tenue en reposo, sólido
+     al invertir. tabular-nums para que 01–09 no bailen de ancho. */
+  .index-num {
+    flex: none;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-size: var(--index-num);
+    line-height: 0.8;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-fg-faint);
+    transition: color 0.18s ease, opacity 0.18s ease;
+  }
+  .index-row:hover .index-num,
+  .index-row:focus-visible .index-num,
+  .index-row-on .index-num {
+    color: inherit;
+    opacity: 0.9;
+  }
+
+  /* Subtítulo/descr. de la fila (mono o soft), debajo o al lado del título. */
+  .index-sub {
+    color: var(--color-fg-muted);
+  }
+
+  /* Flecha de ejecución: oculta en reposo, entra deslizando al invertir. */
+  .index-arrow {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: clamp(20px, 3vw, 30px);
+    line-height: 1;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.6, 0, 0.2, 1);
+  }
+  .index-row:hover .index-arrow,
+  .index-row:focus-visible .index-arrow,
+  .index-row-on .index-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* ── Navegación de índice ──────────────────────────────────────────────────
+     Reemplaza .nav-tab (caja bordeada) en los menús: número de 2 dígitos + label
+     mono, sin recuadro. Activo = tinta plena + marca; inactivo = tenue. */
+  .index-nav {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.35rem 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-fg-quiet);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: var(--text-hud);
+    letter-spacing: var(--tracking-hud);
+    text-transform: uppercase;
+    transition: color 0.16s ease;
+  }
+  .index-nav:hover {
+    color: var(--color-fg);
+  }
+  .index-nav .index-nav-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    opacity: 0.5;
+  }
+  /* Activo: cifra en caja de tinta plena (flip figura/fondo, coherente con .chip-on). */
+  .index-nav-on {
+    color: var(--color-fg);
+  }
+  .index-nav-on .index-nav-num {
+    background-color: var(--color-fg);
+    color: var(--color-canvas);
+    opacity: 1;
+    padding: 0.15em 0.4em;
+    margin-left: -0.15em;
   }
 }
