@@ -666,4 +666,155 @@ body {
     padding: 0.15em 0.4em;
     margin-left: -0.15em;
   }
+
+  /* ── El Expositor ────────────────────────────────────────────────────────────
+     El selector de modos deja de ser una lista: se vuelve una vitrina. Un panel
+     monumental muestra el modo enfocado (nombre gigante + numeral fantasma detrás)
+     y un riel-índice fino a la derecha lo gobierna. Monocromo estricto — el
+     contraste, la escala y el vacío hacen el trabajo; lo activo se marca con una
+     barra de tinta, nunca con color. */
+  .expo {
+    display: grid;
+    grid-template-columns: 1fr minmax(280px, 34%);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: stretch;
+    min-height: min(62vh, 560px);
+  }
+  .expo-focus {
+    position: relative;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+  }
+  /* Numeral fantasma descomunal detrás del nombre. */
+  .expo-ghost {
+    position: absolute;
+    left: -0.06em;
+    top: 50%;
+    transform: translateY(-52%);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-size: min(60vh, 40vw);
+    line-height: 0.7;
+    letter-spacing: -0.04em;
+    color: rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+  }
+  .expo-in {
+    position: relative;
+    z-index: 1;
+    max-width: 46ch;
+  }
+  .expo-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tighter);
+    line-height: 0.9;
+    font-size: clamp(44px, 8vw, var(--display-2xl));
+    overflow-wrap: break-word;
+  }
+  .expo-desc {
+    margin-top: clamp(1rem, 2.4vw, 1.7rem);
+    max-width: 42ch;
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    color: var(--color-fg-soft);
+  }
+  .expo-cta {
+    margin-top: clamp(1.5rem, 3.2vw, 2.4rem);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-fg);
+    transition: opacity 0.16s ease;
+  }
+  .expo-cta .ar { font-size: 18px; transition: transform 0.22s ease; }
+  .expo-cta:hover .ar { transform: translateX(6px); }
+
+  /* Riel-índice a la derecha */
+  .expo-rail {
+    --rail-pad: clamp(1.25rem, 2.4vw, 2rem);
+    border-left: 1px solid var(--color-line-soft);
+    padding-left: var(--rail-pad);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .expo-rail-head {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0.9rem;
+  }
+  .expo-item {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--color-line-soft);
+    padding: clamp(0.55rem, 1vw, 0.75rem) 0;
+    cursor: pointer;
+    transition: padding-left 0.22s cubic-bezier(0.5, 0, 0.2, 1);
+  }
+  .expo-item .n {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-size: 11px;
+    color: var(--color-fg-faint);
+    flex: none;
+    width: 1.9em;
+    transition: color 0.18s ease;
+  }
+  .expo-item .t {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(14px, 1.2vw, 16px);
+    letter-spacing: -0.01em;
+    color: var(--color-fg-muted);
+    transition: color 0.18s ease;
+  }
+  .expo-item.feat { border-bottom: 1px solid var(--color-line); margin-bottom: 0.3rem; padding-top: 0; }
+  .expo-item.feat .t { font-weight: 700; font-size: clamp(16px, 1.4vw, 19px); color: var(--color-fg); }
+  .expo-item:hover { padding-left: 0.5rem; }
+  .expo-item:hover .t,
+  .expo-item.expo-item-on .t { color: var(--color-fg); }
+  .expo-item:hover .n,
+  .expo-item.expo-item-on .n { color: var(--color-fg); }
+  .expo-item.expo-item-on { padding-left: 0.5rem; }
+  .expo-item.expo-item-on::before {
+    content: "";
+    position: absolute;
+    left: calc(-1 * var(--rail-pad));
+    top: -1px;
+    bottom: -1px;
+    width: 3px;
+    background: var(--color-fg);
+  }
+
+  @media (max-width: 860px) {
+    .expo { grid-template-columns: 1fr; gap: 2rem; min-height: 0; }
+    .expo-focus { min-height: 46vh; padding: 1rem 0; }
+    .expo-ghost { font-size: 54vw; }
+    .expo-rail { border-left: none; border-top: 1px solid var(--color-line); padding-left: 0; }
+    .expo-item.expo-item-on::before { left: 0; }
+  }
 }

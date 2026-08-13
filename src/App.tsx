@@ -374,65 +374,10 @@ export default function App() {
                   transition={{ duration: 0.12 }}
                   id="entrenar-view"
                 >
-                  {/* Hero — wordmark descomunal */}
-                  <div className="pt-[clamp(1rem,3vw,2.5rem)] pb-[clamp(2rem,5vw,3.25rem)]">
-                    <div className="hud tracking-[0.3em] mb-6">
-                      Entrenador de acentuación · Español
-                    </div>
-                    <h1 className="display-2xl">AcentOS</h1>
-                    <p className="text-[var(--color-fg-soft)] text-[15px] max-w-[440px] mt-7 leading-[1.65]">
-                      Sesiones de 2 a 10 minutos para saber, sin dudar, cuándo una palabra lleva tilde.
-                    </p>
-
-                    {/* Racha visible (solo si hay racha en curso; sin nags ni notificaciones) */}
-                    {stats.currentStreak > 0 && (
-                      <div className="hud mt-6 inline-flex items-center gap-2 text-[var(--color-fg-quiet)]" id="hero-streak">
-                        <span className="w-1.5 h-1.5 bg-[var(--color-fg)]" />
-                        Racha de {stats.currentStreak} {stats.currentStreak === 1 ? 'acierto' : 'aciertos'}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Filas destacadas full-bleed: CTA adaptativo (00) + Desafío diario (★) */}
-                  <div className="-mx-[var(--pad-x)] border-t border-[var(--color-line)]">
-                    {/* CTA primario: sesión adaptativa (el formato se ajusta al dominio
-                        de cada palabra). Es la puerta de entrada destacada. */}
-                    <button
-                      type="button"
-                      onClick={() => startPractice('adaptativo')}
-                      className="index-row group"
-                      id="cta-entrenar"
-                    >
-                      <span className="index-num" aria-hidden="true">00</span>
-                      <span className="flex-1 min-w-0">
-                        <span className="hud block">Sesión adaptativa</span>
-                        <span className="display-lg block mt-1.5 leading-none">Entrenar</span>
-                        <span className="index-sub block text-[13px] mt-2 leading-relaxed max-w-[52ch]">
-                          El formato de cada palabra se ajusta a tu dominio. La forma recomendada de empezar.
-                        </span>
-                      </span>
-                      <span className="index-arrow" aria-hidden="true">→</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={goTo('desafio')}
-                      className="index-row group"
-                      id="entry-daily-challenge"
-                    >
-                      <span className="index-num" aria-hidden="true">★</span>
-                      <span className="flex-1 min-w-0">
-                        <span className="hud block">Hoy · 20 palabras · +100 XP</span>
-                        <span className="display-md block mt-1.5 leading-none">Desafío diario</span>
-                      </span>
-                      <span className="index-arrow" aria-hidden="true">→</span>
-                    </button>
-                  </div>
-
-                  {/* Modos */}
-                  <div className="pt-[clamp(2rem,5vw,3.25rem)]">
-                    <PracticeSelector onSelectMode={startPractice} />
-                  </div>
+                  {/* Expositor — el menú de modos como vitrina monumental. El panel
+                      de foco reemplaza al hero: muestra el modo enfocado a escala
+                      de afiche mientras se recorre el riel-índice de la derecha. */}
+                  <PracticeSelector onSelectMode={startPractice} onOpenDaily={goTo('desafio')} />
                 </motion.div>
               )}
 
