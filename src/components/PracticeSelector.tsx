@@ -85,11 +85,11 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily }: Practice
     }
   ];
 
+  const ALL_LEVELS: LevelMCER[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
   const handleToggleLevel = (lvl: LevelMCER) => {
     if (customLevels.includes(lvl)) {
-      if (customLevels.length > 1) {
-        setCustomLevels(customLevels.filter(l => l !== lvl));
-      }
+      setCustomLevels(customLevels.filter(l => l !== lvl));
     } else {
       setCustomLevels([...customLevels, lvl]);
     }
@@ -97,9 +97,7 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily }: Practice
 
   const handleToggleCategory = (cat: WordCategory) => {
     if (customCategories.includes(cat)) {
-      if (customCategories.length > 1) {
-        setCustomCategories(customCategories.filter(c => c !== cat));
-      }
+      setCustomCategories(customCategories.filter(c => c !== cat));
     } else {
       setCustomCategories([...customCategories, cat]);
     }
@@ -135,6 +133,11 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily }: Practice
     { id: 'pronombre', label: 'Enclíticos' }
   ];
 
+  const allCategoryIds = categoryOptions.map(c => c.id);
+  const allLevelsSelected = customLevels.length === ALL_LEVELS.length;
+  const allCategoriesSelected = customCategories.length === allCategoryIds.length;
+  const canStartCustom = customLevels.length > 0 && customCategories.length > 0;
+
   if (selectedMode === 'personalizado') {
     return (
       <div id="custom-setup-panel">
@@ -155,9 +158,29 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily }: Practice
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8">
           <div>
-            <div className="hud mb-3.5"><span className="num text-[var(--color-fg-soft)] mr-2">01</span>Nivel MCER</div>
+            <div className="flex items-center justify-between mb-3.5 gap-3">
+              <div className="hud"><span className="num text-[var(--color-fg-soft)] mr-2">01</span>Nivel MCER</div>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setCustomLevels([...ALL_LEVELS])}
+                  disabled={allLevelsSelected}
+                  className="bulk-toggle"
+                >
+                  Todo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCustomLevels([])}
+                  disabled={customLevels.length === 0}
+                  className="bulk-toggle"
+                >
+                  Ninguno
+                </button>
+              </div>
+            </div>
             <div className="flex flex-wrap gap-2">
-              {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as LevelMCER[]).map((lvl) => (
+              {ALL_LEVELS.map((lvl) => (
                 <span key={lvl} onClick={() => handleToggleLevel(lvl)} className={chipClass(customLevels.includes(lvl))}>
                   {lvl}
                 </span>
@@ -177,7 +200,27 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily }: Practice
         </div>
 
         <div className="mb-9">
-          <div className="hud mb-3.5"><span className="num text-[var(--color-fg-soft)] mr-2">03</span>Reglas y categorías</div>
+          <div className="flex items-center justify-between mb-3.5 gap-3">
+            <div className="hud"><span className="num text-[var(--color-fg-soft)] mr-2">03</span>Reglas y categorías</div>
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={() => setCustomCategories([...allCategoryIds])}
+                disabled={allCategoriesSelected}
+                className="bulk-toggle"
+              >
+                Todo
+              </button>
+              <button
+                type="button"
+                onClick={() => setCustomCategories([])}
+                disabled={customCategories.length === 0}
+                className="bulk-toggle"
+              >
+                Ninguno
+              </button>
+            </div>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {categoryOptions.map((cat) => (
               <span key={cat.id} onClick={() => handleToggleCategory(cat.id)} className={chipClass(customCategories.includes(cat.id))}>
@@ -187,10 +230,16 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily }: Practice
           </div>
         </div>
 
-        <div className="flex justify-end border-t border-[var(--color-line-soft)] pt-[26px]">
+        <div className="flex justify-between items-center border-t border-[var(--color-line-soft)] pt-[26px] gap-4 flex-wrap">
+          <p className="text-[var(--color-fg-muted)] text-[12px]">
+            {canStartCustom
+              ? `${customLevels.length} ${customLevels.length === 1 ? 'nivel' : 'niveles'} · ${customCategories.length} ${customCategories.length === 1 ? 'categoría' : 'categorías'}`
+              : 'Elegí al menos un nivel y una categoría para empezar'}
+          </p>
           <button
             onClick={handleStartCustomMode}
-            className="btn-primary hud text-[var(--color-canvas)] px-8 py-3.5 cursor-pointer"
+            disabled={!canStartCustom}
+            className="btn-primary hud text-[var(--color-canvas)] px-8 py-3.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Comenzar entrenamiento
           </button>
