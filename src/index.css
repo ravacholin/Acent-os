@@ -410,6 +410,30 @@ body {
     color: var(--color-canvas);
   }
 
+  /* Acciones masivas (Todo / Ninguno) junto a cada grupo de chips: mismo
+     idioma que .chip pero más discreto, para no competir con la selección. */
+  .bulk-toggle {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.55rem;
+    background-color: transparent;
+    border: 1px solid var(--color-line);
+    border-radius: 0;
+    color: var(--color-fg-muted);
+    cursor: pointer;
+    transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  }
+  .bulk-toggle:hover:not(:disabled) {
+    border-color: var(--color-line-strong);
+    color: var(--color-fg-soft);
+  }
+  .bulk-toggle:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
   .field {
     background-color: transparent;
     border: 1px solid var(--color-line);
