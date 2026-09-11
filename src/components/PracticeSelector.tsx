@@ -1,9 +1,24 @@
-import React, { useState } from 'react';
-import { GameMode, LevelMCER, PracticePack, WordCategory } from '../types';
+import React, { useEffect, useState } from 'react';
+import { GameMode, LevelMCER, PracticePack, Word, WordCategory } from '../types';
 import { motion } from 'motion/react';
 import { WORDS_DATABASE, stripAccents } from '../data/words';
 import { createPack, packUrl, MAX_PACK_WORDS } from '../engine/pack';
 import QrCode, { downloadQrPng } from './QrCode';
+
+/**
+ * Toma al azar hasta `n` ids de una lista de palabras (Fisher-Yates sobre una
+ * copia, sin mutar la entrada). Es la base de la selección automática del pack:
+ * a partir de los niveles y categorías elegidos, llenamos el pack con palabras
+ * sorteadas en vez de pedirle al docente que las tilde una por una.
+ */
+function sampleWordIds(words: Word[], n: number): string[] {
+  const pool = words.slice();
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, n).map((w) => w.id);
+}
 
 interface PracticeSelectorProps {
   onSelectMode: (mode: GameMode, customOptions?: { levels: LevelMCER[]; categories: WordCategory[]; timeLimit?: number }) => void;
@@ -133,7 +148,35 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily, onStartPac
     return stripAccents(w.wordClean).toLowerCase().includes(q);
   });
 
+  // Pool completo de la selección automática: todas las palabras que entran por
+  // nivel + categoría (sin el filtro de búsqueda, que solo acota lo que se ve en
+  // pantalla). De acá salen las 40 que se sortean.
+  const autoPool = WORDS_DATABASE.filter(
+    (w) => customLevels.includes(w.level) && customCategories.includes(w.category)
+  );
+
   const atPackCap = packSelected.size >= MAX_PACK_WORDS;
+
+  // Selección automática: al abrir el constructor y cada vez que cambian los
+  // niveles o las categorías, llenamos el pack con hasta 40 palabras al azar del
+  // pool resultante. El docente después puede sacar o agregar a mano; volver a
+  // tocar un filtro vuelve a sortear.
+  useEffect(() => {
+    if (!packOpen) return;
+    setPackSelected(new Set(sampleWordIds(autoPool, MAX_PACK_WORDS)));
+    setPackLink(null);
+    setCopied(false);
+    // autoPool se recalcula en cada render; lo que dispara el re-sorteo es un
+    // cambio real de niveles/categorías (o abrir el panel), no cada render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [packOpen, customLevels, customCategories]);
+
+  // Re-sortea 40 palabras nuevas con los mismos filtros, sin tener que tocarlos.
+  const reshufflePack = () => {
+    setPackSelected(new Set(sampleWordIds(autoPool, MAX_PACK_WORDS)));
+    setPackLink(null);
+    setCopied(false);
+  };
 
   const togglePackWord = (id: string) => {
     setPackLink(null);
@@ -221,7 +264,7 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily, onStartPac
         <div className="flex justify-between items-baseline border-b border-[var(--color-line-soft)] pb-[22px] mb-8 gap-4 flex-wrap">
           <div>
             <div className="display-lg">Crear pack</div>
-            <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5">Elegí palabras y compartí un enlace de práctica con tus alumnos</p>
+            <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5">Elegí niveles y categorías: las {MAX_PACK_WORDS} palabras se sortean solas. Sacá las que no quieras y compartí el enlace.</p>
           </div>
           <button type="button" onClick={resetPackBuilder} className="index-nav shrink-0">
             <span className="index-nav-num">←</span>
@@ -273,10 +316,22 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily, onStartPac
           </div>
         </div>
 
-        {/* Lista de palabras candidatas (según filtros). */}
-        <div className="flex items-center justify-between mb-2.5 gap-3">
+        {/* Lista de palabras candidatas (según filtros). Las tildadas salieron
+            del sorteo automático; el docente saca o agrega a mano. */}
+        <div className="flex items-center justify-between mb-2.5 gap-3 flex-wrap">
           <div className="hud">Palabras · {packCandidates.length}</div>
-          <div className="hud num" id="pack-count">{packSelected.size}/{MAX_PACK_WORDS} elegidas</div>
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={reshufflePack}
+              disabled={autoPool.length === 0}
+              className="bulk-toggle"
+              id="pack-reshuffle"
+            >
+              Sortear otras
+            </button>
+            <div className="hud num" id="pack-count">{packSelected.size}/{MAX_PACK_WORDS} elegidas</div>
+          </div>
         </div>
         {atPackCap && (
           <p className="text-[var(--color-accent-err)] text-[11px] mb-2">Llegaste al máximo de {MAX_PACK_WORDS} palabras por pack.</p>
