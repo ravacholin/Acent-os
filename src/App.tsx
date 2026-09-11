@@ -1,11 +1,12 @@
-import React, { useRef, useState } from 'react';
-import { GameMode, GameSessionState, Word } from './types';
+import React, { useEffect, useRef, useState } from 'react';
+import { GameMode, GameSessionState, PracticePack, Word } from './types';
 import PracticeSelector from './components/PracticeSelector';
 import StatsDashboard from './components/StatsDashboard';
 import DailyChallenge from './components/DailyChallenge';
 import ExerciseCard from './components/ExerciseCard';
 import { useGameSession } from './hooks/useGameSession';
 import { pickFormat, seededRng } from './engine/formats';
+import { readPackFromHash } from './engine/pack';
 import { playClickSound } from './utils/audio';
 import { motion, AnimatePresence } from 'motion/react';
 import { Volume2, VolumeX } from 'lucide-react';
@@ -36,6 +37,7 @@ export default function App() {
     errorToast,
     startPractice,
     startDailyChallenge,
+    startPack,
     answer,
     nextWord,
     exitSession,
@@ -50,6 +52,35 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<Tab>('entrenar');
   const [selectedResultWord, setSelectedResultWord] = useState<Word | null>(null);
+  const [pendingPack, setPendingPack] = useState<PracticePack | null>(null);
+
+  // Pack compartido en la URL (#pack=...): se lee una vez al montar y se ofrece
+  // arrancar. Se limpia el hash al empezar o descartar, para que recargar no
+  // vuelva a abrir el cartel.
+  useEffect(() => {
+    const pack = readPackFromHash(window.location.hash);
+    if (pack && pack.w.length > 0) {
+      setPendingPack(pack);
+      setActiveTab('entrenar');
+    }
+  }, []);
+
+  const clearPackHash = () => {
+    if (window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  };
+
+  const handleStartPack = () => {
+    if (pendingPack) startPack(pendingPack);
+    clearPackHash();
+    setPendingPack(null);
+  };
+
+  const handleDismissPack = () => {
+    clearPackHash();
+    setPendingPack(null);
+  };
 
   // Descarga el progreso versionado como acentos-progreso.json.
   const handleExportProgress = () => {
@@ -374,10 +405,40 @@ export default function App() {
                   transition={{ duration: 0.12 }}
                   id="entrenar-view"
                 >
+                  {/* Cartel de pack compartido: aparece cuando se abre la app con
+                      un enlace #pack=... generado por un docente. */}
+                  {pendingPack && (
+                    <div className="panel p-5 mb-8 flex flex-col sm:flex-row sm:items-center gap-4 justify-between" id="pending-pack-banner">
+                      <div>
+                        <div className="hud mb-1.5">Pack compartido</div>
+                        <div className="display-sm">{pendingPack.n || 'Práctica sugerida'}</div>
+                        <p className="text-[var(--color-fg-muted)] text-[13px] mt-1">
+                          {pendingPack.w.length} {pendingPack.w.length === 1 ? 'palabra' : 'palabras'} · sesión adaptativa
+                        </p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          onClick={handleStartPack}
+                          className="btn-primary hud px-6 py-3 text-[var(--color-canvas)] cursor-pointer"
+                          id="pending-pack-start"
+                        >
+                          Empezar
+                        </button>
+                        <button
+                          onClick={handleDismissPack}
+                          className="btn-ghost hud px-5 py-3 hover:text-[var(--color-canvas)] cursor-pointer"
+                          id="pending-pack-dismiss"
+                        >
+                          Descartar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Expositor — el menú de modos como vitrina monumental. El panel
                       de foco reemplaza al hero: muestra el modo enfocado a escala
                       de afiche mientras se recorre el riel-índice de la derecha. */}
-                  <PracticeSelector onSelectMode={startPractice} onOpenDaily={goTo('desafio')} />
+                  <PracticeSelector onSelectMode={startPractice} onOpenDaily={goTo('desafio')} onStartPack={startPack} />
                 </motion.div>
               )}
 

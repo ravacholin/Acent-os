@@ -33,6 +33,9 @@ import {
   isEndlessMode,
   SessionAction
 } from '../engine/session';
+import { resolvePackWords } from '../engine/pack';
+import { WORDS_DATABASE } from '../data/words';
+import { PracticePack } from '../types';
 import { playClickSound } from '../utils/audio';
 
 /**
@@ -154,6 +157,30 @@ export function useGameSession() {
 
     dispatch({ type: 'start', session: createSession({ mode, words, initialTime, now: Date.now() }) });
   }, [rememberSeen, selectionContext, showError]);
+
+  // Arranca una sesión con un pack compartido por un docente (set fijo de
+  // palabras). Corre por la escalera adaptativa, como el desafío diario, pero
+  // NO cuenta como desafío (no otorga su XP ni guarda resultado del día).
+  // Devuelve true si pudo arrancar con al menos una palabra válida.
+  const startPack = useCallback((pack: PracticePack): boolean => {
+    const words = resolvePackWords(pack, WORDS_DATABASE);
+    if (words.length === 0) {
+      showError('Este pack no contiene palabras reconocidas por esta versión de la app.');
+      return false;
+    }
+    const ignored = pack.w.length - words.length;
+    if (ignored > 0) {
+      showError(`Se ignoraron ${ignored} ${ignored === 1 ? 'palabra' : 'palabras'} que esta versión no reconoce.`);
+    }
+    playClickSound(progressRef.current.settings.soundEnabled);
+    rememberSeen(words.map(w => w.id));
+    isDailyRef.current = false;
+    dispatch({
+      type: 'start',
+      session: createSession({ mode: 'adaptativo', words, initialTime: 0, now: Date.now() })
+    });
+    return true;
+  }, [rememberSeen, showError]);
 
   const startDailyChallenge = useCallback((words: Word[]) => {
     playClickSound(progressRef.current.settings.soundEnabled);
@@ -327,6 +354,7 @@ export function useGameSession() {
     // handlers
     startPractice,
     startDailyChallenge,
+    startPack,
     answer,
     nextWord,
     exitSession,
