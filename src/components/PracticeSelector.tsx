@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
-import { GameMode, LevelMCER, WordCategory } from '../types';
+import { GameMode, LevelMCER, PracticePack, WordCategory } from '../types';
 import { motion } from 'motion/react';
+import { WORDS_DATABASE, stripAccents } from '../data/words';
+import { createPack, packUrl, MAX_PACK_WORDS } from '../engine/pack';
 
 interface PracticeSelectorProps {
   onSelectMode: (mode: GameMode, customOptions?: { levels: LevelMCER[]; categories: WordCategory[]; timeLimit?: number }) => void;
   onOpenDaily?: () => void;
+  onStartPack?: (pack: PracticePack) => void;
 }
 
-export default function PracticeSelector({ onSelectMode, onOpenDaily }: PracticeSelectorProps) {
+export default function PracticeSelector({ onSelectMode, onOpenDaily, onStartPack }: PracticeSelectorProps) {
   const [selectedMode, setSelectedMode] = useState<GameMode | null>(null);
+
+  // Constructor de packs compartibles.
+  const [packOpen, setPackOpen] = useState(false);
+  const [packSelected, setPackSelected] = useState<Set<string>>(new Set());
+  const [packName, setPackName] = useState('');
+  const [packSearch, setPackSearch] = useState('');
+  const [packLink, setPackLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Custom mode options
   const [customLevels, setCustomLevels] = useState<LevelMCER[]>(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
@@ -111,6 +122,61 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily }: Practice
     });
   };
 
+  // --- Constructor de pack -------------------------------------------------
+  // Reutiliza los filtros de nivel/categoría del panel personalizado para
+  // acotar la lista visible; el docente tilda las palabras que entran al pack.
+  const packCandidates = WORDS_DATABASE.filter((w) => {
+    if (!customLevels.includes(w.level) || !customCategories.includes(w.category)) return false;
+    const q = stripAccents(packSearch.trim()).toLowerCase();
+    if (!q) return true;
+    return stripAccents(w.wordClean).toLowerCase().includes(q);
+  });
+
+  const atPackCap = packSelected.size >= MAX_PACK_WORDS;
+
+  const togglePackWord = (id: string) => {
+    setPackLink(null);
+    setCopied(false);
+    setPackSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else if (next.size < MAX_PACK_WORDS) next.add(id);
+      return next;
+    });
+  };
+
+  const resetPackBuilder = () => {
+    setPackOpen(false);
+    setPackSelected(new Set());
+    setPackName('');
+    setPackSearch('');
+    setPackLink(null);
+    setCopied(false);
+  };
+
+  const handleGeneratePackLink = () => {
+    if (packSelected.size === 0) return;
+    const pack = createPack([...packSelected], packName);
+    setPackLink(packUrl(pack));
+    setCopied(false);
+  };
+
+  const handleCopyPackLink = async () => {
+    if (!packLink) return;
+    try {
+      await navigator.clipboard.writeText(packLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* Sin permiso de portapapeles: el input de solo lectura permite copiar a mano. */
+    }
+  };
+
+  const handleTestPack = () => {
+    if (packSelected.size === 0 || !onStartPack) return;
+    onStartPack(createPack([...packSelected], packName));
+  };
+
   const chipClass = (active: boolean) =>
     `chip px-4 py-2 text-[11px] ${active ? 'chip-on' : ''}`;
 
@@ -137,6 +203,156 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily }: Practice
   const allLevelsSelected = customLevels.length === ALL_LEVELS.length;
   const allCategoriesSelected = customCategories.length === allCategoryIds.length;
   const canStartCustom = customLevels.length > 0 && customCategories.length > 0;
+
+  if (packOpen) {
+    return (
+      <div id="pack-builder-panel">
+        <div className="flex justify-between items-baseline border-b border-[var(--color-line-soft)] pb-[22px] mb-8 gap-4 flex-wrap">
+          <div>
+            <div className="display-lg">Crear pack</div>
+            <p className="text-[var(--color-fg-muted)] text-[13px] mt-2.5">Elegí palabras y compartí un enlace de práctica con tus alumnos</p>
+          </div>
+          <button type="button" onClick={resetPackBuilder} className="index-nav shrink-0">
+            <span className="index-nav-num">←</span>
+            Volver
+          </button>
+        </div>
+
+        {/* Filtros de nivel + categoría para acotar la lista. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-7">
+          <div>
+            <div className="flex items-center justify-between mb-3.5 gap-3">
+              <div className="hud"><span className="num text-[var(--color-fg-soft)] mr-2">01</span>Filtrar por nivel</div>
+              <div className="flex gap-1.5">
+                <button type="button" onClick={() => setCustomLevels([...ALL_LEVELS])} disabled={allLevelsSelected} className="bulk-toggle">Todo</button>
+                <button type="button" onClick={() => setCustomLevels([])} disabled={customLevels.length === 0} className="bulk-toggle">Ninguno</button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {ALL_LEVELS.map((lvl) => (
+                <span key={lvl} onClick={() => handleToggleLevel(lvl)} className={chipClass(customLevels.includes(lvl))}>{lvl}</span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="hud mb-3.5"><span className="num text-[var(--color-fg-soft)] mr-2">02</span>Buscar palabra</div>
+            <input
+              type="text"
+              value={packSearch}
+              onChange={(e) => setPackSearch(e.target.value)}
+              placeholder="Escribí para filtrar…"
+              className="w-full bg-transparent border border-[var(--color-line-soft)] px-3.5 py-2.5 text-[13px] outline-none focus:border-[var(--color-fg-soft)] transition-colors"
+              id="pack-search"
+            />
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-3.5 gap-3 flex-wrap">
+            <div className="hud"><span className="num text-[var(--color-fg-soft)] mr-2">03</span>Categorías</div>
+            <div className="flex gap-1.5">
+              <button type="button" onClick={() => setCustomCategories([...allCategoryIds])} disabled={allCategoriesSelected} className="bulk-toggle">Todo</button>
+              <button type="button" onClick={() => setCustomCategories([])} disabled={customCategories.length === 0} className="bulk-toggle">Ninguno</button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {categoryOptions.map((cat) => (
+              <span key={cat.id} onClick={() => handleToggleCategory(cat.id)} className={chipClass(customCategories.includes(cat.id))}>{cat.label}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Lista de palabras candidatas (según filtros). */}
+        <div className="flex items-center justify-between mb-2.5 gap-3">
+          <div className="hud">Palabras · {packCandidates.length}</div>
+          <div className="hud num" id="pack-count">{packSelected.size}/{MAX_PACK_WORDS} elegidas</div>
+        </div>
+        {atPackCap && (
+          <p className="text-[var(--color-accent-err)] text-[11px] mb-2">Llegaste al máximo de {MAX_PACK_WORDS} palabras por pack.</p>
+        )}
+        <div className="divide-y divide-[var(--color-line-soft)] border-y border-[var(--color-line-soft)] max-h-72 overflow-y-auto pr-1 mb-7">
+          {packCandidates.length === 0 ? (
+            <p className="text-[var(--color-fg-muted)] text-[13px] py-6 text-center">No hay palabras para esta combinación de filtros.</p>
+          ) : (
+            packCandidates.map((w) => {
+              const on = packSelected.has(w.id);
+              const disabled = !on && atPackCap;
+              return (
+                <button
+                  key={w.id}
+                  type="button"
+                  onClick={() => togglePackWord(w.id)}
+                  disabled={disabled}
+                  aria-pressed={on}
+                  className={`w-full flex justify-between items-center gap-4 px-2 py-2.5 text-left transition-colors ${on ? 'bg-[var(--color-surface)]' : 'hover:bg-[var(--color-surface)]'} ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="text-[13px] w-4" aria-hidden="true">{on ? '✓' : '+'}</span>
+                    <span className="display-sm">{w.word}</span>
+                  </span>
+                  <span className="hud text-[var(--color-fg-muted)]">{w.classification} · {w.level}</span>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        {/* Nombre + generación de enlace. */}
+        <div className="border-t border-[var(--color-line-soft)] pt-[26px]">
+          <div className="hud mb-3.5"><span className="num text-[var(--color-fg-soft)] mr-2">04</span>Nombre del pack (opcional)</div>
+          <input
+            type="text"
+            value={packName}
+            onChange={(e) => { setPackName(e.target.value); setPackLink(null); setCopied(false); }}
+            placeholder="Repaso semana 3"
+            className="w-full bg-transparent border border-[var(--color-line-soft)] px-3.5 py-2.5 text-[13px] outline-none focus:border-[var(--color-fg-soft)] transition-colors mb-5"
+            id="pack-name"
+          />
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleGeneratePackLink}
+              disabled={packSelected.size === 0}
+              className="btn-primary hud flex-1 py-3.5 text-[var(--color-canvas)] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              id="pack-generate"
+            >
+              Generar enlace
+            </button>
+            {onStartPack && (
+              <button
+                onClick={handleTestPack}
+                disabled={packSelected.size === 0}
+                className="btn-ghost hud flex-1 py-3.5 hover:text-[var(--color-canvas)] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                id="pack-test"
+              >
+                Probar pack
+              </button>
+            )}
+          </div>
+
+          {packLink && (
+            <div className="panel p-4 mt-5" id="pack-link-box">
+              <div className="hud mb-2">Enlace para compartir</div>
+              <div className="flex gap-2 flex-col sm:flex-row">
+                <input
+                  type="text"
+                  readOnly
+                  value={packLink}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="flex-1 bg-transparent border border-[var(--color-line-soft)] px-3 py-2.5 text-[12px] outline-none"
+                  id="pack-link-input"
+                />
+                <button onClick={handleCopyPackLink} className="btn-primary hud px-6 py-2.5 text-[var(--color-canvas)] cursor-pointer shrink-0">
+                  {copied ? 'Copiado ✓' : 'Copiar'}
+                </button>
+              </div>
+              <p className="text-[var(--color-fg-muted)] text-[11px] mt-2.5">Quien lo abra practica estas {packSelected.size} palabras. El progreso se guarda en el dispositivo de cada alumno.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   if (selectedMode === 'personalizado') {
     return (
@@ -314,6 +530,21 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily }: Practice
             ))}
           </div>
         </nav>
+
+        {/* Modo docente: armar un set de palabras y compartirlo por enlace. */}
+        <button
+          type="button"
+          className="rep-row w-full"
+          id="mode-card-crear-pack"
+          onClick={() => setPackOpen(true)}
+        >
+          <span className="rep-n" aria-hidden="true">＋</span>
+          <span className="rep-body">
+            <span className="rep-title">Crear pack para compartir</span>
+            <span className="rep-spec">Docente · Enlace de práctica</span>
+          </span>
+          <span className="rep-arrow" aria-hidden="true">→</span>
+        </button>
       </div>
     </div>
   );

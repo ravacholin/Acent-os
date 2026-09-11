@@ -38,6 +38,15 @@ export interface Word {
   example?: string;           // Context sentence with the target position marked by "___" (e.g., "___ coche es rojo")
 }
 
+// Pack de práctica compartible: un set fijo de palabras que un docente arma y
+// comparte por enlace (codificado en el hash de la URL, sin backend). Los ids
+// son la palabra tal cual (con tildes), ver `makeWord` en data/words.ts.
+export interface PracticePack {
+  v: 1;            // versión del formato del pack
+  n?: string;      // nombre opcional ("Repaso semana 3")
+  w: string[];     // ids de palabras
+}
+
 export type GameMode =
   | 'lleva-tilde'      // Mode 1: ¿Lleva tilde?
   | 'escribi-tilde'    // Mode 2: Escribí la tilde
