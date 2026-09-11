@@ -3,6 +3,7 @@ import { GameMode, LevelMCER, PracticePack, WordCategory } from '../types';
 import { motion } from 'motion/react';
 import { WORDS_DATABASE, stripAccents } from '../data/words';
 import { createPack, packUrl, MAX_PACK_WORDS } from '../engine/pack';
+import QrCode, { downloadQrPng } from './QrCode';
 
 interface PracticeSelectorProps {
   onSelectMode: (mode: GameMode, customOptions?: { levels: LevelMCER[]; categories: WordCategory[]; timeLimit?: number }) => void;
@@ -169,6 +170,16 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily, onStartPac
       setTimeout(() => setCopied(false), 2000);
     } catch {
       /* Sin permiso de portapapeles: el input de solo lectura permite copiar a mano. */
+    }
+  };
+
+  const handleDownloadQr = async () => {
+    if (!packLink) return;
+    const slug = packName.trim().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').toLowerCase();
+    try {
+      await downloadQrPng(packLink, `${slug || 'pack'}-qr.png`);
+    } catch {
+      /* Si la descarga falla, el QR en pantalla sigue siendo escaneable. */
     }
   };
 
@@ -346,7 +357,26 @@ export default function PracticeSelector({ onSelectMode, onOpenDaily, onStartPac
                   {copied ? 'Copiado ✓' : 'Copiar'}
                 </button>
               </div>
-              <p className="text-[var(--color-fg-muted)] text-[11px] mt-2.5">Quien lo abra practica estas {packSelected.size} palabras. El progreso se guarda en el dispositivo de cada alumno.</p>
+
+              {/* QR del mismo enlace: el alumno lo escanea con la cámara y entra sin tipear. */}
+              <div className="flex flex-col sm:flex-row items-center gap-4 mt-5" id="pack-qr">
+                <div className="bg-white p-2.5 rounded-md shrink-0" style={{ width: 148, height: 148 }}>
+                  <QrCode value={packLink} className="w-full h-full block" label="Código QR para abrir el pack" />
+                </div>
+                <div className="text-center sm:text-left">
+                  <div className="hud mb-1.5">Código QR</div>
+                  <p className="text-[var(--color-fg-muted)] text-[11px] mb-3">Los alumnos lo escanean con la cámara del celular para abrir el pack.</p>
+                  <button
+                    onClick={handleDownloadQr}
+                    className="btn-ghost hud px-5 py-2.5 hover:text-[var(--color-canvas)] cursor-pointer"
+                    id="pack-qr-download"
+                  >
+                    Descargar QR
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-[var(--color-fg-muted)] text-[11px] mt-4">Quien lo abra practica estas {packSelected.size} palabras. El progreso se guarda en el dispositivo de cada alumno.</p>
             </div>
           )}
         </div>
